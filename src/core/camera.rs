@@ -1,12 +1,11 @@
-use crate::color::Color;
-use crate::hit::Hittable;
-use crate::math::interval::Interval;
-use crate::math::vector::{Point, Vec3D};
-use crate::math::Real;
-use crate::ray::Ray;
-use crate::math;
 use std::fs::File;
 use std::io::{self, Write};
+use crate::core::color::Color;
+use crate::core::hit::Hittable;
+use crate::core::math::interval::Interval;
+use crate::core::math::{self, Real};
+use crate::core::math::vector::{Point, Vec3D};
+use crate::core::ray::Ray;
 
 pub struct Camera {
     center: Point,

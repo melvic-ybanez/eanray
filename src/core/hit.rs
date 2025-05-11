@@ -1,9 +1,8 @@
-use crate::math::Real;
-use crate::math::vector::{Point, UnitVec3D};
-use crate::ray::Ray;
-use crate::shapes::sphere::Sphere;
-use std::os::unix::raw::time_t;
-use crate::math::interval::Interval;
+use crate::core::math::interval::Interval;
+use crate::core::math::Real;
+use crate::core::math::vector::{Point, UnitVec3D};
+use crate::core::ray::Ray;
+use crate::core::shapes::sphere::Sphere;
 
 pub struct HitRecord {
     p: Point,

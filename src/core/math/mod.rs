@@ -1,10 +1,12 @@
-use crate::math::vector::CanAdd;
 use std::ops::{Add, Mul};
 
 pub mod vector;
 pub mod interval;
 
 pub type Real = f64;
+
+pub type Vec3D = vector::Vec3D;
+pub type Point = vector::Point;
 
 pub const INFINITY: Real = Real::INFINITY;
 pub const PI: Real = std::f64::consts::PI;

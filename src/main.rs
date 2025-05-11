@@ -1,25 +1,18 @@
-use crate::camera::Camera;
-use crate::hit::{Hittable, HittableList};
-use crate::math::vector::Point;
-use crate::shapes::sphere::Sphere;
 use std::io;
+use crate::dsl::ast::Scene;
 
-mod camera;
-mod color;
-mod hit;
-mod math;
-mod ray;
-mod shapes;
+mod dsl;
+mod core;
 
 fn main() -> io::Result<()> {
-    let world = Hittable::List(HittableList::from_vec(vec![
-        Hittable::Sphere(Sphere::new(Point::new(0.0, 0.0, -1.0), 0.5)),
-        Hittable::Sphere(Sphere::new(Point::new(0.0, -100.5, -1.0), 100.0)),
-    ]));
-
-    let mut camera = Camera::new();
-    camera.image.aspect_ratio = 16.0 / 9.0;
-    camera.image.width = 400;
-
+    let raw_scene = r#"{
+        "camera": {"aspect_ratio": [16, 9], "image_width": 400},
+        "objects": [
+            {"sphere": { "center": [0, 0, -1], "radius": 0.5 }},
+            {"sphere": { "center": [0, -100.5, -1], "radius": 100.0 }}
+        ]
+    }"#;
+    let scene: Scene = serde_json::from_str(raw_scene)?;
+    let (camera, world) = scene.build();
     camera.render(world)
 }

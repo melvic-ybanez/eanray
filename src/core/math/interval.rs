@@ -1,5 +1,4 @@
-use crate::math;
-use crate::math::Real;
+use crate::core::math::{self, Real};
 
 pub struct Interval {
     min: Real,

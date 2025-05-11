@@ -1,5 +1,5 @@
-use crate::math::Real;
-use crate::math::vector::{Point, Vec3D};
+use crate::core::math::Real;
+use crate::core::math::vector::{Point, Vec3D};
 
 #[derive(Clone)]
 pub struct Ray {

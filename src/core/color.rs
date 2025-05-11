@@ -1,7 +1,7 @@
-use crate::math::Real;
-use crate::math::vector::{CanAdd, Vec3D, VecLike};
 use std::fs::File;
 use std::io::{self, Write};
+use crate::core::math::Real;
+use crate::core::math::vector::{CanAdd, Vec3D, VecLike};
 
 pub struct ColorKind;
 

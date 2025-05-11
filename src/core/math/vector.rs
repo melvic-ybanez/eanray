@@ -1,7 +1,7 @@
-use crate::math::Real;
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Neg, Sub};
+use crate::core::math::Real;
 
 #[derive(Clone)]
 pub struct VecKind;

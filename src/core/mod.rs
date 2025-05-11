@@ -1,8 +1,8 @@
 pub mod camera;
 mod color;
 mod hit;
-mod ray;
 pub mod math;
+mod ray;
 pub(crate) mod shapes;
 
 pub type Camera = camera::Camera;

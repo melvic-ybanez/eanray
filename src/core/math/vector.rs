@@ -1,7 +1,7 @@
+use crate::core::math::Real;
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Neg, Sub};
-use crate::core::math::Real;
 
 #[derive(Clone)]
 pub struct VecKind;
@@ -57,7 +57,7 @@ impl Vec3D {
     pub fn length_squared(&self) -> Real {
         self.dot(self)
     }
-    
+
     pub fn dot(&self, rhs: &Vec3D) -> Real {
         self.x * rhs.x + self.y * rhs.y + self.z * rhs.z
     }
@@ -105,7 +105,7 @@ impl<V: CanAdd> Add<VecLike<V>> for VecLike<V> {
 
 impl<V: CanAdd> Add<Real> for VecLike<V> {
     type Output = VecLike<V>;
-    
+
     fn add(self, rhs: Real) -> Self::Output {
         &self + rhs
     }

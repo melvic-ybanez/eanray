@@ -1,9 +1,9 @@
+use crate::dsl::ast::Scene;
 use std::io;
 use std::io::Read;
-use crate::dsl::ast::Scene;
 
-mod dsl;
 mod core;
+mod dsl;
 
 fn main() -> io::Result<()> {
     let mut raw_scene = String::new();

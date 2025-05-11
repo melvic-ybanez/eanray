@@ -1,6 +1,6 @@
 use crate::core::hit::HitRecord;
-use crate::core::math::interval::Interval;
 use crate::core::math::Real;
+use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::ray::Ray;
 

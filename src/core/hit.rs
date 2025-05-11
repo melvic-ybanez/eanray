@@ -1,5 +1,5 @@
-use crate::core::math::interval::Interval;
 use crate::core::math::Real;
+use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::ray::Ray;
 use crate::core::shapes::sphere::Sphere;
@@ -70,7 +70,9 @@ impl HittableList {
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         self.objects.iter().fold(None, |maybe_prev_record, object| {
             if let Some(prev_record) = maybe_prev_record {
-                object.hit(ray, &Interval::new(ray_t.min(), prev_record.t)).or(Some(prev_record))
+                object
+                    .hit(ray, &Interval::new(ray_t.min(), prev_record.t))
+                    .or(Some(prev_record))
             } else {
                 object.hit(ray, ray_t)
             }

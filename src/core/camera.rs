@@ -1,11 +1,11 @@
-use std::fs::File;
-use std::io::{self, Write};
 use crate::core::color::Color;
 use crate::core::hit::Hittable;
 use crate::core::math::interval::Interval;
-use crate::core::math::{self, Real};
 use crate::core::math::vector::{Point, Vec3D};
+use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
+use std::fs::File;
+use std::io::{self, Write};
 
 pub struct Camera {
     center: Point,
@@ -99,7 +99,6 @@ impl Image {
         if height < 1 { 1 } else { height }
     }
 }
-
 
 struct Viewport<'a> {
     height: f64,

@@ -1,7 +1,7 @@
 use std::ops::{Add, Mul};
 
-pub mod vector;
 pub mod interval;
+pub mod vector;
 
 pub type Real = f64;
 
@@ -18,6 +18,7 @@ pub fn degrees_to_radians(degrees: Real) -> Real {
 pub fn normalize_to_01<A>(value: A) -> <A::Output as Mul<Real>>::Output
 where
     A: Add<Real>,
-    A::Output: Mul<Real>,{
+    A::Output: Mul<Real>,
+{
     (value + 1.0) * 0.5
 }

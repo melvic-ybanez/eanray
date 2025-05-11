@@ -1,7 +1,7 @@
-use std::fs::File;
-use std::io::{self, Write};
 use crate::core::math::Real;
 use crate::core::math::vector::{CanAdd, Vec3D, VecLike};
+use std::fs::File;
+use std::io::{self, Write};
 
 pub struct ColorKind;
 
@@ -31,7 +31,7 @@ impl Color {
     pub fn white() -> Color {
         Color::new(1.0, 1.0, 1.0)
     }
-    
+
     pub fn red() -> Color {
         Color::new(1.0, 0.0, 0.0)
     }
@@ -41,6 +41,6 @@ impl CanAdd for ColorKind {}
 
 impl From<Vec3D> for Color {
     fn from(v: Vec3D) -> Self {
-        Color::new(v.x(), v.y(), v.z())   
+        Color::new(v.x(), v.y(), v.z())
     }
 }

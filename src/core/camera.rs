@@ -11,14 +11,16 @@ pub struct Camera {
     center: Point,
     pub focal_length: f64,
     pub image: Image,
+    pub samples_per_pixel: u32,
 }
 
 impl Camera {
     pub fn new() -> Self {
         Self {
-            center: Point::zero(),
-            focal_length: 1.0,
+            center: Self::default_center(),
+            focal_length: Self::default_focal_length(),
             image: Image::new(100, 1.0),
+            samples_per_pixel: Self::default_samples_per_pixel(),
         }
     }
 
@@ -27,7 +29,9 @@ impl Camera {
     }
 
     pub fn render(&self, world: Hittable) -> io::Result<()> {
-        let (viewport, ppm_file) = self.initialize()?;
+        let ppm_file = File::create("output.ppm")?;
+        let viewport = self.viewport();
+        let pixel_sample_scale = self.pixel_sample_scale();
 
         // output the PPM contents
         writeln!(
@@ -40,12 +44,13 @@ impl Camera {
         for j in 0..self.image.height() {
             println!("Scanlines remaining: {}", self.image.height() - j);
             for i in 0..self.image.width {
-                let pixel_center = viewport.pixel_00_loc()
-                    + (viewport.pixel_delta_u() * i as Real)
-                    + (viewport.pixel_delta_v() * j as Real);
-                let ray_direction = pixel_center - self.center();
-                let ray = Ray::new(self.center().clone(), ray_direction);
-                let pixel_color = self.ray_color(&ray, &world);
+                let sample_colors: Vec<Color> = (0..self.samples_per_pixel)
+                    .map(|_| self.ray_color(&self.get_ray(i, j, &viewport), &world))
+                    .collect();
+                let pixel_color = sample_colors
+                    .iter()
+                    .fold(Color::black(), |acc, color| acc + color)
+                    * pixel_sample_scale;
                 pixel_color.write_to_file(&ppm_file)?
             }
         }
@@ -53,6 +58,21 @@ impl Camera {
         println!("Done!");
 
         Ok(())
+    }
+
+    /// Returns a ray directed towards a randomly sampled point around the pixel at i, j
+    fn get_ray(&self, i: u32, j: u32, viewport: &Viewport) -> Ray {
+        let offset = Self::sample_square();
+        let pixel_sample = viewport.pixel_00_loc()
+            + (viewport.pixel_delta_u() * (offset.x() + i as Real))
+            + (viewport.pixel_delta_v() * (offset.y() + j as Real));
+        let origin = self.center();
+        Ray::new(origin.clone(), pixel_sample - origin)
+    }
+
+    /// A vector to a random point within half the unit square.
+    fn sample_square() -> Vec3D {
+        Vec3D::new(math::random() - 0.5, math::random() - 0.5, 0.0)
     }
 
     fn ray_color(&self, ray: &Ray, world: &Hittable) -> Color {
@@ -65,10 +85,24 @@ impl Camera {
         }
     }
 
-    fn initialize(&self) -> io::Result<(Viewport, File)> {
-        let ppm_file = File::create("output.ppm")?;
-        let view_port = Viewport::new(2.0, &self, &self.image);
-        Ok((view_port, ppm_file))
+    fn viewport(&self) -> Viewport {
+        Viewport::new(2.0, &self, &self.image)
+    }
+
+    fn pixel_sample_scale(&self) -> Real {
+        1.0 / self.samples_per_pixel as Real
+    }
+
+    pub fn default_center() -> Point {
+        Point::zero()
+    }
+
+    pub fn default_focal_length() -> f64 {
+        1.0
+    }
+
+    pub fn default_samples_per_pixel() -> u32 {
+        10
     }
 }
 

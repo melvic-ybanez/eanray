@@ -12,20 +12,20 @@ pub struct Camera {
     #[serde(default = "Camera::default_center")]
     center: Point,
 
-    #[serde(default = "Camera::default_focal_point")]
-    focal_point: f64,
+    #[serde(default = "core::Camera::default_focal_length")]
+    focal_length: f64,
 
     aspect_ratio: [Real; 2],
     image_width: u32,
+    
+    #[serde(default = "core::Camera::default_samples_per_pixel")]
+    samples_per_pixel: u32,
 }
 
 impl Camera {
     fn default_center() -> Point {
-        [0.0, 0.0, 0.0]
-    }
-
-    fn default_focal_point() -> f64 {
-        1.0
+        let center = core::Camera::default_center();
+        [center.x(), center.y(), center.z()]
     }
 
     fn ideal_aspect_ratio(&self) -> Real {

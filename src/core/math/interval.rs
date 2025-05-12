@@ -37,4 +37,14 @@ impl Interval {
     pub fn max(&self) -> Real {
         self.max
     }
+    
+    pub fn clamp(&self, x: Real) -> Real {
+        if x < self.min {
+            self.min
+        } else if x > self.max {
+            self.max
+        } else {
+            x
+        }
+    }
 }

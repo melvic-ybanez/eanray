@@ -1,4 +1,5 @@
 use std::ops::{Add, Mul};
+use rand::Rng;
 
 pub mod interval;
 pub mod vector;
@@ -21,4 +22,13 @@ where
     A::Output: Mul<Real>,
 {
     (value + 1.0) * 0.5
+}
+
+pub fn random_range(min: Real, max: Real) -> Real {
+    let mut rng = rand::rng();
+    rng.random_range(min..max)
+}
+
+pub fn random() -> Real {
+    random_range(0.0, 1.0)
 }

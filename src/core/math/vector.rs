@@ -103,6 +103,14 @@ impl<V: CanAdd> Add<VecLike<V>> for VecLike<V> {
     }
 }
 
+impl<V: CanAdd> Add<&VecLike<V>> for VecLike<V> {
+    type Output = VecLike<V>;
+    
+    fn add(self, rhs: &VecLike<V>) -> Self::Output {
+        rhs + self   
+    }   
+}
+
 impl<V: CanAdd> Add<Real> for VecLike<V> {
     type Output = VecLike<V>;
 

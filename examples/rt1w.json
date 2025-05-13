@@ -5,7 +5,8 @@
       9
     ],
     "image_width": 400,
-    "samples_per_pixel": 100
+    "samples_per_pixel": 100,
+    "antialiasing": true
   },
   "objects": [
     {

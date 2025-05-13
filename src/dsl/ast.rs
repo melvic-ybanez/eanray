@@ -20,6 +20,9 @@ pub struct Camera {
 
     #[serde(default = "Camera::default_samples_per_pixel")]
     samples_per_pixel: u32,
+
+    #[serde(default = "Camera::default_antialiasing")]
+    antialiasing: bool,
 }
 
 impl Camera {
@@ -27,13 +30,17 @@ impl Camera {
         let center = core::Camera::default_center();
         [center.x, center.y, center.z]
     }
-    
+
     fn default_focal_length() -> Real {
         core::Camera::DEFAULT_FOCAL_LENGTH
     }
-    
+
     fn default_samples_per_pixel() -> u32 {
         core::Camera::DEFAULT_SAMPLES_PER_PIXEL
+    }
+
+    fn default_antialiasing() -> bool {
+        core::Camera::DEFAULT_ANTIALISING
     }
 
     fn ideal_aspect_ratio(&self) -> Real {
@@ -44,6 +51,8 @@ impl Camera {
         let mut camera = core::Camera::new();
         camera.image.aspect_ratio = self.ideal_aspect_ratio();
         camera.image.width = self.image_width;
+        camera.antialiasing = self.antialiasing;
+        camera.samples_per_pixel = self.samples_per_pixel;
         camera
     }
 }

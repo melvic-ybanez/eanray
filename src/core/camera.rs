@@ -12,6 +12,7 @@ pub struct Camera {
     pub focal_length: f64,
     pub image: Image,
     pub samples_per_pixel: u32,
+    pub antialiasing: bool,
 }
 
 impl Camera {
@@ -21,6 +22,7 @@ impl Camera {
             focal_length: Self::DEFAULT_FOCAL_LENGTH,
             image: Image::new(100, 1.0),
             samples_per_pixel: Self::DEFAULT_SAMPLES_PER_PIXEL,
+            antialiasing: Self::DEFAULT_ANTIALISING,
         }
     }
 
@@ -40,13 +42,23 @@ impl Camera {
         for j in 0..self.image.height() {
             println!("Scanlines remaining: {}", self.image.height() - j);
             for i in 0..self.image.width {
-                let sample_colors: Vec<Color> = (0..self.samples_per_pixel)
-                    .map(|_| self.ray_color(&self.get_ray(i, j, &viewport), &world))
-                    .collect();
-                let pixel_color = sample_colors
-                    .iter()
-                    .fold(Color::black(), |acc, color| acc + color)
-                    * pixel_sample_scale;
+                let pixel_color = if self.antialiasing {
+                    let sample_colors: Vec<Color> = (0..self.samples_per_pixel)
+                        .map(|_| self.ray_color(&self.get_ray(i, j, &viewport), &world))
+                        .collect();
+
+                    sample_colors
+                        .iter()
+                        .fold(Color::black(), |acc, color| acc + color)
+                        * pixel_sample_scale
+                } else {
+                    let pixel_center = viewport.pixel_00_loc()
+                        + (viewport.pixel_delta_u() * i as Real)
+                        + (viewport.pixel_delta_v() * j as Real);
+                    let ray_direction = pixel_center - &self.center;
+                    let ray = Ray::new(self.center.clone(), ray_direction);
+                    self.ray_color(&ray, &world)
+                };
                 pixel_color.write_to_file(&ppm_file)?
             }
         }
@@ -95,6 +107,7 @@ impl Camera {
 
     pub const DEFAULT_FOCAL_LENGTH: f64 = 1.0;
     pub const DEFAULT_SAMPLES_PER_PIXEL: u32 = 10;
+    pub const DEFAULT_ANTIALISING: bool = true;
 }
 
 pub struct Image {

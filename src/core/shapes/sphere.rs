@@ -18,9 +18,9 @@ impl Sphere {
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let oc = &self.center - ray.origin();
-        let a = ray.direction().dot(ray.direction());
-        let b = ray.direction().dot(&oc) * -2.0;
+        let oc = &self.center - &ray.origin;
+        let a = ray.direction.dot(&ray.direction);
+        let b = ray.direction.dot(&oc) * -2.0;
         let c = oc.length_squared() - self.radius * self.radius;
         let discriminant = b * b - 4.0 * a * c;
 

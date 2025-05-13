@@ -7,6 +7,11 @@ pub struct Interval {
 
 impl Interval {
     pub fn new(min: Real, max: Real) -> Self {
+        // let's not return an error for now
+        if min > max {
+            return Self::new(max, min);       
+        }
+        
         Self { min, max }
     }
 

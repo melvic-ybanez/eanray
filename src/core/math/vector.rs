@@ -14,9 +14,9 @@ pub type Point = VecLike<PointKind>;
 
 #[derive(Clone)]
 pub struct VecLike<Kind> {
-    x: Real,
-    y: Real,
-    z: Real,
+    pub x: Real,
+    pub y: Real,
+    pub z: Real,
     _kind: PhantomData<Kind>,
 }
 
@@ -30,18 +30,6 @@ impl<K> VecLike<K> {
             z,
             _kind: PhantomData,
         }
-    }
-
-    pub fn x(&self) -> Real {
-        self.x
-    }
-
-    pub fn y(&self) -> Real {
-        self.y
-    }
-
-    pub fn z(&self) -> Real {
-        self.z
     }
 
     pub fn zero() -> Self {

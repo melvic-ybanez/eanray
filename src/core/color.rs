@@ -10,15 +10,15 @@ pub type Color = VecLike<ColorKind>;
 
 impl Color {
     pub fn red_component(&self) -> Real {
-        self.x()
+        self.x
     }
 
     pub fn green_component(&self) -> Real {
-        self.y()
+        self.y
     }
 
     pub fn blue_component(&self) -> Real {
-        self.z()
+        self.z
     }
 
     pub fn write_to_file(&self, mut file: &File) -> io::Result<()> {
@@ -47,6 +47,6 @@ impl CanAdd for ColorKind {}
 
 impl From<Vec3D> for Color {
     fn from(v: Vec3D) -> Self {
-        Color::new(v.x(), v.y(), v.z())
+        Color::new(v.x, v.y, v.z)
     }
 }

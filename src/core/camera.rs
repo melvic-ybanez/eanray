@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::{self, Write};
 
 pub struct Camera {
-    center: Point,
+    pub center: Point,
     pub focal_length: f64,
     pub image: Image,
     pub samples_per_pixel: u32,
@@ -22,10 +22,6 @@ impl Camera {
             image: Image::new(100, 1.0),
             samples_per_pixel: Self::DEFAULT_SAMPLES_PER_PIXEL,
         }
-    }
-
-    pub fn center(&self) -> &Point {
-        &self.center
     }
 
     pub fn render(&self, world: Hittable) -> io::Result<()> {
@@ -64,9 +60,9 @@ impl Camera {
     fn get_ray(&self, i: u32, j: u32, viewport: &Viewport) -> Ray {
         let offset = Self::sample_square();
         let pixel_sample = viewport.pixel_00_loc()
-            + (viewport.pixel_delta_u() * (offset.x() + i as Real))
-            + (viewport.pixel_delta_v() * (offset.y() + j as Real));
-        let origin = self.center();
+            + (viewport.pixel_delta_u() * (offset.x + i as Real))
+            + (viewport.pixel_delta_v() * (offset.y + j as Real));
+        let origin = &self.center;
         Ray::new(origin.clone(), pixel_sample - origin)
     }
 
@@ -77,10 +73,10 @@ impl Camera {
 
     fn ray_color(&self, ray: &Ray, world: &Hittable) -> Color {
         if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
-            Color::from(math::normalize_to_01(&record.normal().0))
+            Color::from(math::normalize_to_01(&record.normal.0))
         } else {
-            let unit_direction = ray.direction().to_unit().0;
-            let a = math::normalize_to_01(unit_direction.y());
+            let unit_direction = ray.direction.to_unit().0;
+            let a = math::normalize_to_01(unit_direction.y);
             Color::white() * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
         }
     }
@@ -169,7 +165,7 @@ impl<'a> Viewport<'a> {
     }
 
     pub fn upper_left(&self) -> Point {
-        self.camera.center()
+        &self.camera.center
             - Vec3D::new(0.0, 0.0, self.camera.focal_length)
             - self.left_to_right() / 2.0
             - self.bottom_to_top() / 2.0

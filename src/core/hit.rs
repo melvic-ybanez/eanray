@@ -6,7 +6,7 @@ use crate::core::shapes::sphere::Sphere;
 
 pub struct HitRecord {
     p: Point,
-    normal: UnitVec3D,
+    pub normal: UnitVec3D,
     t: Real,
     front_face: bool,
 }
@@ -22,17 +22,13 @@ impl HitRecord {
     }
 
     pub fn face_normal(ray: &Ray, outward_normal: UnitVec3D) -> (bool, UnitVec3D) {
-        let front_face = ray.direction().dot(&outward_normal.0) < 0.0;
+        let front_face = ray.direction.dot(&outward_normal.0) < 0.0;
         let face_normal = if front_face {
             outward_normal
         } else {
             UnitVec3D(-outward_normal.0)
         };
         (front_face, face_normal)
-    }
-
-    pub fn normal(&self) -> &UnitVec3D {
-        &self.normal
     }
 }
 

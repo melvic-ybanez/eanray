@@ -18,9 +18,9 @@ impl Camera {
     pub fn new() -> Self {
         Self {
             center: Self::default_center(),
-            focal_length: Self::default_focal_length(),
+            focal_length: Self::DEFAULT_FOCAL_LENGTH,
             image: Image::new(100, 1.0),
-            samples_per_pixel: Self::default_samples_per_pixel(),
+            samples_per_pixel: Self::DEFAULT_SAMPLES_PER_PIXEL,
         }
     }
 
@@ -97,13 +97,8 @@ impl Camera {
         Point::zero()
     }
 
-    pub fn default_focal_length() -> f64 {
-        1.0
-    }
-
-    pub fn default_samples_per_pixel() -> u32 {
-        10
-    }
+    pub const DEFAULT_FOCAL_LENGTH: f64 = 1.0;
+    pub const DEFAULT_SAMPLES_PER_PIXEL: u32 = 10;
 }
 
 pub struct Image {

@@ -12,13 +12,13 @@ pub struct Camera {
     #[serde(default = "Camera::default_center")]
     center: Point,
 
-    #[serde(default = "core::Camera::default_focal_length")]
+    #[serde(default = "Camera::default_focal_length")]
     focal_length: f64,
 
     aspect_ratio: [Real; 2],
     image_width: u32,
-    
-    #[serde(default = "core::Camera::default_samples_per_pixel")]
+
+    #[serde(default = "Camera::default_samples_per_pixel")]
     samples_per_pixel: u32,
 }
 
@@ -26,6 +26,14 @@ impl Camera {
     fn default_center() -> Point {
         let center = core::Camera::default_center();
         [center.x(), center.y(), center.z()]
+    }
+    
+    fn default_focal_length() -> Real {
+        core::Camera::DEFAULT_FOCAL_LENGTH
+    }
+    
+    fn default_samples_per_pixel() -> u32 {
+        core::Camera::DEFAULT_SAMPLES_PER_PIXEL
     }
 
     fn ideal_aspect_ratio(&self) -> Real {
@@ -80,14 +88,6 @@ impl Scene {
     }
 }
 
-fn build_vec3d(v: Vec3D) -> math::Vec3D {
-    math::Vec3D::new(v[0], v[1], v[2])
-}
-
 fn build_point(p: Point) -> math::Point {
     math::Point::new(p[0], p[1], p[2])
-}
-
-fn build_color(v: Color) -> core::Color {
-    core::Color::new(v[0], v[1], v[2])
 }

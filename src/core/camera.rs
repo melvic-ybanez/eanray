@@ -1,7 +1,7 @@
 use crate::core::color::Color;
 use crate::core::hit::Hittable;
 use crate::core::math::interval::Interval;
-use crate::core::math::vector::{Point, Vec3D};
+use crate::core::math::vector::{Point, UnitVec3D, Vec3D};
 use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
 use std::fs::File;
@@ -85,7 +85,8 @@ impl Camera {
 
     fn ray_color(&self, ray: &Ray, world: &Hittable) -> Color {
         if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
-            Color::from(math::normalize_to_01(&record.normal.0))
+            let direction = Vec3D::random_on_hemisphere(&record.normal);
+            self.ray_color(&Ray::new(record.p, direction.0), world) * 0.5
         } else {
             let unit_direction = ray.direction.to_unit().0;
             let a = math::normalize_to_01(unit_direction.y);

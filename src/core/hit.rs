@@ -5,7 +5,7 @@ use crate::core::ray::Ray;
 use crate::core::shapes::sphere::Sphere;
 
 pub struct HitRecord {
-    p: Point,
+    pub p: Point,
     pub normal: UnitVec3D,
     t: Real,
     front_face: bool,

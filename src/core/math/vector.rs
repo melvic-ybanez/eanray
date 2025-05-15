@@ -1,3 +1,4 @@
+use crate::core::math;
 use crate::core::math::Real;
 use std::fmt;
 use std::marker::PhantomData;
@@ -61,6 +62,42 @@ impl Vec3D {
     pub fn to_unit(&self) -> UnitVec3D {
         UnitVec3D(self / self.length())
     }
+
+    pub fn random_on_hemisphere(normal: &UnitVec3D) -> UnitVec3D {
+        let on_unit_sphere = Self::random_unit();
+        if on_unit_sphere.0.dot(&normal.0) > 0.0 {
+            on_unit_sphere
+        } else {
+            UnitVec3D(-on_unit_sphere.0)
+        }
+    }
+
+    fn random_unit() -> UnitVec3D {
+        loop {
+            let vec = Vec3D::random_range(-1.0, 1.0);
+
+            // not using the magnitude directly to delay computation for sqrt
+            let len_squared = vec.length_squared();
+
+            // we check for 1e-160 to avoid producing a 0 sqrt if the length
+            // squared is too small, which can cause division issues
+            if 1e-160 < len_squared && len_squared <= 1.0 {
+                return UnitVec3D(vec / len_squared.sqrt());
+            }
+        }
+    }
+
+    fn random() -> Vec3D {
+        Vec3D::new(math::random(), math::random(), math::random())
+    }
+
+    fn random_range(min: Real, max: Real) -> Vec3D {
+        Vec3D::new(
+            math::random_range(min, max),
+            math::random_range(min, max),
+            math::random_range(min, max),
+        )
+    }
 }
 
 pub trait CanAdd {}
@@ -93,10 +130,10 @@ impl<V: CanAdd> Add<VecLike<V>> for VecLike<V> {
 
 impl<V: CanAdd> Add<&VecLike<V>> for VecLike<V> {
     type Output = VecLike<V>;
-    
+
     fn add(self, rhs: &VecLike<V>) -> Self::Output {
-        rhs + self   
-    }   
+        rhs + self
+    }
 }
 
 impl<V: CanAdd> Add<Real> for VecLike<V> {

@@ -1,8 +1,8 @@
-use crate::core;
-use crate::core::camera::{CameraBuilder, Image};
+use crate::core::Camera as CoreCamera;
+use crate::core::camera::Image;
 use crate::core::math::Real;
-use crate::core::math::vector::Coordinates;
 use crate::core::{Hittable, HittableList, math, shapes};
+use crate::settings::Config;
 use serde::Deserialize;
 
 type Vec3D = [Real; 3];
@@ -11,59 +11,33 @@ type Color = Vec3D;
 
 #[derive(Deserialize)]
 pub struct Camera {
-    #[serde(default = "Camera::default_center")]
-    center: Point,
-
-    #[serde(default = "Camera::default_focal_length")]
-    focal_length: f64,
-
+    center: Option<Point>,
+    focal_length: Option<Real>,
     aspect_ratio: [Real; 2],
     image_width: u32,
-
-    #[serde(default = "Camera::default_samples_per_pixel")]
-    samples_per_pixel: u32,
-
-    #[serde(default = "Camera::default_antialiasing")]
-    antialiasing: bool,
-
-    // for now, let's toggle it rather than accept and provide a numerical value
-    #[serde(default = "Camera::default_diffuse")]
-    diffuse: bool,
+    samples_per_pixel: Option<u32>,
+    antialiasing: Option<bool>,
+    diffuse: Option<bool>,
 }
 
 impl Camera {
-    fn default_center() -> Point {
-        let center = core::Camera::default_center();
-        [center.x(), center.y(), center.z()]
-    }
-
-    fn default_focal_length() -> Real {
-        core::Camera::DEFAULT_FOCAL_LENGTH
-    }
-
-    fn default_samples_per_pixel() -> u32 {
-        core::Camera::DEFAULT_SAMPLES_PER_PIXEL
-    }
-
-    fn default_antialiasing() -> bool {
-        core::Camera::DEFAULT_ANTIALISING
-    }
-
-    fn default_diffuse() -> bool {
-        core::Camera::DEFAULT_DIFFUSE
-    }
-
     fn ideal_aspect_ratio(&self) -> Real {
         self.aspect_ratio[0] / self.aspect_ratio[1]
     }
 
-    fn build(&self) -> core::Camera {
-        CameraBuilder::new()
-            .center(build_point(self.center))
+    fn build(&self, config: Config) -> CoreCamera {
+        let builder_config = config.clone();
+        let defaults = builder_config.app().scene().camera().defaults();
+
+        CoreCamera::builder(config)
+            .center(build_point(self.center.unwrap_or(defaults.center())))
             .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
-            .antialiasing(self.antialiasing)
-            .samples_per_pixel(self.samples_per_pixel)
-            .diffuse(self.diffuse)
+            .antialiasing(self.antialiasing.unwrap_or(defaults.antialiasing()))
+            .samples_per_pixel(
+                self.samples_per_pixel
+                    .unwrap_or(defaults.samples_per_pixel()),
+            )
+            .diffuse(self.diffuse.unwrap_or(defaults.diffuse()))
             .build()
     }
 }
@@ -101,8 +75,8 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn build(&self) -> (core::Camera, Hittable) {
-        let camera = self.camera.build();
+    pub fn build(&self, config: Config) -> (CoreCamera, Hittable) {
+        let camera = self.camera.build(config);
         let objects = HittableList::from_vec(self.objects.iter().map(|o| o.build()).collect());
         (camera, Hittable::List(objects))
     }

@@ -1,0 +1,9 @@
+[app]
+name = "Eanray"
+
+[app.scene.camera.defaults]
+center = [0, 0, 0]
+focal_length = 1.0
+samples_per_pixel = 10
+antialiasing = true
+diffuse = true

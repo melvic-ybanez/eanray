@@ -1,9 +1,10 @@
 use crate::core::color::Color;
 use crate::core::hit::Hittable;
 use crate::core::math::interval::Interval;
-use crate::core::math::vector::{Point, UnitVec3D, Vec3D};
+use crate::core::math::vector::{Point, Vec3D};
 use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
+use crate::settings::Config;
 use std::fs::File;
 use std::io::{self, Write};
 
@@ -13,10 +14,16 @@ pub struct Camera {
     image: Image,
     samples_per_pixel: u32,
     antialiasing: bool,
+
+    // for now, let's toggle it rather than accept and provide a numerical value
     diffuse: bool,
 }
 
 impl Camera {
+    pub fn builder(config: Config) -> CameraBuilder {
+        CameraBuilder::new(config)
+    }
+
     pub fn render(&self, world: Hittable) -> io::Result<()> {
         let ppm_file = File::create("output.ppm")?;
         let viewport = self.viewport();
@@ -96,15 +103,6 @@ impl Camera {
     fn pixel_sample_scale(&self) -> Real {
         1.0 / self.samples_per_pixel as Real
     }
-
-    pub fn default_center() -> Point {
-        Point::zero()
-    }
-
-    pub const DEFAULT_FOCAL_LENGTH: f64 = 1.0;
-    pub const DEFAULT_SAMPLES_PER_PIXEL: u32 = 10;
-    pub const DEFAULT_ANTIALISING: bool = true;
-    pub const DEFAULT_DIFFUSE: bool = true;
 }
 
 pub struct CameraBuilder {
@@ -114,10 +112,11 @@ pub struct CameraBuilder {
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
     diffuse: Option<bool>,
+    config: Config,
 }
 
 impl CameraBuilder {
-    pub fn new() -> CameraBuilder {
+    fn new(config: Config) -> CameraBuilder {
         CameraBuilder {
             center: None,
             focal_length: None,
@@ -125,6 +124,7 @@ impl CameraBuilder {
             samples_per_pixel: None,
             antialiasing: None,
             diffuse: None,
+            config,
         }
     }
 
@@ -159,15 +159,19 @@ impl CameraBuilder {
     }
 
     pub fn build(&self) -> Camera {
+        let defaults = self.config.app().scene().camera().defaults();
         Camera {
-            center: self.center.clone().unwrap_or(Camera::default_center()),
-            focal_length: self.focal_length.unwrap_or(Camera::DEFAULT_FOCAL_LENGTH),
+            center: self.center.clone().unwrap_or({
+                let center = defaults.center();
+                Point::new(center[0], center[1], center[2])
+            }),
+            focal_length: self.focal_length.unwrap_or(defaults.focal_length()),
             image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
             samples_per_pixel: self
                 .samples_per_pixel
-                .unwrap_or(Camera::DEFAULT_SAMPLES_PER_PIXEL),
-            antialiasing: self.antialiasing.unwrap_or(Camera::DEFAULT_ANTIALISING),
-            diffuse: self.diffuse.unwrap_or(Camera::DEFAULT_DIFFUSE),
+                .unwrap_or(defaults.samples_per_pixel()),
+            antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
+            diffuse: self.diffuse.unwrap_or(defaults.diffuse()),
         }
     }
 }

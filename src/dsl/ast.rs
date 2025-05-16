@@ -23,6 +23,10 @@ pub struct Camera {
 
     #[serde(default = "Camera::default_antialiasing")]
     antialiasing: bool,
+    
+    // for now, let's toggle it rather than accept and provide a numerical value
+    #[serde(default = "Camera::default_diffuse")]
+    diffuse: bool,
 }
 
 impl Camera {
@@ -42,6 +46,10 @@ impl Camera {
     fn default_antialiasing() -> bool {
         core::Camera::DEFAULT_ANTIALISING
     }
+    
+    fn default_diffuse() -> bool {
+        core::Camera::DEFAULT_DIFFUSE
+    }
 
     fn ideal_aspect_ratio(&self) -> Real {
         self.aspect_ratio[0] / self.aspect_ratio[1]
@@ -49,10 +57,12 @@ impl Camera {
 
     fn build(&self) -> core::Camera {
         let mut camera = core::Camera::new();
+        camera.center = build_point(self.center);
         camera.image.aspect_ratio = self.ideal_aspect_ratio();
         camera.image.width = self.image_width;
         camera.antialiasing = self.antialiasing;
         camera.samples_per_pixel = self.samples_per_pixel;
+        camera.diffuse = self.diffuse;
         camera
     }
 }

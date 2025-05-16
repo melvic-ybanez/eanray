@@ -13,6 +13,7 @@ pub struct Camera {
     pub image: Image,
     pub samples_per_pixel: u32,
     pub antialiasing: bool,
+    pub diffuse: bool,
 }
 
 impl Camera {
@@ -23,6 +24,7 @@ impl Camera {
             image: Image::new(100, 1.0),
             samples_per_pixel: Self::DEFAULT_SAMPLES_PER_PIXEL,
             antialiasing: Self::DEFAULT_ANTIALISING,
+            diffuse: Self::DEFAULT_DIFFUSE,       
         }
     }
 
@@ -85,8 +87,12 @@ impl Camera {
 
     fn ray_color(&self, ray: &Ray, world: &Hittable) -> Color {
         if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
-            let direction = Vec3D::random_on_hemisphere(&record.normal);
-            self.ray_color(&Ray::new(record.p, direction.0), world) * 0.5
+            if self.diffuse {
+                let direction = Vec3D::random_on_hemisphere(&record.normal);
+                self.ray_color(&Ray::new(record.p, direction.0), world) * 0.5   
+            } else {
+                Color::from(math::normalize_to_01(&record.normal.0))
+            }
         } else {
             let unit_direction = ray.direction.to_unit().0;
             let a = math::normalize_to_01(unit_direction.y);
@@ -109,6 +115,7 @@ impl Camera {
     pub const DEFAULT_FOCAL_LENGTH: f64 = 1.0;
     pub const DEFAULT_SAMPLES_PER_PIXEL: u32 = 10;
     pub const DEFAULT_ANTIALISING: bool = true;
+    pub const DEFAULT_DIFFUSE: bool = true;
 }
 
 pub struct Image {

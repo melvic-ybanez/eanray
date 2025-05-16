@@ -1,4 +1,4 @@
-use crate::core::hit::HitRecord;
+use crate::core::hit::{self, HitRecord};
 use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
@@ -43,7 +43,12 @@ impl Sphere {
                 let p = ray.at(root);
                 let outward_normal = UnitVec3D((&p - &self.center) / self.radius);
                 let (front_face, face_normal) = HitRecord::face_normal(&ray, outward_normal);
-                HitRecord::new(p, face_normal, root, front_face)
+                HitRecord::new(
+                    hit::P(p),
+                    hit::Normal(face_normal),
+                    hit::T(root),
+                    hit::FrontFace(front_face),
+                )
             })
         }
     }

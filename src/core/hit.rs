@@ -1,23 +1,23 @@
-use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
+use crate::core::math::Real;
 use crate::core::ray::Ray;
 use crate::core::shapes::sphere::Sphere;
 
 pub struct HitRecord {
-    pub p: Point,
-    pub normal: UnitVec3D,
+    p: Point,
+    normal: UnitVec3D,
     t: Real,
     front_face: bool,
 }
 
 impl HitRecord {
-    pub fn new(p: Point, normal: UnitVec3D, t: Real, front_face: bool) -> HitRecord {
+    pub fn new(p: P, normal: Normal, t: T, front_face: FrontFace) -> HitRecord {
         HitRecord {
-            p,
-            normal,
-            t,
-            front_face,
+            p: p.0,
+            normal: normal.0,
+            t: t.0,
+            front_face: front_face.0,
         }
     }
 
@@ -30,7 +30,20 @@ impl HitRecord {
         };
         (front_face, face_normal)
     }
+
+    pub fn p(&self) -> &Point {
+        &self.p
+    }
+
+    pub fn normal(&self) -> &UnitVec3D {
+        &self.normal
+    }
 }
+
+pub struct P(pub Point);
+pub struct Normal(pub UnitVec3D);
+pub struct T(pub Real);
+pub struct FrontFace(pub bool); 
 
 pub enum Hittable {
     Sphere(Sphere),

@@ -8,26 +8,15 @@ use std::fs::File;
 use std::io::{self, Write};
 
 pub struct Camera {
-    pub center: Point,
-    pub focal_length: f64,
-    pub image: Image,
-    pub samples_per_pixel: u32,
-    pub antialiasing: bool,
-    pub diffuse: bool,
+    center: Point,
+    focal_length: f64,
+    image: Image,
+    samples_per_pixel: u32,
+    antialiasing: bool,
+    diffuse: bool,
 }
 
 impl Camera {
-    pub fn new() -> Self {
-        Self {
-            center: Self::default_center(),
-            focal_length: Self::DEFAULT_FOCAL_LENGTH,
-            image: Image::new(100, 1.0),
-            samples_per_pixel: Self::DEFAULT_SAMPLES_PER_PIXEL,
-            antialiasing: Self::DEFAULT_ANTIALISING,
-            diffuse: Self::DEFAULT_DIFFUSE,       
-        }
-    }
-
     pub fn render(&self, world: Hittable) -> io::Result<()> {
         let ppm_file = File::create("output.ppm")?;
         let viewport = self.viewport();
@@ -88,10 +77,10 @@ impl Camera {
     fn ray_color(&self, ray: &Ray, world: &Hittable) -> Color {
         if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
             if self.diffuse {
-                let direction = Vec3D::random_on_hemisphere(&record.normal);
-                self.ray_color(&Ray::new(record.p, direction.0), world) * 0.5   
+                let direction = Vec3D::random_on_hemisphere(&record.normal());
+                self.ray_color(&Ray::new(record.p().clone(), direction.0), world) * 0.5
             } else {
-                Color::from(math::normalize_to_01(&record.normal.0))
+                Color::from(math::normalize_to_01(&record.normal().0))
             }
         } else {
             let unit_direction = ray.direction.to_unit().0;
@@ -118,11 +107,77 @@ impl Camera {
     pub const DEFAULT_DIFFUSE: bool = true;
 }
 
+pub struct CameraBuilder {
+    center: Option<Point>,
+    focal_length: Option<f64>,
+    image: Option<Image>,
+    samples_per_pixel: Option<u32>,
+    antialiasing: Option<bool>,
+    diffuse: Option<bool>,
+}
+
+impl CameraBuilder {
+    pub fn new() -> CameraBuilder {
+        CameraBuilder {
+            center: None,
+            focal_length: None,
+            image: None,
+            samples_per_pixel: None,
+            antialiasing: None,
+            diffuse: None,
+        }
+    }
+
+    pub fn center(&mut self, center: Point) -> &mut Self {
+        self.center = Some(center);
+        self
+    }
+
+    pub fn focal_length(&mut self, focal_length: f64) -> &mut Self {
+        self.focal_length = Some(focal_length);
+        self
+    }
+
+    pub fn image(&mut self, image: Image) -> &mut Self {
+        self.image = Some(image);
+        self
+    }
+
+    pub fn samples_per_pixel(&mut self, samples_per_pixel: u32) -> &mut Self {
+        self.samples_per_pixel = Some(samples_per_pixel);
+        self
+    }
+
+    pub fn antialiasing(&mut self, antialiasing: bool) -> &mut Self {
+        self.antialiasing = Some(antialiasing);
+        self
+    }
+
+    pub fn diffuse(&mut self, diffuse: bool) -> &mut Self {
+        self.diffuse = Some(diffuse);
+        self
+    }
+
+    pub fn build(&self) -> Camera {
+        Camera {
+            center: self.center.clone().unwrap_or(Camera::default_center()),
+            focal_length: self.focal_length.unwrap_or(Camera::DEFAULT_FOCAL_LENGTH),
+            image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
+            samples_per_pixel: self
+                .samples_per_pixel
+                .unwrap_or(Camera::DEFAULT_SAMPLES_PER_PIXEL),
+            antialiasing: self.antialiasing.unwrap_or(Camera::DEFAULT_ANTIALISING),
+            diffuse: self.diffuse.unwrap_or(Camera::DEFAULT_DIFFUSE),
+        }
+    }
+}
+
+#[derive(Clone)]
 pub struct Image {
-    pub width: u32,
+    width: u32,
 
     // Ideal aspect ratio, not the actual one.
-    pub aspect_ratio: f64,
+    aspect_ratio: f64,
 }
 
 impl Image {
@@ -131,6 +186,14 @@ impl Image {
             width,
             aspect_ratio,
         }
+    }
+
+    pub fn width(&self) -> u32 {
+        self.width
+    }
+
+    pub fn ideal_aspect_ratio(&self) -> f64 {
+        self.aspect_ratio
     }
 
     /// The actual aspect ratio can be bigger than [`self.aspect_ratio`]

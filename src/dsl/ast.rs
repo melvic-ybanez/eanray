@@ -31,6 +31,7 @@ impl Camera {
 
         CoreCamera::builder(config)
             .center(build_point(self.center.unwrap_or(defaults.center())))
+            .focal_length(self.focal_length.unwrap_or(defaults.focal_length()))
             .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
             .antialiasing(self.antialiasing.unwrap_or(defaults.antialiasing()))
             .samples_per_pixel(

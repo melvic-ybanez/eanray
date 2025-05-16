@@ -2,6 +2,7 @@ use crate::core;
 use crate::core::math::Real;
 use crate::core::{Hittable, HittableList, math, shapes};
 use serde::Deserialize;
+use crate::core::math::vector::Coordinates;
 
 type Vec3D = [Real; 3];
 type Point = Vec3D;
@@ -32,7 +33,7 @@ pub struct Camera {
 impl Camera {
     fn default_center() -> Point {
         let center = core::Camera::default_center();
-        [center.x, center.y, center.z]
+        [center.x(), center.y(), center.z()]
     }
 
     fn default_focal_length() -> Real {

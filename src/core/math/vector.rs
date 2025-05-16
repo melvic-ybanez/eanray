@@ -15,9 +15,9 @@ pub type Point = VecLike<PointKind>;
 
 #[derive(Clone)]
 pub struct VecLike<Kind> {
-    pub x: Real,
-    pub y: Real,
-    pub z: Real,
+    pub(in crate::core) x: Real,
+    pub(in crate::core) y: Real,
+    pub(in crate::core) z: Real,
     _kind: PhantomData<Kind>,
 }
 
@@ -259,5 +259,30 @@ impl<K> Div<Real> for VecLike<K> {
 impl<K> fmt::Display for VecLike<K> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{} {} {}", self.x, self.y, self.z)
+    }
+}
+
+trait HasCoordinates {}
+
+pub trait Coordinates {
+    fn x(&self) -> Real;
+    fn y(&self) -> Real;
+    fn z(&self) -> Real;
+}
+
+impl HasCoordinates for VecKind {}
+impl HasCoordinates for PointKind {}
+
+impl<K: HasCoordinates> Coordinates for VecLike<K> {
+    fn x(&self) -> Real {
+        self.x
+    }
+
+    fn y(&self) -> Real {
+        self.y
+    }
+
+    fn z(&self) -> Real {
+        self.z
     }
 }

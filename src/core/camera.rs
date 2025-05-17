@@ -94,7 +94,7 @@ impl Camera {
     fn ray_color(&self, ray: &Ray, depth: u32, world: &Hittable) -> Color {
         if depth <= 0 {
             Color::black()
-        } else if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
+        } else if let Some(record) = world.hit(ray, &Interval::new(0.001, math::INFINITY)) {
             if self.diffuse {
                 let direction = Vec3D::random_on_hemisphere(&record.normal());
                 self.ray_color(&Ray::new(record.p().clone(), direction.0), depth - 1, world) * 0.5

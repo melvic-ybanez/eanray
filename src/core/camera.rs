@@ -7,6 +7,7 @@ use crate::core::ray::Ray;
 use crate::settings::Config;
 use std::fs::File;
 use std::io::{self, Write};
+use std::time::Instant;
 
 pub struct Camera {
     center: Point,
@@ -25,6 +26,7 @@ impl Camera {
     }
 
     pub fn render(&self, world: Hittable) -> io::Result<()> {
+        let start = Instant::now();
         let ppm_file = File::create("output.ppm")?;
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
@@ -39,14 +41,11 @@ impl Camera {
 
         for j in 0..self.image.height() {
             println!("Scanlines remaining: {}", self.image.height() - j);
+
             for i in 0..self.image.width {
                 let pixel_color = if self.antialiasing {
-                    let sample_colors: Vec<Color> = (0..self.samples_per_pixel)
+                    (0..self.samples_per_pixel)
                         .map(|_| self.ray_color(&self.get_ray(i, j, &viewport), &world))
-                        .collect();
-
-                    sample_colors
-                        .iter()
                         .fold(Color::black(), |acc, color| acc + color)
                         * pixel_sample_scale
                 } else {
@@ -57,11 +56,13 @@ impl Camera {
                     let ray = Ray::new(self.center.clone(), ray_direction);
                     self.ray_color(&ray, &world)
                 };
+
                 pixel_color.write_to_file(&ppm_file)?
             }
         }
 
-        println!("Done!");
+        let duration = start.elapsed();
+        println!("Done. Running time: {:?}", duration);
 
         Ok(())
     }

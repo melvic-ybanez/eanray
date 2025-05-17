@@ -41,6 +41,8 @@ impl Camera {
             self.image.height()
         )?;
 
+        let mut ppm_content = String::new();
+
         for j in 0..self.image.height() {
             println!("Scanlines remaining: {}", self.image.height() - j);
 
@@ -62,9 +64,11 @@ impl Camera {
                     self.ray_color(&ray, self.max_depth, &world)
                 };
 
-                pixel_color.write_to_file(&ppm_file)?
+                ppm_content += &format!("{}\n", pixel_color.to_bytes_string());
             }
         }
+
+        writeln!(&ppm_file, "{}", ppm_content)?;
 
         let duration = start.elapsed();
         println!("Done. Running time: {:?}", duration);

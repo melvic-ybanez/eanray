@@ -1,3 +1,5 @@
+use std::fmt;
+use std::fmt::Formatter;
 use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{CanAdd, Vec3D, VecLike};
@@ -21,15 +23,6 @@ impl Color {
         self.z
     }
 
-    pub fn write_to_file(&self, mut file: &File) -> io::Result<()> {
-        let intensity = Interval::new(0.0, 0.999);
-        let r_byte = (intensity.clamp(self.red_component()) * 256.0) as u16;
-        let g_byte = (intensity.clamp(self.green_component()) * 256.0) as u16;
-        let b_byte = (intensity.clamp(self.blue_component()) * 256.0) as u16;
-
-        writeln!(file, "{} {} {}", r_byte, g_byte, b_byte)
-    }
-
     pub fn black() -> Color {
         Color::new(0.0, 0.0, 0.0)
     }
@@ -40,6 +33,15 @@ impl Color {
 
     pub fn red() -> Color {
         Color::new(1.0, 0.0, 0.0)
+    }
+    
+    pub fn to_bytes_string(&self) -> String {
+        let intensity = Interval::new(0.0, 0.999);
+        let r_byte = (intensity.clamp(self.red_component()) * 256.0) as u16;
+        let g_byte = (intensity.clamp(self.green_component()) * 256.0) as u16;
+        let b_byte = (intensity.clamp(self.blue_component()) * 256.0) as u16;
+
+        format!("{} {} {}", r_byte, g_byte, b_byte)
     }
 }
 

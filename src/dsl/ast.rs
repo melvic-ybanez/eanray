@@ -18,6 +18,7 @@ pub struct Camera {
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
     diffuse: Option<bool>,
+    max_depth: Option<u32>,
 }
 
 impl Camera {
@@ -39,6 +40,7 @@ impl Camera {
                     .unwrap_or(defaults.samples_per_pixel()),
             )
             .diffuse(self.diffuse.unwrap_or(defaults.diffuse()))
+            .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
             .build()
     }
 }

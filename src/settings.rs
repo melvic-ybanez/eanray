@@ -57,6 +57,7 @@ pub struct CameraDefaults {
     samples_per_pixel: u32,
     antialiasing: bool,
     diffuse: bool,
+    max_depth: u32,
 }
 
 impl CameraDefaults {
@@ -78,5 +79,9 @@ impl CameraDefaults {
     
     pub fn diffuse(&self) -> bool {
         self.diffuse
+    }
+    
+    pub fn max_depth(&self) -> u32 {
+        self.max_depth
     }
 }

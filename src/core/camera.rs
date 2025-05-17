@@ -18,6 +18,8 @@ pub struct Camera {
 
     // for now, let's toggle it rather than accept and provide a numerical value
     diffuse: bool,
+
+    max_depth: u32,
 }
 
 impl Camera {
@@ -44,8 +46,11 @@ impl Camera {
 
             for i in 0..self.image.width {
                 let pixel_color = if self.antialiasing {
+                    // compute the average color from the sample rays
                     (0..self.samples_per_pixel)
-                        .map(|_| self.ray_color(&self.get_ray(i, j, &viewport), &world))
+                        .map(|_| {
+                            self.ray_color(&self.get_ray(i, j, &viewport), self.max_depth, &world)
+                        })
                         .fold(Color::black(), |acc, color| acc + color)
                         * pixel_sample_scale
                 } else {
@@ -54,7 +59,7 @@ impl Camera {
                         + (viewport.pixel_delta_v() * j as Real);
                     let ray_direction = pixel_center - &self.center;
                     let ray = Ray::new(self.center.clone(), ray_direction);
-                    self.ray_color(&ray, &world)
+                    self.ray_color(&ray, self.max_depth, &world)
                 };
 
                 pixel_color.write_to_file(&ppm_file)?
@@ -82,11 +87,13 @@ impl Camera {
         Vec3D::new(math::random() - 0.5, math::random() - 0.5, 0.0)
     }
 
-    fn ray_color(&self, ray: &Ray, world: &Hittable) -> Color {
-        if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
+    fn ray_color(&self, ray: &Ray, depth: u32, world: &Hittable) -> Color {
+        if depth <= 0 {
+            Color::black()
+        } else if let Some(record) = world.hit(ray, &Interval::new(0.0, math::INFINITY)) {
             if self.diffuse {
                 let direction = Vec3D::random_on_hemisphere(&record.normal());
-                self.ray_color(&Ray::new(record.p().clone(), direction.0), world) * 0.5
+                self.ray_color(&Ray::new(record.p().clone(), direction.0), depth - 1, world) * 0.5
             } else {
                 Color::from(math::normalize_to_01(&record.normal().0))
             }
@@ -113,6 +120,7 @@ pub struct CameraBuilder {
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
     diffuse: Option<bool>,
+    max_depth: Option<u32>,
     config: Config,
 }
 
@@ -125,6 +133,7 @@ impl CameraBuilder {
             samples_per_pixel: None,
             antialiasing: None,
             diffuse: None,
+            max_depth: None,
             config,
         }
     }
@@ -159,6 +168,11 @@ impl CameraBuilder {
         self
     }
 
+    pub fn max_depth(&mut self, max_depth: u32) -> &mut Self {
+        self.max_depth = Some(max_depth);
+        self
+    }
+
     pub fn build(&self) -> Camera {
         let defaults = self.config.app().scene().camera().defaults();
         Camera {
@@ -173,6 +187,7 @@ impl CameraBuilder {
                 .unwrap_or(defaults.samples_per_pixel()),
             antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
             diffuse: self.diffuse.unwrap_or(defaults.diffuse()),
+            max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
         }
     }
 }

@@ -1,6 +1,9 @@
 [app]
 name = "Eanray"
 
+[app.scene]
+output_file = "output.ppm"
+
 [app.scene.camera.defaults]
 center = [0, 0, 0]
 focal_length = 1.0

@@ -30,12 +30,17 @@ impl AppConfig {
 
 #[derive(Deserialize, Clone)]
 pub struct SceneConfig {
+    output_file: String,
     camera: CameraConfig,
 }
 
 impl SceneConfig {
     pub fn camera(&self) -> &CameraConfig {
         &self.camera
+    }
+    
+    pub fn output_file(&self) -> &str {
+        &self.output_file
     }
 }
 

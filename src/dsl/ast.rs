@@ -26,7 +26,7 @@ impl Camera {
         self.aspect_ratio[0] / self.aspect_ratio[1]
     }
 
-    fn build(&self, config: Config) -> CoreCamera {
+    fn build(&self, config: &'static Config) -> CoreCamera {
         let builder_config = config.clone();
         let defaults = builder_config.app().scene().camera().defaults();
 
@@ -78,7 +78,7 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn build(&self, config: Config) -> (CoreCamera, Hittable) {
+    pub fn build(&self, config: &'static Config) -> (CoreCamera, Hittable) {
         let camera = self.camera.build(config);
         let objects = HittableList::from_vec(self.objects.iter().map(|o| o.build()).collect());
         (camera, Hittable::List(objects))

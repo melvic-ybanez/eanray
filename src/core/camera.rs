@@ -23,13 +23,13 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn builder(config: Config) -> CameraBuilder {
+    pub fn builder(config: &'static Config) -> CameraBuilder {
         CameraBuilder::new(config)
     }
 
-    pub fn render(&self, world: Hittable) -> io::Result<()> {
+    pub fn render(&self, world: Hittable, config: &Config) -> io::Result<()> {
         let start = Instant::now();
-        let ppm_file = File::create("output.ppm")?;
+        let ppm_file = File::create(config.app().scene().output_file())?;
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
@@ -125,11 +125,11 @@ pub struct CameraBuilder {
     antialiasing: Option<bool>,
     diffuse: Option<bool>,
     max_depth: Option<u32>,
-    config: Config,
+    config: &'static Config,
 }
 
 impl CameraBuilder {
-    fn new(config: Config) -> CameraBuilder {
+    fn new(config: &'static Config) -> CameraBuilder {
         CameraBuilder {
             center: None,
             focal_length: None,

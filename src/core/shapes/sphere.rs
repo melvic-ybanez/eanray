@@ -28,7 +28,7 @@ impl Sphere {
             None
         } else {
             let sqrtd = discriminant.sqrt();
-            let root = (-b - sqrtd) / (2.0 * a);
+            let root = (-b - sqrtd) / (2.0 * a); 
             let root = if !ray_t.surrounds(root) {
                 let root = (-b + sqrtd) / (2.0 * a);
                 if !ray_t.surrounds(root) {

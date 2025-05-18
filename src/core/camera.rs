@@ -96,8 +96,8 @@ impl Camera {
             Color::black()
         } else if let Some(record) = world.hit(ray, &Interval::new(0.001, math::INFINITY)) {
             if self.diffuse {
-                let direction = Vec3D::random_on_hemisphere(&record.normal());
-                self.ray_color(&Ray::new(record.p().clone(), direction.0), depth - 1, world) * 0.5
+                let direction = &record.normal().0 + Vec3D::random_unit().0;
+                self.ray_color(&Ray::new(record.p().clone(), direction), depth - 1, world) * 0.5
             } else {
                 Color::from(math::normalize_to_01(&record.normal().0))
             }

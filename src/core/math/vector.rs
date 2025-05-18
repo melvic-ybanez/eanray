@@ -72,7 +72,7 @@ impl Vec3D {
         }
     }
 
-    fn random_unit() -> UnitVec3D {
+    pub fn random_unit() -> UnitVec3D {
         loop {
             let vec = Vec3D::random_range(-1.0, 1.0);
 

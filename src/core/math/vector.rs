@@ -72,6 +72,11 @@ impl Vec3D {
         }
     }
 
+    pub fn near_zero(&self) -> bool {
+        let small = 1e-8;
+        self.x.abs() < small && self.y.abs() < small && self.z.abs() < small
+    }
+
     pub fn random_unit() -> UnitVec3D {
         loop {
             let vec = Vec3D::random_range(-1.0, 1.0);

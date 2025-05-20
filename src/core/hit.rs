@@ -1,21 +1,24 @@
+use crate::core::materials::Material;
+use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
-use crate::core::math::Real;
 use crate::core::ray::Ray;
 use crate::core::shapes::sphere::Sphere;
 
-pub struct HitRecord {
+pub struct HitRecord<'a> {
     p: Point,
     normal: UnitVec3D,
+    mat: &'a Material,
     t: Real,
     front_face: bool,
 }
 
-impl HitRecord {
-    pub fn new(p: P, normal: Normal, t: T, front_face: FrontFace) -> HitRecord {
+impl<'a> HitRecord<'a> {
+    pub fn new(p: P, normal: Normal, mat: Mat<'a>, t: T, front_face: FrontFace) -> HitRecord {
         HitRecord {
             p: p.0,
             normal: normal.0,
+            mat: mat.0,
             t: t.0,
             front_face: front_face.0,
         }
@@ -42,8 +45,9 @@ impl HitRecord {
 
 pub struct P(pub Point);
 pub struct Normal(pub UnitVec3D);
+pub struct Mat<'a>(pub &'a Material);
 pub struct T(pub Real);
-pub struct FrontFace(pub bool); 
+pub struct FrontFace(pub bool);
 
 pub enum Hittable {
     Sphere(Sphere),

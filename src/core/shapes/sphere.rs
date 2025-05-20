@@ -1,4 +1,6 @@
+use crate::core::Color;
 use crate::core::hit::{self, HitRecord};
+use crate::core::materials::Material;
 use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
@@ -7,6 +9,7 @@ use crate::core::ray::Ray;
 pub struct Sphere {
     center: Point,
     radius: Real,
+    mat: Material
 }
 
 impl Sphere {
@@ -14,11 +17,12 @@ impl Sphere {
         Self {
             center,
             radius: Real::max(0.0, radius),
+            mat: Material::Lambertian { albedo: Color::black()}     // dummy implementation
         }
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let oc = &self.center - &ray.origin;
+        let oc = &self.center - ray.origin;
         let a = ray.direction.dot(&ray.direction);
         let b = ray.direction.dot(&oc) * -2.0;
         let c = oc.length_squared() - self.radius * self.radius;
@@ -46,6 +50,7 @@ impl Sphere {
                 HitRecord::new(
                     hit::P(p),
                     hit::Normal(face_normal),
+                    hit::Mat(&self.mat),
                     hit::T(root),
                     hit::FrontFace(front_face),
                 )

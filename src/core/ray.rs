@@ -2,17 +2,17 @@ use crate::core::math::Real;
 use crate::core::math::vector::{Point, Vec3D};
 
 #[derive(Clone)]
-pub struct Ray {
-    pub origin: Point,
+pub struct Ray<'a> {
+    pub origin: &'a Point,
     pub direction: Vec3D,
 }
 
-impl Ray {
-    pub fn new(origin: Point, direction: Vec3D) -> Ray {
+impl<'a> Ray<'a> {
+    pub fn new(origin: &'a Point, direction: Vec3D) -> Ray<'a> {
         Ray { origin, direction }
     }
 
     pub fn at(&self, t: Real) -> Point {
-        &self.origin + &self.direction * t
+        self.origin + &self.direction * t
     }
 }

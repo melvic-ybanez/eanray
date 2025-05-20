@@ -60,7 +60,7 @@ impl Camera {
                         + (viewport.pixel_delta_u() * i as Real)
                         + (viewport.pixel_delta_v() * j as Real);
                     let ray_direction = pixel_center - &self.center;
-                    let ray = Ray::new(self.center.clone(), ray_direction);
+                    let ray = Ray::new(&self.center, ray_direction);
                     self.ray_color(&ray, self.max_depth, &world)
                 };
 
@@ -83,7 +83,7 @@ impl Camera {
             + (viewport.pixel_delta_u() * (offset.x + i as Real))
             + (viewport.pixel_delta_v() * (offset.y + j as Real));
         let origin = &self.center;
-        Ray::new(origin.clone(), pixel_sample - origin)
+        Ray::new(origin, pixel_sample - origin)
     }
 
     /// A vector to a random point within half the unit square.
@@ -97,7 +97,7 @@ impl Camera {
         } else if let Some(record) = world.hit(ray, &Interval::new(0.001, math::INFINITY)) {
             if self.diffuse {
                 let direction = &record.normal().0 + Vec3D::random_unit().0;
-                self.ray_color(&Ray::new(record.p().clone(), direction), depth - 1, world) * 0.5
+                self.ray_color(&Ray::new(record.p(), direction), depth - 1, world) * 0.5
             } else {
                 Color::from(math::normalize_to_01(&record.normal().0))
             }

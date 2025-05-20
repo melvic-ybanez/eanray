@@ -25,7 +25,7 @@ impl<'a> HitRecord<'a> {
     }
 
     pub fn face_normal(ray: &Ray, outward_normal: UnitVec3D) -> (bool, UnitVec3D) {
-        let front_face = ray.direction.dot(&outward_normal.0) < 0.0;
+        let front_face = ray.direction().dot(&outward_normal.0) < 0.0;
         let face_normal = if front_face {
             outward_normal
         } else {

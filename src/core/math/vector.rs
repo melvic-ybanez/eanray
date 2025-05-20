@@ -71,6 +71,10 @@ impl Vec3D {
             UnitVec3D(-on_unit_sphere.0)
         }
     }
+    
+    pub fn reflect(&self, normal: &UnitVec3D) -> Vec3D {
+        self - &normal.0 * 2.0 * self.dot(&normal.0)
+    }
 
     pub fn near_zero(&self) -> bool {
         let small = 1e-8;
@@ -170,6 +174,14 @@ impl Add<Vec3D> for Point {
 
     fn add(self, rhs: Vec3D) -> Self::Output {
         &self + rhs
+    }
+}
+
+impl Sub<Vec3D> for &Vec3D {
+    type Output = Vec3D;
+    
+    fn sub(self, rhs: Vec3D) -> Self::Output {
+        self + -rhs
     }
 }
 

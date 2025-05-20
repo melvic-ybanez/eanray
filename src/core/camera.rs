@@ -102,7 +102,7 @@ impl Camera {
                 Color::from(math::normalize_to_01(&record.normal().0))
             }
         } else {
-            let unit_direction = ray.direction.to_unit().0;
+            let unit_direction = ray.direction().to_unit().0;
             let a = math::normalize_to_01(unit_direction.y);
             Color::white() * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
         }

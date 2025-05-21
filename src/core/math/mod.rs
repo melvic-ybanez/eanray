@@ -6,8 +6,8 @@ pub mod vector;
 
 pub type Real = f64;
 
-pub type Vec3D = vector::Vec3D;
-pub type Point = vector::Point;
+pub use vector::Vec3D;
+pub use vector::Point;
 
 pub const INFINITY: Real = Real::INFINITY;
 pub const PI: Real = std::f64::consts::PI;

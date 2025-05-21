@@ -71,7 +71,7 @@ impl Vec3D {
             UnitVec3D(-on_unit_sphere.0)
         }
     }
-    
+
     pub fn reflect(&self, normal: &UnitVec3D) -> Vec3D {
         self - &normal.0 * 2.0 * self.dot(&normal.0)
     }
@@ -179,7 +179,7 @@ impl Add<Vec3D> for Point {
 
 impl Sub<Vec3D> for &Vec3D {
     type Output = Vec3D;
-    
+
     fn sub(self, rhs: Vec3D) -> Self::Output {
         self + -rhs
     }
@@ -243,7 +243,7 @@ impl<K> Mul<VecLike<K>> for &VecLike<K> {
 
 impl<K> Mul<VecLike<K>> for VecLike<K> {
     type Output = VecLike<K>;
-    
+
     fn mul(self, rhs: VecLike<K>) -> Self::Output {
         &self * rhs
     }

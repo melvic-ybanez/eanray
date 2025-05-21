@@ -8,7 +8,7 @@ pub enum Material {
 }
 
 impl Material {
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
+    pub fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         match self {
             Material::Lambertian { albedo } => {
                 let scatter_direction = &rec.normal().0 + Vec3D::random_unit().0;

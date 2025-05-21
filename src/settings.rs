@@ -61,7 +61,6 @@ pub struct CameraDefaults {
     focal_length: Real,
     samples_per_pixel: u32,
     antialiasing: bool,
-    diffuse: bool,
     max_depth: u32,
 }
 
@@ -80,10 +79,6 @@ impl CameraDefaults {
     
     pub fn antialiasing(&self) -> bool {
         self.antialiasing
-    }
-    
-    pub fn diffuse(&self) -> bool {
-        self.diffuse
     }
     
     pub fn max_depth(&self) -> u32 {

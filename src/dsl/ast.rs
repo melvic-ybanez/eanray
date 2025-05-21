@@ -1,7 +1,7 @@
 use crate::core::Camera as CoreCamera;
 use crate::core::camera::Image;
 use crate::core::math::Real;
-use crate::core::{Hittable, HittableList, math, shapes};
+use crate::core::{self, Hittable, HittableList, math, shapes};
 use crate::settings::Config;
 use serde::Deserialize;
 
@@ -17,7 +17,6 @@ pub struct Camera {
     image_width: u32,
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
-    diffuse: Option<bool>,
     max_depth: Option<u32>,
 }
 
@@ -39,7 +38,6 @@ impl Camera {
                 self.samples_per_pixel
                     .unwrap_or(defaults.samples_per_pixel()),
             )
-            .diffuse(self.diffuse.unwrap_or(defaults.diffuse()))
             .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
             .build()
     }
@@ -63,11 +61,32 @@ impl Object {
 pub struct Sphere {
     center: Point,
     radius: Real,
+    material: Material,
 }
 
 impl Sphere {
     fn build(&self) -> shapes::Sphere {
-        shapes::Sphere::new(build_point(self.center), self.radius)
+        shapes::Sphere::new(build_point(self.center), self.radius, self.material.build())
+    }
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum Material {
+    Lambertian { lambertian: Color },
+    Metal { metal: Color },
+}
+
+impl Material {
+    pub fn build(&self) -> core::Material {
+        match self {
+            Material::Lambertian { lambertian } => core::Material::Lambertian {
+                albedo: build_color(lambertian.clone()),
+            },
+            Material::Metal { metal } => core::Material::Metal {
+                albedo: build_color(metal.clone()),
+            },
+        }
     }
 }
 
@@ -87,4 +106,8 @@ impl Scene {
 
 fn build_point(p: Point) -> math::Point {
     math::Point::new(p[0], p[1], p[2])
+}
+
+fn build_color(p: Color) -> core::Color {
+    core::Color::new(p[0], p[1], p[2])
 }

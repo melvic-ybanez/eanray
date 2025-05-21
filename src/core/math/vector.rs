@@ -241,6 +241,14 @@ impl<K> Mul<VecLike<K>> for &VecLike<K> {
     }
 }
 
+impl<K> Mul<VecLike<K>> for VecLike<K> {
+    type Output = VecLike<K>;
+    
+    fn mul(self, rhs: VecLike<K>) -> Self::Output {
+        &self * rhs
+    }
+}
+
 impl<K> Mul<Real> for &VecLike<K> {
     type Output = VecLike<K>;
 

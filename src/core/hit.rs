@@ -41,6 +41,10 @@ impl<'a> HitRecord<'a> {
     pub fn normal(&self) -> &UnitVec3D {
         &self.normal
     }
+    
+    pub fn material(&self) -> &Material {
+        &self.mat
+    }
 }
 
 pub struct P(pub Point);

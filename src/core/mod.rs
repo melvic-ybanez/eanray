@@ -1,13 +1,14 @@
 pub mod camera;
-mod color;
+pub mod color;
 mod hit;
 pub mod math;
 mod ray;
-pub(crate) mod shapes;
+pub mod shapes;
 mod materials;
 
-pub type Camera = camera::Camera;
-pub type HittableList = hit::HittableList;
-pub type Hittable = hit::Hittable;
-pub type Color = color::Color;
-pub type Ray<'a> = ray::Ray<'a>;
+pub use camera::Camera;
+pub use hit::HittableList;
+pub use hit::Hittable;
+pub use color::Color;
+pub use ray::Ray;
+pub use materials::Material;

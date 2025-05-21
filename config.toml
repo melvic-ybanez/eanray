@@ -9,5 +9,4 @@ center = [0, 0, 0]
 focal_length = 1.0
 samples_per_pixel = 10
 antialiasing = true
-diffuse = true
 max_depth = 10

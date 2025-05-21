@@ -15,10 +15,6 @@ pub struct Camera {
     image: Image,
     samples_per_pixel: u32,
     antialiasing: bool,
-
-    // for now, let's toggle it rather than accept and provide a numerical value
-    diffuse: bool,
-
     max_depth: u32,
 }
 
@@ -95,11 +91,10 @@ impl Camera {
         if depth <= 0 {
             Color::black()
         } else if let Some(record) = world.hit(ray, &Interval::new(0.001, math::INFINITY)) {
-            if self.diffuse {
-                let direction = &record.normal().0 + Vec3D::random_unit().0;
-                self.ray_color(&Ray::new(record.p(), direction), depth - 1, world) * 0.5
+            if let Some((scattered, attenuation)) = record.material().scatter(ray, &record) {
+                self.ray_color(&scattered, depth - 1, world) * attenuation
             } else {
-                Color::from(math::normalize_to_01(&record.normal().0))
+                Color::black()
             }
         } else {
             let unit_direction = ray.direction().to_unit().0;
@@ -123,7 +118,6 @@ pub struct CameraBuilder {
     image: Option<Image>,
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
-    diffuse: Option<bool>,
     max_depth: Option<u32>,
     config: &'static Config,
 }
@@ -136,7 +130,6 @@ impl CameraBuilder {
             image: None,
             samples_per_pixel: None,
             antialiasing: None,
-            diffuse: None,
             max_depth: None,
             config,
         }
@@ -167,11 +160,6 @@ impl CameraBuilder {
         self
     }
 
-    pub fn diffuse(&mut self, diffuse: bool) -> &mut Self {
-        self.diffuse = Some(diffuse);
-        self
-    }
-
     pub fn max_depth(&mut self, max_depth: u32) -> &mut Self {
         self.max_depth = Some(max_depth);
         self
@@ -190,7 +178,6 @@ impl CameraBuilder {
                 .samples_per_pixel
                 .unwrap_or(defaults.samples_per_pixel()),
             antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
-            diffuse: self.diffuse.unwrap_or(defaults.diffuse()),
             max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
         }
     }

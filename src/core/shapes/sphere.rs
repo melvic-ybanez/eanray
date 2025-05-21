@@ -1,4 +1,3 @@
-use crate::core::Color;
 use crate::core::hit::{self, HitRecord};
 use crate::core::materials::Material;
 use crate::core::math::Real;
@@ -9,15 +8,15 @@ use crate::core::ray::Ray;
 pub struct Sphere {
     center: Point,
     radius: Real,
-    mat: Material
+    mat: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Point, radius: Real) -> Self {
+    pub fn new(center: Point, radius: Real, mat: Material) -> Self {
         Self {
             center,
             radius: Real::max(0.0, radius),
-            mat: Material::Lambertian { albedo: Color::black()}     // dummy implementation
+            mat,
         }
     }
 
@@ -32,7 +31,7 @@ impl Sphere {
             None
         } else {
             let sqrtd = discriminant.sqrt();
-            let root = (-b - sqrtd) / (2.0 * a); 
+            let root = (-b - sqrtd) / (2.0 * a);
             let root = if !ray_t.surrounds(root) {
                 let root = (-b + sqrtd) / (2.0 * a);
                 if !ray_t.surrounds(root) {

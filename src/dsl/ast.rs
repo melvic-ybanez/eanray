@@ -10,6 +10,7 @@ type Point = Vec3D;
 type Color = Vec3D;
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Camera {
     center: Option<Point>,
     focal_length: Option<Real>,
@@ -44,21 +45,23 @@ impl Camera {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
-pub enum Object {
-    Sphere { sphere: Sphere },
+#[serde(tag = "shape")]
+pub enum Shape {
+    Sphere(Sphere),
 }
 
-impl Object {
+impl Shape {
     fn build(&self) -> Hittable {
         match self {
-            Object::Sphere { sphere } => Hittable::Sphere(sphere.build()),
+            Shape::Sphere(sphere) => Hittable::Sphere(sphere.build()),
         }
     }
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Sphere {
+    description: Option<String>,
     center: Point,
     radius: Real,
     material: Material,
@@ -71,29 +74,43 @@ impl Sphere {
 }
 
 #[derive(Deserialize)]
-#[serde(untagged)]
+#[serde(tag = "type")]
 pub enum Material {
-    Lambertian { lambertian: Color },
-    Metal { metal: Color },
+    Lambertian(Lambertian),
+    Metal(Metal),
 }
 
 impl Material {
     pub fn build(&self) -> core::Material {
-        match self {
-            Material::Lambertian { lambertian } => core::Material::Lambertian {
-                albedo: build_color(lambertian.clone()),
+        match *self {
+            Material::Lambertian(Lambertian { albedo }) => core::Material::Lambertian {
+                albedo: build_color(albedo),
             },
-            Material::Metal { metal } => core::Material::Metal {
-                albedo: build_color(metal.clone()),
-            },
+            Material::Metal(Metal { albedo, fuzz }) => {
+                core::Material::new_metal(build_color(albedo), fuzz)
+            }
         }
     }
 }
 
 #[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Lambertian {
+    albedo: Color,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Metal {
+    albedo: Color,
+    fuzz: Real,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Scene {
     camera: Camera,
-    objects: Vec<Object>,
+    objects: Vec<Shape>,
 }
 
 impl Scene {

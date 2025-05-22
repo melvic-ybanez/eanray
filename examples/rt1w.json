@@ -11,51 +11,77 @@
   },
   "objects": [
     {
-      "sphere": {
-        "description": "ground",
-        "center": [
-          0,
-          -100.5,
-          -1
+      "shape": "Sphere",
+      "description": "ground",
+      "center": [
+        0,
+        -100.5,
+        -1
+      ],
+      "radius": 100.0,
+      "material": {
+        "type": "Lambertian",
+        "albedo": [
+          0.8,
+          0.8,
+          0.0
+        ]
+      }
+    },
+    {
+      "shape": "Sphere",
+      "description": "center (slightly further)",
+      "center": [
+        0,
+        0,
+        -1.2
+      ],
+      "radius": 0.5,
+      "material": {
+        "type": "Lambertian",
+        "albedo": [
+          0.1,
+          0.2,
+          0.5
+        ]
+      }
+    },
+    {
+      "shape": "Sphere",
+      "description": "left",
+      "center": [
+        -1.0,
+        0.0,
+        -1.0
+      ],
+      "radius": 0.5,
+      "material": {
+        "type": "Metal",
+        "albedo": [
+          0.8,
+          0.8,
+          0.8
         ],
-        "radius": 100.0,
-        "material": {
-          "lambertian": [0.8, 0.8, 0.0]
-        }
+        "fuzz": 0.3
       }
     },
     {
-      "sphere": {
-        "description": "center (slightly further)",
-        "center": [
-          0,
-          0,
-          -1.2
+      "shape": "Sphere",
+      "description": "right",
+      "center": [
+        1.0,
+        0.0,
+        -1.0
+      ],
+      "radius": 0.5,
+      "material": {
+        "type": "Metal",
+        "albedo": [
+          0.8,
+          0.6,
+          0.2
         ],
-        "radius": 0.5,
-        "material": {
-          "lambertian": [0.1, 0.2, 0.5]
-        }
-      }
-    },
-    {
-      "sphere": {
-        "description": "left",
-        "center": [-1.0, 0.0, -1.0],
-        "radius": 0.5,
-        "material": {
-          "metal": [0.8, 0.8, 0.8]
-        }
-      }
-    },
-    {
-      "sphere": {
-        "description": "right",
-        "center": [1.0, 0.0, -1.0],
-        "radius": 0.5,
-        "material": {
-          "metal": [0.8, 0.6, 0.2]
-        }
+        "fuzz": 1.0
       }
     }
   ]

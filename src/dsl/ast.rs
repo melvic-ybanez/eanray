@@ -45,6 +45,19 @@ impl Camera {
 }
 
 #[derive(Deserialize)]
+pub struct Object {
+    description: Option<String>,
+    #[serde(flatten)]
+    shape: Shape,
+}
+
+impl Object {
+    fn build(&self) -> Hittable {
+        self.shape.build()
+    }
+}
+
+#[derive(Deserialize)]
 #[serde(tag = "shape")]
 pub enum Shape {
     Sphere(Sphere),
@@ -61,7 +74,6 @@ impl Shape {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Sphere {
-    description: Option<String>,
     center: Point,
     radius: Real,
     material: Material,
@@ -110,7 +122,7 @@ pub struct Metal {
 #[serde(deny_unknown_fields)]
 pub struct Scene {
     camera: Camera,
-    objects: Vec<Shape>,
+    objects: Vec<Object>,
 }
 
 impl Scene {

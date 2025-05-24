@@ -95,4 +95,12 @@ impl Dielectric {
 
         Some((scattered, Color::white()))
     }
+    
+    
+}
+
+pub mod refractive_index {
+    use crate::core::math::Real;
+
+    pub const GLASS: Real = 1.5;
 }

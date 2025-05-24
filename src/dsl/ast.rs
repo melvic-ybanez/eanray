@@ -95,15 +95,21 @@ pub enum Material {
 
 impl Material {
     pub fn build(&self) -> core::Material {
-        match *self {
+        match self {
             Material::Lambertian(Lambertian { albedo }) => {
-                core::Material::new_lambertian(build_color(albedo))
+                core::Material::new_lambertian(build_color(albedo.clone()))
             }
             Material::Metal(Metal { albedo, fuzz }) => {
-                core::Material::new_metal(build_color(albedo), fuzz)
+                core::Material::new_metal(build_color(albedo.clone()), *fuzz)
             }
             Material::Dielectric(Dielectric { refraction_index }) => {
-                core::Material::new_dielectric(refraction_index)
+                let index = match refraction_index {
+                    RefractionIndex::Custom(index) => index,
+                    RefractionIndex::Label(RefractionIndexLabel::Glass) => {
+                        &core::materials::refractive_index::GLASS
+                    }
+                };
+                core::Material::new_dielectric(*index)
             }
         }
     }
@@ -125,7 +131,19 @@ pub struct Metal {
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Dielectric {
-    refraction_index: Real,
+    refraction_index: RefractionIndex,
+}
+
+#[derive(Deserialize)]
+#[serde(untagged)]
+pub enum RefractionIndex {
+    Label(RefractionIndexLabel),
+    Custom(Real),
+}
+
+#[derive(Deserialize)]
+pub enum RefractionIndexLabel {
+    Glass,
 }
 
 #[derive(Deserialize)]

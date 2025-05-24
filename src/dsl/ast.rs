@@ -1,5 +1,6 @@
 use crate::core::Camera as CoreCamera;
 use crate::core::camera::Image;
+use crate::core::materials::refractive_index;
 use crate::core::math::Real;
 use crate::core::{self, Hittable, HittableList, math, shapes};
 use crate::settings::Config;
@@ -105,8 +106,14 @@ impl Material {
             Material::Dielectric(Dielectric { refraction_index }) => {
                 let index = match refraction_index {
                     RefractionIndex::Custom(index) => index,
-                    RefractionIndex::Label(RefractionIndexLabel::Glass) => {
-                        &core::materials::refractive_index::GLASS
+                    RefractionIndex::Label(RefractionIndexLabel::Glass) => &refractive_index::GLASS,
+                    RefractionIndex::Label(RefractionIndexLabel::Air) => &refractive_index::AIR,
+                    RefractionIndex::Label(RefractionIndexLabel::Vacuum) => {
+                        &refractive_index::VACUUM
+                    }
+                    RefractionIndex::Label(RefractionIndexLabel::Water) => &refractive_index::WATER,
+                    RefractionIndex::Label(RefractionIndexLabel::Diamond) => {
+                        &refractive_index::DIAMOND
                     }
                 };
                 core::Material::new_dielectric(*index)
@@ -144,6 +151,10 @@ pub enum RefractionIndex {
 #[derive(Deserialize)]
 pub enum RefractionIndexLabel {
     Glass,
+    Air,
+    Vacuum,
+    Water,
+    Diamond,
 }
 
 #[derive(Deserialize)]

@@ -45,6 +45,10 @@ impl<'a> HitRecord<'a> {
     pub fn material(&self) -> &Material {
         &self.mat
     }
+    
+    pub fn front_face(&self) -> bool {
+        self.front_face
+    }
 }
 
 pub struct P(pub Point);

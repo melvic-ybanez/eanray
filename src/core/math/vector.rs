@@ -76,6 +76,14 @@ impl Vec3D {
         self - &normal.0 * 2.0 * self.dot(&normal.0)
     }
 
+    pub fn refract(unit_vec3d: &UnitVec3D, normal: &UnitVec3D, etai_over_etat: Real) -> Vec3D {
+        let cos_theta = -unit_vec3d.0.dot(&normal.0).min(1.0);
+        let refracted_perpendicular = (&unit_vec3d.0 + &normal.0 * cos_theta) * etai_over_etat;
+        let refracted_parallel =
+            -(1.0 - refracted_perpendicular.length_squared()).sqrt() * &normal.0;
+        refracted_perpendicular + refracted_parallel
+    }
+
     pub fn near_zero(&self) -> bool {
         let small = 1e-8;
         self.x.abs() < small && self.y.abs() < small && self.z.abs() < small
@@ -262,6 +270,14 @@ impl<K> Mul<Real> for VecLike<K> {
 
     fn mul(self, t: Real) -> Self::Output {
         &self * VecLike::new(t, t, t)
+    }
+}
+
+impl<K> Mul<&VecLike<K>> for Real {
+    type Output = VecLike<K>;
+
+    fn mul(self, rhs: &VecLike<K>) -> Self::Output {
+        rhs * self
     }
 }
 

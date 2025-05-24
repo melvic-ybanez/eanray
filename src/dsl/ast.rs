@@ -90,6 +90,7 @@ impl Sphere {
 pub enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
+    Dielectric(Dielectric)
 }
 
 impl Material {
@@ -100,6 +101,9 @@ impl Material {
             },
             Material::Metal(Metal { albedo, fuzz }) => {
                 core::Material::new_metal(build_color(albedo), fuzz)
+            }
+            Material::Dielectric(Dielectric { refraction_index }) => {
+                core::Material::Dielectric { refraction_index }
             }
         }
     }
@@ -116,6 +120,12 @@ pub struct Lambertian {
 pub struct Metal {
     albedo: Color,
     fuzz: Real,
+}
+
+#[derive(Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Dielectric {
+    refraction_index: Real
 }
 
 #[derive(Deserialize)]

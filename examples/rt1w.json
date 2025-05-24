@@ -56,13 +56,8 @@
       ],
       "radius": 0.5,
       "material": {
-        "type": "Metal",
-        "albedo": [
-          0.8,
-          0.8,
-          0.8
-        ],
-        "fuzz": 0.3
+        "type": "Dielectric",
+        "refraction_index": 1.5
       }
     },
     {

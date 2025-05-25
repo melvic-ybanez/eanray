@@ -121,11 +121,19 @@ pub trait CanAdd {}
 
 impl CanAdd for VecKind {}
 
+impl<V> Neg for &VecLike<V> {
+    type Output = VecLike<V>;
+
+    fn neg(self) -> Self::Output {
+        VecLike::new(-self.x, -self.y, -self.z)
+    }
+}
+
 impl<V> Neg for VecLike<V> {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self::new(-self.x, -self.y, -self.z)
+        -&self
     }
 }
 

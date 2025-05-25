@@ -16,15 +16,15 @@ impl Material {
             Material::Dielectric(dielectric) => dielectric.scatter(ray_in, rec),
         }
     }
-    
+
     pub fn new_lambertian(albedo: Color) -> Self {
         Material::Lambertian(Lambertian::new(albedo))
     }
-    
+
     pub fn new_metal(albedo: Color, fuzz: Real) -> Self {
         Material::Metal(Metal::new(albedo, fuzz))
     }
-    
+
     pub fn new_dielectric(refraction_index: Real) -> Self {
         Material::Dielectric(Dielectric::new(refraction_index))
     }
@@ -90,13 +90,21 @@ impl Dielectric {
             self.refraction_index
         };
         let unit_direction = ray_in.direction().to_unit();
-        let refracted = Vec3D::refract(&unit_direction, rec.normal(), ri);
-        let scattered = Ray::new(rec.p(), refracted);
+
+        let cos_theta = (-&unit_direction.0).dot(&rec.normal().0).min(1.0);
+        let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
+
+        let cannot_refract = ri * sin_theta > 1.0;
+        let direction = if cannot_refract {
+            unit_direction.0.reflect(rec.normal())
+        } else {
+            Vec3D::refract(&unit_direction, rec.normal(), ri)
+        };
+
+        let scattered = Ray::new(rec.p(), direction);
 
         Some((scattered, Color::white()))
     }
-    
-    
 }
 
 pub mod refractive_index {

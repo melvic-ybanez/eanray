@@ -1,6 +1,6 @@
 use crate::core::hit::HitRecord;
 use crate::core::math::{Real, Vec3D};
-use crate::core::{Color, Ray};
+use crate::core::{Color, Ray, math};
 
 pub enum Material {
     Lambertian(Lambertian),
@@ -95,7 +95,7 @@ impl Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.0;
-        let direction = if cannot_refract {
+        let direction = if cannot_refract || Self::reflectance(cos_theta, ri) > math::random() {
             unit_direction.0.reflect(rec.normal())
         } else {
             Vec3D::refract(&unit_direction, rec.normal(), ri)
@@ -104,6 +104,13 @@ impl Dielectric {
         let scattered = Ray::new(rec.p(), direction);
 
         Some((scattered, Color::white()))
+    }
+
+    /// Computes the reflectance using Schlick's Approximation
+    fn reflectance(cosine: Real, refraction_index: Real) -> Real {
+        let r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
+        let r0 = r0 * r0;
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
     }
 }
 

@@ -10,3 +10,4 @@ focal_length = 1.0
 samples_per_pixel = 10
 antialiasing = true
 max_depth = 10
+field_of_view = 90

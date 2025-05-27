@@ -20,6 +20,7 @@ pub struct Camera {
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
     max_depth: Option<u32>,
+    field_of_view: Option<Real>,
 }
 
 impl Camera {
@@ -41,6 +42,7 @@ impl Camera {
                     .unwrap_or(defaults.samples_per_pixel()),
             )
             .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
+            .field_of_view(self.field_of_view.unwrap_or(defaults.field_of_view()))
             .build()
     }
 }

@@ -16,6 +16,7 @@ pub struct Camera {
     samples_per_pixel: u32,
     antialiasing: bool,
     max_depth: u32,
+    field_of_view: Real,
 }
 
 impl Camera {
@@ -104,7 +105,10 @@ impl Camera {
     }
 
     fn viewport(&self) -> Viewport {
-        Viewport::new(2.0, &self, &self.image)
+        let theta = math::degrees_to_radians(self.field_of_view);
+        let h = Real::tan(theta / 2.0);
+        let height = 2.0 * h * self.focal_length;
+        Viewport::new(height, &self, &self.image)
     }
 
     fn pixel_sample_scale(&self) -> Real {
@@ -119,6 +123,7 @@ pub struct CameraBuilder {
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
     max_depth: Option<u32>,
+    field_of_view: Option<Real>,
     config: &'static Config,
 }
 
@@ -131,6 +136,7 @@ impl CameraBuilder {
             samples_per_pixel: None,
             antialiasing: None,
             max_depth: None,
+            field_of_view: None,
             config,
         }
     }
@@ -165,6 +171,11 @@ impl CameraBuilder {
         self
     }
 
+    pub fn field_of_view(&mut self, field_of_view: Real) -> &mut Self {
+        self.field_of_view = Some(field_of_view);
+        self
+    }
+
     pub fn build(&self) -> Camera {
         let defaults = self.config.app().scene().camera().defaults();
         Camera {
@@ -179,6 +190,7 @@ impl CameraBuilder {
                 .unwrap_or(defaults.samples_per_pixel()),
             antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
             max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
+            field_of_view: self.field_of_view.unwrap_or(defaults.field_of_view()),
         }
     }
 }

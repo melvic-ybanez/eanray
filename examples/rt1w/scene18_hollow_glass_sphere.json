@@ -62,12 +62,12 @@
     },
     {
       "shape": "Sphere",
-      "description": "bubble (refraction index = 1.0 / 1.5)",
+      "description": "bubble",
       "center": [-1.0, 0.0, -1.0],
       "radius": 0.4,
       "material": {
         "type": "Dielectric",
-        "refraction_index": 0.66666
+        "refraction_index": "1.0 / 1.5"
       }
     },
     {

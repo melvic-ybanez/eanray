@@ -3,6 +3,8 @@ use crate::core::camera::Image;
 use crate::core::materials::refractive_index;
 use crate::core::math::Real;
 use crate::core::{self, Hittable, HittableList, math, shapes};
+use crate::dsl;
+use crate::dsl::expr::EvalResultF;
 use crate::settings::Config;
 use serde::Deserialize;
 
@@ -55,7 +57,7 @@ pub struct Object {
 }
 
 impl Object {
-    fn build(&self) -> Hittable {
+    fn build(&self) -> EvalResultF<Hittable> {
         self.shape.build()
     }
 }
@@ -67,9 +69,9 @@ pub enum Shape {
 }
 
 impl Shape {
-    fn build(&self) -> Hittable {
+    fn build(&self) -> EvalResultF<Hittable> {
         match self {
-            Shape::Sphere(sphere) => Hittable::Sphere(sphere.build()),
+            Shape::Sphere(sphere) => sphere.build().map(Hittable::Sphere),
         }
     }
 }
@@ -83,8 +85,10 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    fn build(&self) -> shapes::Sphere {
-        shapes::Sphere::new(build_point(self.center), self.radius, self.material.build())
+    fn build(&self) -> EvalResultF<shapes::Sphere> {
+        self.material
+            .build()
+            .map(|mat| shapes::Sphere::new(build_point(self.center), self.radius, mat))
     }
 }
 
@@ -97,28 +101,34 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn build(&self) -> core::Material {
+    pub fn build(&self) -> EvalResultF<core::Material> {
         match self {
             Material::Lambertian(Lambertian { albedo }) => {
-                core::Material::new_lambertian(build_color(albedo.clone()))
+                Ok(core::Material::new_lambertian(build_color(albedo.clone())))
             }
-            Material::Metal(Metal { albedo, fuzz }) => {
-                core::Material::new_metal(build_color(albedo.clone()), *fuzz)
-            }
+            Material::Metal(Metal { albedo, fuzz }) => Ok(core::Material::new_metal(
+                build_color(albedo.clone()),
+                *fuzz,
+            )),
             Material::Dielectric(Dielectric { refraction_index }) => {
-                let index = match refraction_index {
-                    RefractionIndex::Custom(index) => index,
-                    RefractionIndex::Label(RefractionIndexLabel::Glass) => &refractive_index::GLASS,
-                    RefractionIndex::Label(RefractionIndexLabel::Air) => &refractive_index::AIR,
-                    RefractionIndex::Label(RefractionIndexLabel::Vacuum) => {
-                        &refractive_index::VACUUM
+                let index_result = match refraction_index {
+                    RefractionIndex::Custom(Expr::Num(value)) => Ok(*value),
+                    RefractionIndex::Custom(Expr::Complex(expr)) => dsl::expr::eval(expr),
+                    RefractionIndex::Label(RefractionIndexLabel::Glass) => {
+                        Ok(refractive_index::GLASS)
                     }
-                    RefractionIndex::Label(RefractionIndexLabel::Water) => &refractive_index::WATER,
+                    RefractionIndex::Label(RefractionIndexLabel::Air) => Ok(refractive_index::AIR),
+                    RefractionIndex::Label(RefractionIndexLabel::Vacuum) => {
+                        Ok(refractive_index::VACUUM)
+                    }
+                    RefractionIndex::Label(RefractionIndexLabel::Water) => {
+                        Ok(refractive_index::WATER)
+                    }
                     RefractionIndex::Label(RefractionIndexLabel::Diamond) => {
-                        &refractive_index::DIAMOND
+                        Ok(refractive_index::DIAMOND)
                     }
                 };
-                core::Material::new_dielectric(*index)
+                index_result.map(core::Material::new_dielectric)
             }
         }
     }
@@ -147,7 +157,7 @@ pub struct Dielectric {
 #[serde(untagged)]
 pub enum RefractionIndex {
     Label(RefractionIndexLabel),
-    Custom(Real),
+    Custom(Expr),
 }
 
 #[derive(Deserialize)]
@@ -160,6 +170,13 @@ pub enum RefractionIndexLabel {
 }
 
 #[derive(Deserialize)]
+#[serde(untagged)]
+pub enum Expr {
+    Num(Real),
+    Complex(String),
+}
+
+#[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Scene {
     camera: Camera,
@@ -167,10 +184,13 @@ pub struct Scene {
 }
 
 impl Scene {
-    pub fn build(&self, config: &'static Config) -> (CoreCamera, Hittable) {
+    pub fn build(&self, config: &'static Config) -> EvalResultF<(CoreCamera, Hittable)> {
         let camera = self.camera.build(config);
-        let objects = HittableList::from_vec(self.objects.iter().map(|o| o.build()).collect());
-        (camera, Hittable::List(objects))
+        let objects: EvalResultF<Vec<Hittable>> = self.objects.iter().map(Object::build).collect();
+        objects.map(|shapes| {
+            let objects = HittableList::from_vec(shapes);
+            (camera, Hittable::List(objects))
+        })
     }
 }
 

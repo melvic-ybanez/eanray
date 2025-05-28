@@ -48,7 +48,7 @@
     },
     {
       "shape": "Sphere",
-      "description": "left (refraction index = 1.00 / 1.33)",
+      "description": "left",
       "center": [
         -1.0,
         0.0,
@@ -57,7 +57,7 @@
       "radius": 0.5,
       "material": {
         "type": "Dielectric",
-        "refraction_index": 0.75187969924
+        "refraction_index": "1.00 / 1.33"
       }
     },
     {

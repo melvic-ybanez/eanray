@@ -12,14 +12,16 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .add_source(File::with_name("config"))
         .build()?
         .try_deserialize::<settings::Config>()?;
-    
+
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
 
     let mut raw_scene = String::new();
     io::stdin().read_to_string(&mut raw_scene)?;
     let scene: Scene = serde_json::from_str(&raw_scene)?;
-    let (camera, world) = scene.build(settings);
-    camera.render(world, settings)?;
+    match scene.build(settings) {
+        Ok((camera, world)) => camera.render(world, settings)?,
+        Err(message) => println!("{message}"),
+    }
 
     Ok(())
 }

@@ -17,9 +17,12 @@ pub fn eval(expr: &str) -> EvalResult {
 
         if let Some(operator) = scan_operator(tokens) {
             while let Some(prev_op) = operators.last() {
-                if precedence(prev_op) >= precedence(&operator.to_string()) {
-                    match eval_op(prev_op, values) {
-                        Ok(result) => values.push(result.to_string()),
+                if precedence(&prev_op) >= precedence(&operator.to_string()) {
+                    match eval_op(&prev_op, values) {
+                        Ok(result) => {
+                            values.push(result.to_string());
+                            operators.pop();
+                        },
                         err => return err,
                     }
                 } else {
@@ -30,9 +33,9 @@ pub fn eval(expr: &str) -> EvalResult {
         }
     }
 
-    for operator in operators {
-        match eval_op(operator, values) {
-            Ok(value) => values.push(value.to_string()),
+    while let Some(operator) = operators.pop() {
+        match eval_op(&operator, values) {
+            Ok(result) => values.push(result.to_string()),
             err => return err,
         }
     }
@@ -76,15 +79,31 @@ fn scan_digits(expr: &mut Peekable<Chars>) -> String {
     digits
 }
 
-fn scan_operator(expr: &mut Peekable<Chars>) -> Option<char> {
+fn scan_operator(expr: &mut Peekable<Chars>) -> Option<String> {
     skip_whitespaces(expr);
 
+    let supported_functions = vec!["cos", "sin", "tan"];
     let supported_ops = "*/+-";
+
     expr.next().and_then(|c| {
-        if supported_ops.contains(c) {
-            Some(c)
+        if c.is_alphabetic() && c.is_lowercase() {
+            let mut function = c.to_string();
+            while let Some(c) = expr.next() {
+                if c.is_alphabetic() {
+                    function.push(c);
+                }
+            }
+            if supported_functions.contains(&function.as_str()) {
+                Some(function)
+            } else {
+                None
+            }
         } else {
-            None
+            if supported_ops.contains(c) {
+                Some(c.to_string())
+            } else {
+                None
+            }
         }
     })
 }
@@ -92,6 +111,7 @@ fn scan_operator(expr: &mut Peekable<Chars>) -> Option<char> {
 fn eval_op(operator: &str, values: &mut Vec<String>) -> EvalResult {
     if let Some(a) = values.pop() {
         if let Some(b) = values.pop() {
+            // values are expected to be numeric
             let a: f64 = a.parse().unwrap();
             let b: f64 = b.parse().unwrap();
 

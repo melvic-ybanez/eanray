@@ -13,6 +13,12 @@ fn test_precedence() {
     assert_eval("2 * 9 - 1", 17.0);
 }
 
+#[test]
+fn test_params() {
+    assert_eval("(1 + 9) * 2", 20.0);
+    assert_eval("1 + (9 - 2 * (3 / 6))", 9.0);
+}
+
 fn assert_eval(expr: &str, expected: Real) {
     assert_eq!(eval(expr).unwrap(), expected);
 }

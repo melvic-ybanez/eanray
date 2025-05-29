@@ -15,6 +15,9 @@ pub fn eval(expr: &str) -> EvalResult {
             values.push(number);
         }
 
+        scan_open_param(tokens, operators);
+        scan_close_param(tokens, values, operators)?;
+
         if let Some(operator) = scan_operator(tokens) {
             while let Some(prev_op) = operators.last() {
                 if precedence(&prev_op) >= precedence(&operator.to_string()) {
@@ -22,7 +25,7 @@ pub fn eval(expr: &str) -> EvalResult {
                         Ok(result) => {
                             values.push(result.to_string());
                             operators.pop();
-                        },
+                        }
                         err => return err,
                     }
                 } else {
@@ -33,12 +36,7 @@ pub fn eval(expr: &str) -> EvalResult {
         }
     }
 
-    while let Some(operator) = operators.pop() {
-        match eval_op(&operator, values) {
-            Ok(result) => values.push(result.to_string()),
-            err => return err,
-        }
-    }
+    apply_all_ops(values, operators, |_| false)?;
 
     if let Some(result) = values.first() {
         let result: Result<f64, _> = result.parse();
@@ -48,9 +46,48 @@ pub fn eval(expr: &str) -> EvalResult {
     }
 }
 
+fn apply_all_ops(
+    values: &mut Vec<String>,
+    operators: &mut Vec<String>,
+    until: fn(&String) -> bool,
+) -> EvalResultF<()> {
+    while let Some(operator) = operators.pop() {
+        if until(&operator) {
+            break;
+        }
+
+        match eval_op(&operator, values) {
+            Ok(result) => values.push(result.to_string()),
+            Err(msg) => return Err(msg),
+        }
+    }
+
+    Ok(())
+}
+
 fn skip_whitespaces(expr: &mut Peekable<Chars>) {
     while matches!(expr.peek(), Some(c) if c.is_whitespace()) {
         expr.next();
+    }
+}
+
+fn scan_open_param(expr: &mut Peekable<Chars>, operators: &mut Vec<String>) {
+    skip_whitespaces(expr);
+    if let Some('(') = expr.peek() {
+        operators.push("(".to_string());
+    }
+}
+
+fn scan_close_param(
+    expr: &mut Peekable<Chars>,
+    values: &mut Vec<String>,
+    operators: &mut Vec<String>,
+) -> EvalResultF<()> {
+    skip_whitespaces(expr);
+    if let Some(')') = expr.peek() {
+        apply_all_ops(values, operators, |operator| operator == "(")
+    } else {
+        Ok(())
     }
 }
 

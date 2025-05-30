@@ -21,8 +21,7 @@ impl<'a> Expr<'a> {
 
     pub fn eval(&mut self) -> EvalResult {
         while self.tokens.peek().is_some() {
-            let number = self.scan_number();
-            if !number.is_empty() {
+            if let Some(number) = self.scan_number() {
                 self.values.push(number);
             }
 
@@ -96,29 +95,29 @@ impl<'a> Expr<'a> {
         }
     }
 
-    fn scan_number(&mut self) -> String {
+    fn scan_number(&mut self) -> Option<String> {
         self.skip_whitespaces();
 
-        let whole = self.scan_digits();
-
-        if let Some('.') = self.tokens.peek() {
-            self.tokens.next();
-            let fractional = self.scan_digits();
-            whole + "." + &fractional
-        } else {
-            whole
-        }
+        self.scan_digits().and_then(|whole| {
+            if let Some('.') = self.tokens.peek() {
+                self.tokens.next();
+                self.scan_digits()
+                    .map(|fractional| whole + "." + &fractional)
+            } else {
+                Some(whole)
+            }
+        })
     }
 
-    fn scan_digits(&mut self) -> String {
+    fn scan_digits(&mut self) -> Option<String> {
         self.scan_word(|c| is_digit(c))
     }
 
-    fn scan_alphabetic(&mut self) -> String {
+    fn scan_alphabetic(&mut self) -> Option<String> {
         self.scan_word(|c| c.is_alphabetic() && c.is_lowercase())
     }
-    
-    fn scan_word(&mut self, filter: fn(char) -> bool) -> String {
+
+    fn scan_word(&mut self, filter: fn(char) -> bool) -> Option<String> {
         let mut chars = String::new();
 
         // we are not using `take_while` to avoid consuming an extra token
@@ -126,7 +125,7 @@ impl<'a> Expr<'a> {
             chars.push(self.tokens.next().unwrap());
         }
 
-        chars
+        if chars.is_empty() { None } else { Some(chars) }
     }
 
     fn scan_operator(&mut self) -> Option<String> {
@@ -138,12 +137,13 @@ impl<'a> Expr<'a> {
         match self.tokens.peek() {
             Some(c) => {
                 if c.is_alphabetic() && c.is_lowercase() {
-                    let word = self.scan_alphabetic();
-                    if supported_functions.contains(&word.as_str()) {
-                        Some(word)
-                    } else {
-                        None
-                    }
+                    self.scan_alphabetic().and_then(|word| {
+                        if supported_functions.contains(&word.as_str()) {
+                            Some(word)
+                        } else {
+                            None
+                        }
+                    })
                 } else {
                     if supported_ops.contains(*c) {
                         Some(c.to_string())

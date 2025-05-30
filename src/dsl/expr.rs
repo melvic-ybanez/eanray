@@ -5,7 +5,6 @@ pub type EvalResult = EvalResultF<f64>;
 pub type EvalResultF<A> = Result<A, &'static str>;
 
 pub struct Expr<'a> {
-    text: &'a str,
     values: Vec<String>,
     operators: Vec<String>,
     tokens: Peekable<Chars<'a>>,
@@ -14,7 +13,6 @@ pub struct Expr<'a> {
 impl<'a> Expr<'a> {
     pub fn new(expr: &'a str) -> Self {
         Self {
-            text: expr,
             values: Vec::new(),
             operators: Vec::new(),
             tokens: expr.chars().peekable(),
@@ -47,6 +45,8 @@ impl<'a> Expr<'a> {
                 }
                 self.operators.push(operator.to_string());
             }
+
+            self.tokens.next();
         }
 
         self.apply_all_ops(|_| false)?;
@@ -121,33 +121,41 @@ impl<'a> Expr<'a> {
         digits
     }
 
+    fn scan_word(&mut self) -> String {
+        let mut chars = String::new();
+
+        while matches!(self.tokens.peek(), Some(&c) if c.is_alphabetic() && c.is_lowercase()) {
+            chars.push(self.tokens.next().unwrap());
+        }
+
+        chars
+    }
+
     fn scan_operator(&mut self) -> Option<String> {
         self.skip_whitespaces();
 
         let supported_functions = vec!["cos", "sin", "tan"];
         let supported_ops = "*/+-";
 
-        self.tokens.next().and_then(|c| {
-            if c.is_alphabetic() && c.is_lowercase() {
-                let mut function = c.to_string();
-                while let Some(c) = self.tokens.next() {
-                    if c.is_alphabetic() {
-                        function.push(c);
+        match self.tokens.peek() {
+            Some(c) => {
+                if c.is_alphabetic() && c.is_lowercase() {
+                    let word = self.scan_word();
+                    if supported_functions.contains(&word.as_str()) {
+                        Some(word)
+                    } else {
+                        None
+                    }
+                } else {
+                    if supported_ops.contains(*c) {
+                        Some(c.to_string())
+                    } else {
+                        None
                     }
                 }
-                if supported_functions.contains(&function.as_str()) {
-                    Some(function)
-                } else {
-                    None
-                }
-            } else {
-                if supported_ops.contains(c) {
-                    Some(c.to_string())
-                } else {
-                    None
-                }
             }
-        })
+            None => None,
+        }
     }
 
     fn eval_op(&mut self, operator: &str) -> EvalResult {

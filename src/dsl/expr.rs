@@ -111,20 +111,18 @@ impl<'a> Expr<'a> {
     }
 
     fn scan_digits(&mut self) -> String {
-        let mut digits = String::new();
-
-        // we are not using `take_while` to avoid consuming an extra token
-        while matches!(self.tokens.peek(), Some(&c) if is_digit(c)) {
-            digits.push(self.tokens.next().unwrap());
-        }
-
-        digits
+        self.scan_word(|c| is_digit(c))
     }
 
-    fn scan_word(&mut self) -> String {
+    fn scan_alphabetic(&mut self) -> String {
+        self.scan_word(|c| c.is_alphabetic() && c.is_lowercase())
+    }
+    
+    fn scan_word(&mut self, filter: fn(char) -> bool) -> String {
         let mut chars = String::new();
 
-        while matches!(self.tokens.peek(), Some(&c) if c.is_alphabetic() && c.is_lowercase()) {
+        // we are not using `take_while` to avoid consuming an extra token
+        while matches!(self.tokens.peek(), Some(&c) if filter(c)) {
             chars.push(self.tokens.next().unwrap());
         }
 
@@ -140,7 +138,7 @@ impl<'a> Expr<'a> {
         match self.tokens.peek() {
             Some(c) => {
                 if c.is_alphabetic() && c.is_lowercase() {
-                    let word = self.scan_word();
+                    let word = self.scan_alphabetic();
                     if supported_functions.contains(&word.as_str()) {
                         Some(word)
                     } else {

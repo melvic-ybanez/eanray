@@ -1,5 +1,5 @@
 use crate::core::math::Real;
-use crate::dsl::expr::eval;
+use crate::dsl::Expr;
 
 #[test]
 fn test_simple_ops() {
@@ -19,6 +19,7 @@ fn test_params() {
     assert_eval("1 + (9 - 2 * (3 / 6))", 9.0);
 }
 
-fn assert_eval(expr: &str, expected: Real) {
-    assert_eq!(eval(expr).unwrap(), expected);
+fn assert_eval(tokens: &str, expected: Real) {
+    let mut expr = Expr::new(tokens);
+    assert_eq!(expr.eval().unwrap(), expected);
 }

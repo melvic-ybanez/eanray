@@ -113,7 +113,7 @@ impl Material {
             Material::Dielectric(Dielectric { refraction_index }) => {
                 let index_result = match refraction_index {
                     RefractionIndex::Custom(Expr::Num(value)) => Ok(*value),
-                    RefractionIndex::Custom(Expr::Complex(expr)) => dsl::expr::eval(expr),
+                    RefractionIndex::Custom(Expr::Complex(expr)) => dsl::Expr::new(expr).eval(),
                     RefractionIndex::Label(RefractionIndexLabel::Glass) => {
                         Ok(refractive_index::GLASS)
                     }

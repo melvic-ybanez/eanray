@@ -1,4 +1,5 @@
 use crate::core::math;
+use crate::core::math::Real;
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -7,7 +8,7 @@ pub type EvalResultF<A> = Result<A, &'static str>;
 
 pub struct Expr<'a> {
     values: Vec<String>,
-    operators: Vec<String>,
+    operators: Vec<(String, OpKind)>,
     tokens: Peekable<Chars<'a>>,
 }
 
@@ -26,13 +27,14 @@ impl<'a> Expr<'a> {
                 self.values.push(number);
             }
 
-            self.scan_open_param();
-            self.scan_close_param()?;
+            self.scan_open_paren();
+            self.scan_close_paren()?;
+            self.scan_constants();
 
-            if let Some(operator) = self.scan_operator() {
-                while let Some(prev_op) = self.operators.last() {
+            if let Some((operator, op_kind)) = self.scan_operator() {
+                while let Some((prev_op, _)) = self.operators.last() {
                     if precedence(&prev_op) >= precedence(&operator.to_string()) {
-                        match self.eval_op(&prev_op.clone()) {
+                        match self.eval_op(&prev_op.clone(), &op_kind) {
                             Ok(result) => {
                                 self.values.push(result.to_string());
                                 self.operators.pop();
@@ -43,13 +45,13 @@ impl<'a> Expr<'a> {
                         break;
                     }
                 }
-                self.operators.push(operator.to_string());
+                self.operators.push((operator.to_string(), op_kind));
+                self.tokens.next();
             }
-
-            self.tokens.next();
         }
 
         self.apply_all_ops(|_| false)?;
+
 
         if let Some(result) = self.values.first() {
             let result: Result<f64, _> = result.parse();
@@ -60,12 +62,12 @@ impl<'a> Expr<'a> {
     }
 
     fn apply_all_ops(&mut self, until: fn(&String) -> bool) -> EvalResultF<()> {
-        while let Some(operator) = self.operators.pop() {
+        while let Some((operator, kind)) = self.operators.pop() {
             if until(&operator) {
                 break;
             }
 
-            match self.eval_op(&operator) {
+            match self.eval_op(&operator, &kind) {
                 Ok(result) => self.values.push(result.to_string()),
                 Err(msg) => return Err(msg),
             }
@@ -80,20 +82,28 @@ impl<'a> Expr<'a> {
         }
     }
 
-    fn scan_open_param(&mut self) {
+    fn scan_open_paren(&mut self) {
         self.skip_whitespaces();
-        if let Some('(') = self.tokens.peek() {
-            self.operators.push("(".to_string());
+
+        match self.tokens.peek() {
+            Some(p) if p.to_string() == lexemes::LEFT_PAREN => {
+                self.tokens.next();
+                self.operators
+                    .push((lexemes::LEFT_PAREN.to_string(), OpKind::Param))
+            }
+            _ => (),
         }
     }
 
-    fn scan_close_param(&mut self) -> EvalResultF<()> {
+    fn scan_close_paren(&mut self) -> EvalResultF<()> {
         self.skip_whitespaces();
 
-        if let Some(')') = self.tokens.peek() {
-            self.apply_all_ops(|operator| operator == "(")
-        } else {
-            Ok(())
+        match self.tokens.peek() {
+            Some(c) if c.to_string() == lexemes::RIGHT_PAREN => {
+                self.tokens.next();
+                self.apply_all_ops(|operator| operator == lexemes::LEFT_PAREN)
+            }
+            _ => Ok(()),
         }
     }
 
@@ -101,16 +111,14 @@ impl<'a> Expr<'a> {
         self.skip_whitespaces();
 
         self.scan_digits()
-            .and_then(|whole| {
-                if let Some('.') = self.tokens.peek() {
+            .and_then(|whole| match self.tokens.peek() {
+                Some(c) if c.to_string() == lexemes::DOT => {
                     self.tokens.next();
                     self.scan_digits()
-                        .map(|fractional| whole + "." + &fractional)
-                } else {
-                    Some(whole)
+                        .map(|fractional| whole + lexemes::DOT + &fractional)
                 }
+                _ => Some(whole),
             })
-            .or(self.scan_constants())
     }
 
     fn scan_digits(&mut self) -> Option<String> {
@@ -121,14 +129,20 @@ impl<'a> Expr<'a> {
         self.scan_word(|c| c.is_alphabetic() && c.is_lowercase())
     }
 
-    fn scan_constants(&mut self) -> Option<String> {
-        self.scan_alphabetic().map(|lexeme| {
-            let value = match lexeme.as_str() {
-                "pi" => math::PI,
-                _ => f64::NAN,
-            };
-            value.to_string()
-        })
+    fn scan_constants(&mut self) {
+        self.skip_whitespaces();
+
+        if let Some(lexeme) = self.scan_alphabetic() {
+            let supported_functions = vec![lexemes::COS, lexemes::SIN, lexemes::TAN];
+
+            match lexeme.as_str() {
+                lexemes::PI => self.values.push(math::PI.to_string()),
+                func if supported_functions.contains(&func) => {
+                    self.operators.push((func.to_string(), OpKind::Unary))
+                }
+                _ => (),
+            }
+        }
     }
 
     fn scan_word(&mut self, filter: fn(char) -> bool) -> Option<String> {
@@ -142,66 +156,113 @@ impl<'a> Expr<'a> {
         if chars.is_empty() { None } else { Some(chars) }
     }
 
-    fn scan_operator(&mut self) -> Option<String> {
+    fn scan_operator(&mut self) -> Option<(String, OpKind)> {
         self.skip_whitespaces();
 
-        let supported_functions = vec!["cos", "sin", "tan"];
-        let supported_ops = "*/+-";
+        let supported_binary_ops = vec![
+            lexemes::TIMES,
+            lexemes::DIVIDE,
+            lexemes::PLUS,
+            lexemes::MINUS,
+        ]
+        .join("");
 
         match self.tokens.peek() {
             Some(c) => {
-                if c.is_alphabetic() && c.is_lowercase() {
-                    self.scan_alphabetic().and_then(|word| {
-                        if supported_functions.contains(&word.as_str()) {
-                            Some(word)
-                        } else {
-                            None
-                        }
-                    })
+                if supported_binary_ops.contains(*c) {
+                    Some((c.to_string(), OpKind::Binary))
                 } else {
-                    if supported_ops.contains(*c) {
-                        Some(c.to_string())
-                    } else {
-                        None
-                    }
+                    None
                 }
             }
             None => None,
         }
     }
 
-    fn eval_op(&mut self, operator: &str) -> EvalResult {
+    fn eval_op(&mut self, operator: &str, kind: &OpKind) -> EvalResult {
+        match kind {
+            OpKind::Param => Ok(Real::NAN),
+            OpKind::Unary => self.eval_unary(operator),
+            OpKind::Binary => self.eval_binop(operator),
+        }
+    }
+
+    fn eval_unary(&mut self, operator: &str) -> EvalResult {
+        if let Some(value) = self.values.pop() {
+            let result = match operator {
+                lexemes::COS => Real::cos(value.parse().unwrap()),
+                _ => return Err("Unknown function"),
+            };
+            Ok(result)
+        } else {
+            errors::NO_VALUE_PROVIDED
+        }
+    }
+
+    fn eval_binop(&mut self, operator: &str) -> EvalResult {
         if let Some(a) = self.values.pop() {
             if let Some(b) = self.values.pop() {
                 // values are expected to be numeric
-                let a: f64 = a.parse().unwrap();
-                let b: f64 = b.parse().unwrap();
+                let a: Real = a.parse().unwrap();
+                let b: Real = b.parse().unwrap();
 
                 let result = match operator {
-                    "*" => b * a,
-                    "/" => b / a,
-                    "+" => b + a,
-                    "-" => b - a,
-                    _ => f64::NAN,
+                    lexemes::TIMES => b * a,
+                    lexemes::DIVIDE => b / a,
+                    lexemes::PLUS => b + a,
+                    lexemes::MINUS => b - a,
+                    _ => return Err("Unknown operator"),
                 };
                 Ok(result)
             } else {
-                Err("Not enough values to evaluate")
+                Err("Only one value provided")
             }
         } else {
-            Err("No values to evaluate")
+            errors::NO_VALUE_PROVIDED
         }
     }
 }
 
+#[derive(Debug)]
+enum OpKind {
+    Unary,
+    Binary,
+    Param,
+}
+
 fn precedence(operator: &str) -> u16 {
     match operator {
-        "+" | "-" => 1,
-        "*" | "/" => 2,
+        lexemes::PLUS | lexemes::MINUS => 1,
+        lexemes::TIMES | lexemes::DIVIDE => 2,
+        lexemes::COS | lexemes::SIN | lexemes::TAN => 3,
         _ => 0,
     }
 }
 
 fn is_digit(c: char) -> bool {
     c.is_digit(10)
+}
+
+mod lexemes {
+    pub const PI: &str = "pi";
+
+    pub const COS: &str = "cos";
+    pub const SIN: &str = "sin";
+    pub const TAN: &str = "tan";
+
+    pub const LEFT_PAREN: &str = "(";
+    pub const RIGHT_PAREN: &str = ")";
+
+    pub const PLUS: &str = "+";
+    pub const MINUS: &str = "-";
+    pub const TIMES: &str = "*";
+    pub const DIVIDE: &str = "/";
+
+    pub const DOT: &str = ".";
+}
+
+mod errors {
+    use crate::dsl::expr::EvalResult;
+
+    pub const NO_VALUE_PROVIDED: EvalResult = Err("No value provided");
 }

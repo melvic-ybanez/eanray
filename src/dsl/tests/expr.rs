@@ -1,3 +1,4 @@
+use crate::core::math;
 use crate::core::math::Real;
 use crate::dsl::Expr;
 
@@ -17,6 +18,11 @@ fn test_precedence() {
 fn test_params() {
     assert_eval("(1 + 9) * 2", 20.0);
     assert_eval("1 + (9 - 2 * (3 / 6))", 9.0);
+}
+
+#[test]
+fn test_constants() {
+    assert_eval("pi / 4", math::PI / 4.0);
 }
 
 fn assert_eval(tokens: &str, expected: Real) {

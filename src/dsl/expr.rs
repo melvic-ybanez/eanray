@@ -1,3 +1,4 @@
+use crate::core::math;
 use std::iter::Peekable;
 use std::str::Chars;
 
@@ -88,6 +89,7 @@ impl<'a> Expr<'a> {
 
     fn scan_close_param(&mut self) -> EvalResultF<()> {
         self.skip_whitespaces();
+
         if let Some(')') = self.tokens.peek() {
             self.apply_all_ops(|operator| operator == "(")
         } else {
@@ -98,15 +100,17 @@ impl<'a> Expr<'a> {
     fn scan_number(&mut self) -> Option<String> {
         self.skip_whitespaces();
 
-        self.scan_digits().and_then(|whole| {
-            if let Some('.') = self.tokens.peek() {
-                self.tokens.next();
-                self.scan_digits()
-                    .map(|fractional| whole + "." + &fractional)
-            } else {
-                Some(whole)
-            }
-        })
+        self.scan_digits()
+            .and_then(|whole| {
+                if let Some('.') = self.tokens.peek() {
+                    self.tokens.next();
+                    self.scan_digits()
+                        .map(|fractional| whole + "." + &fractional)
+                } else {
+                    Some(whole)
+                }
+            })
+            .or(self.scan_constants())
     }
 
     fn scan_digits(&mut self) -> Option<String> {
@@ -115,6 +119,16 @@ impl<'a> Expr<'a> {
 
     fn scan_alphabetic(&mut self) -> Option<String> {
         self.scan_word(|c| c.is_alphabetic() && c.is_lowercase())
+    }
+
+    fn scan_constants(&mut self) -> Option<String> {
+        self.scan_alphabetic().map(|lexeme| {
+            let value = match lexeme.as_str() {
+                "pi" => math::PI,
+                _ => f64::NAN,
+            };
+            value.to_string()
+        })
     }
 
     fn scan_word(&mut self, filter: fn(char) -> bool) -> Option<String> {

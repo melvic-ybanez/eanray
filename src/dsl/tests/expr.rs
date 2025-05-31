@@ -6,6 +6,7 @@ use crate::dsl::Expr;
 fn test_simple_ops() {
     assert_eval("1.00 / 1.33", 1.00 / 1.33);
     assert_eval("1.0 / 1.5", 1.0 / 1.5);
+    assert_eq!(Expr::new("5 6 -").eval(), Err("Too many values remaining"));
 }
 
 #[test]

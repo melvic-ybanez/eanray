@@ -22,7 +22,7 @@ impl<'a> Expr<'a> {
     }
 
     /// Evaluates the expression.
-    /// Note: Right now, it can take expressions that do not make sense, such as `5 6 -`, and
+    /// Note: Right now, it might take expressions that do not make sense and
     /// still try to compute them. In the future, we might need to modify this to
     /// support proper parsing.
     pub fn eval(&mut self) -> EvalResult {
@@ -38,7 +38,7 @@ impl<'a> Expr<'a> {
             if let Some((operator, op_kind)) = self.scan_operator() {
                 while let Some((prev_op, prev_op_kind)) = self.operators.last() {
                     let prev_op_kind = (*prev_op_kind).clone();
-                    
+
                     if precedence(&prev_op, &prev_op_kind)
                         >= precedence(&operator.to_string(), &op_kind)
                     {
@@ -60,7 +60,9 @@ impl<'a> Expr<'a> {
 
         self.apply_all_ops(|_| false)?;
 
-        if let Some(result) = self.values.first() {
+        if self.values.len() > 1 {
+            Err("Too many values remaining")
+        } else if let Some(result) = self.values.first() {
             let result: Result<f64, _> = result.parse();
             result.map_err(|_| "Result is not a number")
         } else {
@@ -188,7 +190,12 @@ impl<'a> Expr<'a> {
                 {
                     Some((cstr, OpKind::Unary))
                 } else if supported_binary_ops.contains(*c) {
-                    Some((cstr, OpKind::Binary))
+                    if bin_count < self.values.len() - 1{
+                        self.tokens.next();
+                        None
+                    } else {
+                        Some((cstr, OpKind::Binary))
+                    }
                 } else {
                     None
                 }
@@ -260,7 +267,7 @@ fn precedence(operator: &str, kind: &OpKind) -> u16 {
             lexemes::COS | lexemes::SIN | lexemes::TAN => 3,
             _ => 0,
         },
-        _ => 0
+        _ => 0,
     }
 }
 

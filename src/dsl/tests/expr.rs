@@ -26,6 +26,14 @@ fn test_constants() {
 }
 
 #[test]
+fn test_signs() {
+    assert_eval("-10", -10.0);
+    assert_eval("8 + -90", -82.0);
+    assert_eval("+10", 10.0);
+    assert_eval("-cos (pi/4)", -Real::sqrt(2.0) / 2.0);
+}
+
+#[test]
 fn test_trig_functions() {
     assert_eval("cos 0", 1.0);
     assert_eval("cos (pi / 4)", Real::sqrt(2.0) / 2.0);

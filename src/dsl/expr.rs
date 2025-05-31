@@ -21,6 +21,10 @@ impl<'a> Expr<'a> {
         }
     }
 
+    /// Evaluates the expression.
+    /// Note: Right now, it can take expressions that do not make sense, such as `5 6 -`, and
+    /// still try to compute them. In the future, we might need to modify this to
+    /// support proper parsing.
     pub fn eval(&mut self) -> EvalResult {
         while self.tokens.peek().is_some() {
             if let Some(number) = self.scan_number() {
@@ -32,9 +36,13 @@ impl<'a> Expr<'a> {
             self.scan_constants();
 
             if let Some((operator, op_kind)) = self.scan_operator() {
-                while let Some((prev_op, _)) = self.operators.last() {
-                    if precedence(&prev_op) >= precedence(&operator.to_string()) {
-                        match self.eval_op(&prev_op.clone(), &op_kind) {
+                while let Some((prev_op, prev_op_kind)) = self.operators.last() {
+                    let prev_op_kind = (*prev_op_kind).clone();
+                    
+                    if precedence(&prev_op, &prev_op_kind)
+                        >= precedence(&operator.to_string(), &op_kind)
+                    {
+                        match self.eval_op(&prev_op.clone(), &prev_op_kind) {
                             Ok(result) => {
                                 self.values.push(result.to_string());
                                 self.operators.pop();
@@ -51,7 +59,6 @@ impl<'a> Expr<'a> {
         }
 
         self.apply_all_ops(|_| false)?;
-
 
         if let Some(result) = self.values.first() {
             let result: Result<f64, _> = result.parse();
@@ -169,8 +176,19 @@ impl<'a> Expr<'a> {
 
         match self.tokens.peek() {
             Some(c) => {
-                if supported_binary_ops.contains(*c) {
-                    Some((c.to_string(), OpKind::Binary))
+                let cstr = c.to_string();
+                let bin_count = self
+                    .operators
+                    .iter()
+                    .filter(|(_, kind)| matches!(kind, OpKind::Binary))
+                    .count();
+
+                if bin_count == self.values.len()
+                    && (cstr == lexemes::MINUS || cstr == lexemes::PLUS)
+                {
+                    Some((cstr, OpKind::Unary))
+                } else if supported_binary_ops.contains(*c) {
+                    Some((cstr, OpKind::Binary))
                 } else {
                     None
                 }
@@ -189,8 +207,11 @@ impl<'a> Expr<'a> {
 
     fn eval_unary(&mut self, operator: &str) -> EvalResult {
         if let Some(value) = self.values.pop() {
+            let value = value.parse().unwrap();
             let result = match operator {
-                lexemes::COS => Real::cos(value.parse().unwrap()),
+                lexemes::COS => Real::cos(value),
+                lexemes::PLUS => value,
+                lexemes::MINUS => -value,
                 _ => return Err("Unknown function"),
             };
             Ok(result)
@@ -223,19 +244,23 @@ impl<'a> Expr<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum OpKind {
     Unary,
     Binary,
     Param,
 }
 
-fn precedence(operator: &str) -> u16 {
-    match operator {
-        lexemes::PLUS | lexemes::MINUS => 1,
-        lexemes::TIMES | lexemes::DIVIDE => 2,
-        lexemes::COS | lexemes::SIN | lexemes::TAN => 3,
-        _ => 0,
+fn precedence(operator: &str, kind: &OpKind) -> u16 {
+    match kind {
+        OpKind::Unary => 3,
+        OpKind::Binary => match operator {
+            lexemes::PLUS | lexemes::MINUS => 1,
+            lexemes::TIMES | lexemes::DIVIDE => 2,
+            lexemes::COS | lexemes::SIN | lexemes::TAN => 3,
+            _ => 0,
+        },
+        _ => 0
     }
 }
 

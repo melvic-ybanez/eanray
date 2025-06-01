@@ -38,6 +38,7 @@ fn test_signs() {
 fn test_trig_functions() {
     assert_eval("cos 0", 1.0);
     assert_eval("cos (pi / 4)", Real::sqrt(2.0) / 2.0);
+    assert_eval("cos(pi / 4)", Real::sqrt(2.0) / 2.0);
 }
 
 fn assert_eval(tokens: &str, expected: Real) {

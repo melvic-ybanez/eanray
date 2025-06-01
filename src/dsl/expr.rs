@@ -13,6 +13,10 @@ pub struct Expr<'a> {
 }
 
 impl<'a> Expr<'a> {
+    pub fn eval_str(expr: &str) -> EvalResult {
+        Expr::new(expr).eval()
+    }
+    
     pub fn new(expr: &'a str) -> Self {
         Self {
             values: Vec::new(),

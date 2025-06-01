@@ -13,13 +13,13 @@
   "objects": [
     {
       "shape": "Sphere",
-      "description": "left (radius = cos(pi/4))",
+      "description": "left",
       "center": [
-        -0.7071067,
+        "-cos(pi / 4)",
         0.0,
         -1.0
       ],
-      "radius": 0.7071067,
+      "radius": "cos(pi / 4)",
       "material": {
         "type": "Lambertian",
         "albedo": [
@@ -31,13 +31,13 @@
     },
     {
       "shape": "Sphere",
-      "description": "right (radius = cos(pi/4))",
+      "description": "right",
       "center": [
-        0.7071067,
+        "cos(pi / 4)",
         0.0,
         -1.0
       ],
-      "radius": 0.7071067,
+      "radius": "cos(pi / 4)",
       "material": {
         "type": "Lambertian",
         "albedo": [

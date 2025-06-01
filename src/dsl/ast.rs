@@ -2,18 +2,21 @@ use crate::core::Camera as CoreCamera;
 use crate::core::camera::Image;
 use crate::core::materials::refractive_index;
 use crate::core::math::Real;
+use crate::core::math::vector::Coordinates;
 use crate::core::{self, Hittable, HittableList, math, shapes};
 use crate::dsl;
-use crate::dsl::expr::EvalResultF;
+use crate::dsl::Expr;
+use crate::dsl::expr::{EvalResult, EvalResultF};
 use crate::settings::Config;
 use serde::Deserialize;
 
-type Vec3D = [Real; 3];
+type Vec3D = [Number; 3];
 type Point = Vec3D;
 type Color = Vec3D;
 
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
+#[derive(Clone)]
 pub struct Camera {
     center: Option<Point>,
     focal_length: Option<Real>,
@@ -30,22 +33,30 @@ impl Camera {
         self.aspect_ratio[0] / self.aspect_ratio[1]
     }
 
-    fn build(&self, config: &'static Config) -> CoreCamera {
+    fn build(&self, config: &'static Config) -> EvalResultF<CoreCamera> {
         let builder_config = config.clone();
         let defaults = builder_config.app().scene().camera().defaults();
+        let center = build_point(
+            &self
+                .center
+                .clone()
+                .unwrap_or(defaults.center().map(|comp| Number::Value(comp))),
+        );
 
-        CoreCamera::builder(config)
-            .center(build_point(self.center.unwrap_or(defaults.center())))
-            .focal_length(self.focal_length.unwrap_or(defaults.focal_length()))
-            .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
-            .antialiasing(self.antialiasing.unwrap_or(defaults.antialiasing()))
-            .samples_per_pixel(
-                self.samples_per_pixel
-                    .unwrap_or(defaults.samples_per_pixel()),
-            )
-            .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
-            .field_of_view(self.field_of_view.unwrap_or(defaults.field_of_view()))
-            .build()
+        center.map(|center| {
+            CoreCamera::builder(config)
+                .center(center)
+                .focal_length(self.focal_length.unwrap_or(defaults.focal_length()))
+                .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
+                .antialiasing(self.antialiasing.unwrap_or(defaults.antialiasing()))
+                .samples_per_pixel(
+                    self.samples_per_pixel
+                        .unwrap_or(defaults.samples_per_pixel()),
+                )
+                .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
+                .field_of_view(self.field_of_view.unwrap_or(defaults.field_of_view()))
+                .build()
+        })
     }
 }
 
@@ -80,15 +91,17 @@ impl Shape {
 #[serde(deny_unknown_fields)]
 pub struct Sphere {
     center: Point,
-    radius: Real,
+    radius: Number,
     material: Material,
 }
 
 impl Sphere {
     fn build(&self) -> EvalResultF<shapes::Sphere> {
-        self.material
-            .build()
-            .map(|mat| shapes::Sphere::new(build_point(self.center), self.radius, mat))
+        self.material.build().and_then(|mat| {
+            self.radius.eval().and_then(|radius| {
+                build_point(&self.center).map(|center| shapes::Sphere::new(center, radius, mat))
+            })
+        })
     }
 }
 
@@ -104,16 +117,15 @@ impl Material {
     pub fn build(&self) -> EvalResultF<core::Material> {
         match self {
             Material::Lambertian(Lambertian { albedo }) => {
-                Ok(core::Material::new_lambertian(build_color(albedo.clone())))
+                build_color(albedo).map(|albedo| core::Material::new_lambertian(albedo))
             }
-            Material::Metal(Metal { albedo, fuzz }) => Ok(core::Material::new_metal(
-                build_color(albedo.clone()),
-                *fuzz,
-            )),
+            Material::Metal(Metal { albedo, fuzz }) => {
+                build_color(albedo).map(|albedo| core::Material::new_metal(albedo, *fuzz))
+            }
             Material::Dielectric(Dielectric { refraction_index }) => {
                 let index_result = match refraction_index {
-                    RefractionIndex::Custom(Expr::Num(value)) => Ok(*value),
-                    RefractionIndex::Custom(Expr::Complex(expr)) => dsl::Expr::new(expr).eval(),
+                    RefractionIndex::Custom(Number::Value(value)) => Ok(*value),
+                    RefractionIndex::Custom(Number::Expr(expr)) => Expr::eval_str(expr),
                     RefractionIndex::Label(RefractionIndexLabel::Glass) => {
                         Ok(refractive_index::GLASS)
                     }
@@ -157,7 +169,7 @@ pub struct Dielectric {
 #[serde(untagged)]
 pub enum RefractionIndex {
     Label(RefractionIndexLabel),
-    Custom(Expr),
+    Custom(Number),
 }
 
 #[derive(Deserialize)]
@@ -171,9 +183,19 @@ pub enum RefractionIndexLabel {
 
 #[derive(Deserialize)]
 #[serde(untagged)]
-pub enum Expr {
-    Num(Real),
-    Complex(String),
+#[derive(Clone)]
+pub enum Number {
+    Value(Real),
+    Expr(String),
+}
+
+impl Number {
+    fn eval(&self) -> EvalResult {
+        match self {
+            Number::Value(real) => Ok(*real),
+            Number::Expr(expr) => Expr::eval_str(expr),
+        }
+    }
 }
 
 #[derive(Deserialize)]
@@ -187,17 +209,23 @@ impl Scene {
     pub fn build(&self, config: &'static Config) -> EvalResultF<(CoreCamera, Hittable)> {
         let camera = self.camera.build(config);
         let objects: EvalResultF<Vec<Hittable>> = self.objects.iter().map(Object::build).collect();
-        objects.map(|shapes| {
-            let objects = HittableList::from_vec(shapes);
-            (camera, Hittable::List(objects))
+        camera.and_then(|camera| {
+            objects.map(|shapes| {
+                let objects = HittableList::from_vec(shapes);
+                (camera, Hittable::List(objects))
+            })
         })
     }
 }
 
-fn build_point(p: Point) -> math::Point {
-    math::Point::new(p[0], p[1], p[2])
+fn build_point(point: &Point) -> EvalResultF<math::Point> {
+    let p: EvalResultF<Vec<Real>> = point.iter().map(|x| x.eval()).collect();
+
+    p.map(|coords| math::Point::new(coords[0], coords[1], coords[2]))
 }
 
-fn build_color(p: Color) -> core::Color {
-    core::Color::new(p[0], p[1], p[2])
+fn build_color(color: &Color) -> EvalResultF<core::Color> {
+    let p: EvalResultF<math::Point> = build_point(color);
+
+    p.map(|point| core::Color::new(point.x(), point.y(), point.z()))
 }

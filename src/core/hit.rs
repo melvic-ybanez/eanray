@@ -1,7 +1,7 @@
 use crate::core::materials::Material;
-use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
+use crate::core::math::Real;
 use crate::core::ray::Ray;
 use crate::core::shapes::sphere::Sphere;
 
@@ -41,11 +41,11 @@ impl<'a> HitRecord<'a> {
     pub fn normal(&self) -> &UnitVec3D {
         &self.normal
     }
-    
+
     pub fn material(&self) -> &Material {
         &self.mat
     }
-    
+
     pub fn front_face(&self) -> bool {
         self.front_face
     }

@@ -16,7 +16,7 @@ impl<'a> Expr<'a> {
     pub fn eval_str(expr: &str) -> EvalResult {
         Expr::new(expr).eval()
     }
-    
+
     pub fn new(expr: &'a str) -> Self {
         Self {
             values: Vec::new(),
@@ -194,7 +194,7 @@ impl<'a> Expr<'a> {
                 {
                     Some((cstr, OpKind::Unary))
                 } else if supported_binary_ops.contains(*c) {
-                    if bin_count < self.values.len() - 1{
+                    if bin_count < self.values.len() - 1 {
                         self.tokens.next();
                         None
                     } else {

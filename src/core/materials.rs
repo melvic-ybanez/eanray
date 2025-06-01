@@ -1,6 +1,6 @@
 use crate::core::hit::HitRecord;
 use crate::core::math::{Real, Vec3D};
-use crate::core::{Color, Ray, math};
+use crate::core::{math, Color, Ray};
 
 pub enum Material {
     Lambertian(Lambertian),

@@ -1,5 +1,5 @@
-use crate::core::math::Real;
 use crate::core::math::vector::{Point, Vec3D};
+use crate::core::math::Real;
 
 #[derive(Clone)]
 pub struct Ray<'a> {
@@ -15,11 +15,11 @@ impl<'a> Ray<'a> {
     pub fn at(&self, t: Real) -> Point {
         self.origin + &self.direction * t
     }
-    
+
     pub fn origin(&self) -> &Point {
         self.origin
     }
-    
+
     pub fn direction(&self) -> &Vec3D {
         &self.direction
     }

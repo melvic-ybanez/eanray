@@ -9,9 +9,9 @@ impl Interval {
     pub fn new(min: Real, max: Real) -> Self {
         // let's not return an error for now
         if min > max {
-            return Self::new(max, min);       
+            return Self::new(max, min);
         }
-        
+
         Self { min, max }
     }
 
@@ -42,7 +42,7 @@ impl Interval {
     pub fn max(&self) -> Real {
         self.max
     }
-    
+
     pub fn clamp(&self, x: Real) -> Real {
         if x < self.min {
             self.min

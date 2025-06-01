@@ -1,12 +1,11 @@
-use crate::core::Camera as CoreCamera;
 use crate::core::camera::Image;
 use crate::core::materials::refractive_index;
-use crate::core::math::Real;
 use crate::core::math::vector::Coordinates;
-use crate::core::{self, Hittable, HittableList, math, shapes};
-use crate::dsl;
-use crate::dsl::Expr;
+use crate::core::math::Real;
+use crate::core::Camera as CoreCamera;
+use crate::core::{self, math, shapes, Hittable, HittableList};
 use crate::dsl::expr::{EvalResult, EvalResultF};
+use crate::dsl::Expr;
 use crate::settings::Config;
 use serde::Deserialize;
 

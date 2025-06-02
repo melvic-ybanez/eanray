@@ -1,6 +1,9 @@
 use crate::core::math::Real;
 use serde::Deserialize;
 
+pub type Vec3D = [Real; 3];
+pub type Point = Vec3D;
+
 #[derive(Deserialize, Clone)]
 pub struct Config {
     app: AppConfig,
@@ -57,23 +60,16 @@ impl CameraConfig {
 
 #[derive(Deserialize, Clone)]
 pub struct CameraDefaults {
-    center: [Real; 3],
-    focal_length: Real,
     samples_per_pixel: u32,
     antialiasing: bool,
     max_depth: u32,
     field_of_view: Real,
+    look_from: Point,
+    look_at: Point,
+    vup: Vec3D
 }
 
 impl CameraDefaults {
-    pub fn center(&self) -> [Real; 3] {
-        self.center
-    }
-
-    pub fn focal_length(&self) -> Real {
-        self.focal_length
-    }
-
     pub fn samples_per_pixel(&self) -> u32 {
         self.samples_per_pixel
     }
@@ -88,5 +84,17 @@ impl CameraDefaults {
 
     pub fn field_of_view(&self) -> Real {
         self.field_of_view
+    }
+
+    pub fn look_from(&self) -> Point {
+        self.look_from
+    }
+
+    pub fn look_at(&self) -> Point {
+        self.look_at
+    }
+
+    pub fn vup(&self) -> Vec3D {
+        self.vup
     }
 }

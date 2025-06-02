@@ -1,7 +1,7 @@
 use crate::core::color::Color;
 use crate::core::hit::Hittable;
 use crate::core::math::interval::Interval;
-use crate::core::math::vector::{Point, Vec3D};
+use crate::core::math::vector::{Point, UnitVec3D, Vec3D, VecLike};
 use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
 use crate::settings::Config;
@@ -10,13 +10,20 @@ use std::io::{self, Write};
 use std::time::Instant;
 
 pub struct Camera {
-    center: Point,
     focal_length: f64,
     image: Image,
     samples_per_pixel: u32,
     antialiasing: bool,
     max_depth: u32,
     field_of_view: Real,
+    look_from: Point,
+    look_at: Point,
+    vup: Vec3D,
+
+    // basis vectors
+    u: UnitVec3D,
+    v: UnitVec3D,
+    w: UnitVec3D,
 }
 
 impl Camera {
@@ -56,8 +63,8 @@ impl Camera {
                     let pixel_center = viewport.pixel_00_loc()
                         + (viewport.pixel_delta_u() * i as Real)
                         + (viewport.pixel_delta_v() * j as Real);
-                    let ray_direction = pixel_center - &self.center;
-                    let ray = Ray::new(&self.center, ray_direction);
+                    let ray_direction = pixel_center - self.center();
+                    let ray = Ray::new(&self.center(), ray_direction);
                     self.ray_color(&ray, self.max_depth, &world)
                 };
 
@@ -79,7 +86,7 @@ impl Camera {
         let pixel_sample = viewport.pixel_00_loc()
             + (viewport.pixel_delta_u() * (offset.x + i as Real))
             + (viewport.pixel_delta_v() * (offset.y + j as Real));
-        let origin = &self.center;
+        let origin = self.center();
         Ray::new(origin, pixel_sample - origin)
     }
 
@@ -114,41 +121,37 @@ impl Camera {
     fn pixel_sample_scale(&self) -> Real {
         1.0 / self.samples_per_pixel as Real
     }
+
+    fn center(&self) -> &Point {
+        &self.look_from
+    }
 }
 
 pub struct CameraBuilder {
-    center: Option<Point>,
-    focal_length: Option<f64>,
     image: Option<Image>,
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
     max_depth: Option<u32>,
     field_of_view: Option<Real>,
+    look_from: Option<Point>,
+    look_at: Option<Point>,
+    vup: Option<Vec3D>,
     config: &'static Config,
 }
 
 impl CameraBuilder {
     fn new(config: &'static Config) -> CameraBuilder {
         CameraBuilder {
-            center: None,
-            focal_length: None,
             image: None,
             samples_per_pixel: None,
             antialiasing: None,
             max_depth: None,
             field_of_view: None,
+            look_from: None,
+            look_at: None,
+            vup: None,
             config,
         }
-    }
-
-    pub fn center(&mut self, center: Point) -> &mut Self {
-        self.center = Some(center);
-        self
-    }
-
-    pub fn focal_length(&mut self, focal_length: f64) -> &mut Self {
-        self.focal_length = Some(focal_length);
-        self
     }
 
     pub fn image(&mut self, image: Image) -> &mut Self {
@@ -176,14 +179,47 @@ impl CameraBuilder {
         self
     }
 
+    pub fn look_from(&mut self, look_from: Point) -> &mut Self {
+        self.look_from = Some(look_from);
+        self
+    }
+
+    pub fn look_at(&mut self, look_at: Point) -> &mut Self {
+        self.look_at = Some(look_at);
+        self
+    }
+
+    pub fn vup(&mut self, vup: Vec3D) -> &mut Self {
+        self.vup = Some(vup);
+        self
+    }
+
     pub fn build(&self) -> Camera {
+        fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
+            VecLike::new(p[0], p[1], p[2])
+        }
+
         let defaults = self.config.app().scene().camera().defaults();
+        let look_from = self
+            .look_from
+            .clone()
+            .unwrap_or(build_vec_like(defaults.look_from()));
+        let look_at = self
+            .look_at
+            .clone()
+            .unwrap_or(build_vec_like(defaults.look_at()));
+        let looks_delta = &look_from - &look_at;
+        let vup = self.vup.clone().unwrap_or(build_vec_like(defaults.vup()));
+
+        let w = looks_delta.to_unit();
+        let u = vup.cross(&w.0).to_unit();
+
+        // technically, there's no need to normalize because it's a cross-product
+        // of two perpendicular unit vectors
+        let v = UnitVec3D(w.0.cross(&u.0));
+
         Camera {
-            center: self.center.clone().unwrap_or({
-                let center = defaults.center();
-                Point::new(center[0], center[1], center[2])
-            }),
-            focal_length: self.focal_length.unwrap_or(defaults.focal_length()),
+            focal_length: looks_delta.length(),
             image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
             samples_per_pixel: self
                 .samples_per_pixel
@@ -191,6 +227,12 @@ impl CameraBuilder {
             antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
             max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
             field_of_view: self.field_of_view.unwrap_or(defaults.field_of_view()),
+            look_from,
+            look_at,
+            vup,
+            w,
+            u,
+            v,
         }
     }
 }
@@ -256,11 +298,11 @@ impl<'a> Viewport<'a> {
     }
 
     pub fn left_to_right(&self) -> Vec3D {
-        Vec3D::new(self.width(), 0.0, 0.0)
+        self.width() * &self.camera.u.0
     }
 
     pub fn bottom_to_top(&self) -> Vec3D {
-        Vec3D::new(0.0, -self.height(), 0.0)
+        self.height() * &(-&self.camera.v.0)
     }
 
     pub fn pixel_delta_u(&self) -> Vec3D {
@@ -272,8 +314,8 @@ impl<'a> Viewport<'a> {
     }
 
     pub fn upper_left(&self) -> Point {
-        &self.camera.center
-            - Vec3D::new(0.0, 0.0, self.camera.focal_length)
+        self.camera.center()
+            - (self.camera.focal_length * &self.camera.w.0)
             - self.left_to_right() / 2.0
             - self.bottom_to_top() / 2.0
     }

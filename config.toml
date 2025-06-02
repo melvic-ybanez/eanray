@@ -5,9 +5,10 @@ name = "Eanray"
 output_file = "output.ppm"
 
 [app.scene.camera.defaults]
-center = [0, 0, 0]
-focal_length = 1.0
 samples_per_pixel = 10
 antialiasing = true
 max_depth = 10
 field_of_view = 90
+look_from = [0, 0, 0]
+look_at = [0, 0, -1]
+vup = [0, 1, 0]

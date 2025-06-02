@@ -1,11 +1,11 @@
 use crate::core::camera::Image;
 use crate::core::materials::refractive_index;
-use crate::core::math::vector::Coordinates;
 use crate::core::math::Real;
 use crate::core::Camera as CoreCamera;
 use crate::core::{self, math, shapes, Hittable, HittableList};
 use crate::dsl::expr::{EvalResult, EvalResultF};
 use crate::dsl::Expr;
+use crate::settings;
 use crate::settings::Config;
 use serde::Deserialize;
 
@@ -17,7 +17,6 @@ type Color = Vec3D;
 #[serde(deny_unknown_fields)]
 #[derive(Clone)]
 pub struct Camera {
-    center: Option<Point>,
     focal_length: Option<Real>,
     aspect_ratio: [Real; 2],
     image_width: u32,
@@ -25,6 +24,9 @@ pub struct Camera {
     antialiasing: Option<bool>,
     max_depth: Option<u32>,
     field_of_view: Option<Real>,
+    look_from: Option<Point>,
+    look_at: Option<Point>,
+    vup: Option<Vec3D>,
 }
 
 impl Camera {
@@ -35,27 +37,35 @@ impl Camera {
     fn build(&self, config: &'static Config) -> EvalResultF<CoreCamera> {
         let builder_config = config.clone();
         let defaults = builder_config.app().scene().camera().defaults();
-        let center = build_point(
-            &self
-                .center
-                .clone()
-                .unwrap_or(defaults.center().map(|comp| Number::Value(comp))),
-        );
 
-        center.map(|center| {
-            CoreCamera::builder(config)
-                .center(center)
-                .focal_length(self.focal_length.unwrap_or(defaults.focal_length()))
-                .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
-                .antialiasing(self.antialiasing.unwrap_or(defaults.antialiasing()))
-                .samples_per_pixel(
-                    self.samples_per_pixel
-                        .unwrap_or(defaults.samples_per_pixel()),
-                )
-                .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
-                .field_of_view(self.field_of_view.unwrap_or(defaults.field_of_view()))
-                .build()
-        })
+        fn build_vec_like_with_default<K>(
+            vec_like: &Option<Vec3D>,
+            default: settings::Point,
+        ) -> EvalResultF<math::VecLike<K>> {
+            build_vec_like(
+                &vec_like
+                    .clone()
+                    .unwrap_or(default.map(|comp| Number::Value(comp))),
+            )
+        }
+
+        let look_from = build_vec_like_with_default(&self.look_from, defaults.look_from())?;
+        let look_at = build_vec_like_with_default(&self.look_at, defaults.look_at())?;
+        let vup = build_vec_like_with_default(&self.vup, defaults.vup())?;
+
+        Ok(CoreCamera::builder(config)
+            .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
+            .antialiasing(self.antialiasing.unwrap_or(defaults.antialiasing()))
+            .samples_per_pixel(
+                self.samples_per_pixel
+                    .unwrap_or(defaults.samples_per_pixel()),
+            )
+            .max_depth(self.max_depth.unwrap_or(defaults.max_depth()))
+            .field_of_view(self.field_of_view.unwrap_or(defaults.field_of_view()))
+            .look_from(look_from)
+            .look_at(look_at)
+            .vup(vup)
+            .build())
     }
 }
 
@@ -96,11 +106,10 @@ pub struct Sphere {
 
 impl Sphere {
     fn build(&self) -> EvalResultF<shapes::Sphere> {
-        self.material.build().and_then(|mat| {
-            self.radius.eval().and_then(|radius| {
-                build_point(&self.center).map(|center| shapes::Sphere::new(center, radius, mat))
-            })
-        })
+        let mat = self.material.build()?;
+        let radius = self.radius.eval()?;
+        
+        build_vec_like(&self.center).map(|center| shapes::Sphere::new(center, radius, mat))
     }
 }
 
@@ -116,10 +125,10 @@ impl Material {
     pub fn build(&self) -> EvalResultF<core::Material> {
         match self {
             Material::Lambertian(Lambertian { albedo }) => {
-                build_color(albedo).map(|albedo| core::Material::new_lambertian(albedo))
+                build_vec_like(albedo).map(|albedo| core::Material::new_lambertian(albedo))
             }
             Material::Metal(Metal { albedo, fuzz }) => {
-                build_color(albedo).map(|albedo| core::Material::new_metal(albedo, *fuzz))
+                build_vec_like(albedo).map(|albedo| core::Material::new_metal(albedo, *fuzz))
             }
             Material::Dielectric(Dielectric { refraction_index }) => {
                 let index_result = match refraction_index {
@@ -217,14 +226,8 @@ impl Scene {
     }
 }
 
-fn build_point(point: &Point) -> EvalResultF<math::Point> {
+fn build_vec_like<K>(point: &Point) -> EvalResultF<math::VecLike<K>> {
     let p: EvalResultF<Vec<Real>> = point.iter().map(|x| x.eval()).collect();
 
-    p.map(|coords| math::Point::new(coords[0], coords[1], coords[2]))
-}
-
-fn build_color(color: &Color) -> EvalResultF<core::Color> {
-    let p: EvalResultF<math::Point> = build_point(color);
-
-    p.map(|point| core::Color::new(point.x(), point.y(), point.z()))
+    p.map(|coords| math::VecLike::new(coords[0], coords[1], coords[2]))
 }

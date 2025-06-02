@@ -8,6 +8,7 @@ pub type Real = f64;
 
 pub use vector::Point;
 pub use vector::Vec3D;
+pub use vector::VecLike;
 
 pub const INFINITY: Real = Real::INFINITY;
 pub const PI: Real = std::f64::consts::PI;

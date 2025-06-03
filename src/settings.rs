@@ -66,7 +66,9 @@ pub struct CameraDefaults {
     field_of_view: Real,
     look_from: Point,
     look_at: Point,
-    vup: Vec3D
+    vup: Vec3D,
+    defocus_angle: Real,
+    focus_distance: Real,
 }
 
 impl CameraDefaults {
@@ -96,5 +98,13 @@ impl CameraDefaults {
 
     pub fn vup(&self) -> Vec3D {
         self.vup
+    }
+    
+    pub fn defocus_angle(&self) -> Real {
+        self.defocus_angle
+    }
+    
+    pub fn focus_distance(&self) -> Real {
+        self.focus_distance
     }
 }

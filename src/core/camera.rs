@@ -5,6 +5,7 @@ use crate::core::math::vector::{Point, UnitVec3D, Vec3D, VecLike};
 use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
 use crate::settings::Config;
+use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
@@ -21,9 +22,14 @@ pub struct Camera {
     vup: Vec3D,
 
     // basis vectors
-    u: UnitVec3D,
-    v: UnitVec3D,
-    w: UnitVec3D,
+    right: UnitVec3D,
+    up: UnitVec3D,
+    out: UnitVec3D,
+
+    defocus_angle: Real,
+    focus_distance: Real,
+
+    defocus_disk: DefocusDisk,
 }
 
 impl Camera {
@@ -61,10 +67,10 @@ impl Camera {
                         * pixel_sample_scale
                 } else {
                     let pixel_center = viewport.pixel_00_loc()
-                        + (viewport.pixel_delta_u() * i as Real)
-                        + (viewport.pixel_delta_v() * j as Real);
+                        + (viewport.pixel_delta_horizontal() * i as Real)
+                        + (viewport.pixel_delta_vertical() * j as Real);
                     let ray_direction = pixel_center - self.center();
-                    let ray = Ray::new(&self.center(), ray_direction);
+                    let ray = Ray::from_ref_origin(self.center(), ray_direction);
                     self.ray_color(&ray, self.max_depth, &world)
                 };
 
@@ -84,10 +90,21 @@ impl Camera {
     fn get_ray(&self, i: u32, j: u32, viewport: &Viewport) -> Ray {
         let offset = Self::sample_square();
         let pixel_sample = viewport.pixel_00_loc()
-            + (viewport.pixel_delta_u() * (offset.x + i as Real))
-            + (viewport.pixel_delta_v() * (offset.y + j as Real));
-        let origin = self.center();
-        Ray::new(origin, pixel_sample - origin)
+            + (viewport.pixel_delta_horizontal() * (offset.x + i as Real))
+            + (viewport.pixel_delta_vertical() * (offset.y + j as Real));
+        let origin = if self.defocus_angle <= 0.0 {
+            Cow::Borrowed(self.center())
+        } else {
+            Cow::Owned(self.defocus_disk_sample())
+        };
+        let direction = pixel_sample - origin.as_ref();
+
+        Ray::new(origin, direction)
+    }
+
+    fn defocus_disk_sample(&self) -> Point {
+        let p = Vec3D::random_in_unit_disk();
+        self.center() + (&self.defocus_disk.horizontal * p.x) + (&self.defocus_disk.vertical * p.y)
     }
 
     /// A vector to a random point within half the unit square.
@@ -114,7 +131,7 @@ impl Camera {
     fn viewport(&self) -> Viewport {
         let theta = math::degrees_to_radians(self.field_of_view);
         let h = Real::tan(theta / 2.0);
-        let height = 2.0 * h * self.focal_length;
+        let height = 2.0 * h * self.focus_distance;
         Viewport::new(height, &self, &self.image)
     }
 
@@ -136,6 +153,8 @@ pub struct CameraBuilder {
     look_from: Option<Point>,
     look_at: Option<Point>,
     vup: Option<Vec3D>,
+    defocus_angle: Option<Real>,
+    focus_distance: Option<Real>,
     config: &'static Config,
 }
 
@@ -150,6 +169,8 @@ impl CameraBuilder {
             look_from: None,
             look_at: None,
             vup: None,
+            defocus_angle: None,
+            focus_distance: None,
             config,
         }
     }
@@ -194,6 +215,16 @@ impl CameraBuilder {
         self
     }
 
+    pub fn defocus_angle(&mut self, defocus_angle: Real) -> &mut Self {
+        self.defocus_angle = Some(defocus_angle);
+        self
+    }
+
+    pub fn focus_distance(&mut self, focus_distance: Real) -> &mut Self {
+        self.focus_distance = Some(focus_distance);
+        self
+    }
+
     pub fn build(&self) -> Camera {
         fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
             VecLike::new(p[0], p[1], p[2])
@@ -211,14 +242,14 @@ impl CameraBuilder {
         let looks_delta = &look_from - &look_at;
         let vup = self.vup.clone().unwrap_or(build_vec_like(defaults.vup()));
 
-        let w = looks_delta.to_unit();
-        let u = vup.cross(&w.0).to_unit();
+        let out = looks_delta.to_unit();
+        let right = vup.cross(&out.0).to_unit();
 
         // technically, there's no need to normalize because it's a cross-product
         // of two perpendicular unit vectors
-        let v = UnitVec3D(w.0.cross(&u.0));
+        let up = UnitVec3D(out.0.cross(&right.0));
 
-        Camera {
+        let mut camera = Camera {
             focal_length: looks_delta.length(),
             image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
             samples_per_pixel: self
@@ -230,26 +261,39 @@ impl CameraBuilder {
             look_from,
             look_at,
             vup,
-            w,
-            u,
-            v,
-        }
+            out,
+            right,
+            up,
+            defocus_angle: self.defocus_angle.unwrap_or(defaults.defocus_angle()),
+            focus_distance: self.focus_distance.unwrap_or(defaults.focus_distance()),
+            defocus_disk: DefocusDisk::empty(),
+        };
+
+        camera.defocus_disk = DefocusDisk::from_camera(&camera);
+        camera
     }
 }
 
 #[derive(Clone)]
 pub struct Image {
     width: u32,
+    height: u32,
 
     // Ideal aspect ratio, not the actual one.
     aspect_ratio: f64,
+    actual_aspect_ratio: f64,
 }
 
 impl Image {
     pub fn new(width: u32, aspect_ratio: f64) -> Image {
+        let height = (width as f64 / aspect_ratio) as u32;
+        let height = if height < 1 { 1 } else { height };
+
         Image {
             width,
+            height,
             aspect_ratio,
+            actual_aspect_ratio: width as f64 / height as f64,
         }
     }
 
@@ -265,27 +309,47 @@ impl Image {
     /// because [`self.height`] truncates decimal points. [`self.height`] also
     /// isn't allowed to have a value of less than 1.
     pub fn actual_aspect_ratio(&self) -> f64 {
-        self.width as f64 / self.height() as f64
+        self.actual_aspect_ratio
     }
 
     pub fn height(&self) -> u32 {
-        let height = (self.width as f64 / self.aspect_ratio) as u32;
-        if height < 1 { 1 } else { height }
+        self.height
     }
 }
 
-struct Viewport<'a> {
+struct Viewport {
     height: f64,
-    camera: &'a Camera,
-    image: &'a Image,
+    width: f64,
+    left_to_right: Vec3D,
+    top_to_bottom: Vec3D,
+    pixel_delta_horizontal: Vec3D,
+    pixel_delta_vertical: Vec3D,
+    upper_left: Point,
+    pixel_00_loc: Point,
 }
 
-impl<'a> Viewport<'a> {
-    pub fn new(height: f64, camera: &'a Camera, image: &'a Image) -> Viewport<'a> {
+impl Viewport {
+    pub fn new(height: f64, camera: &Camera, image: &Image) -> Viewport {
+        let width = height * image.actual_aspect_ratio();
+        let left_to_right = width * &camera.right.0;
+        let top_to_bottom = height * &(-&camera.up.0);
+        let pixel_delta_horizontal = &left_to_right / image.width as Real;
+        let pixel_delta_vertical = &top_to_bottom / image.height as Real;
+        let upper_left = camera.center()
+            - (camera.focus_distance * &camera.out.0)
+            - &left_to_right / 2.0
+            - &top_to_bottom / 2.0;
+        let pixel_00_loc = &upper_left + (&pixel_delta_horizontal + &pixel_delta_vertical) * 0.5;
+
         Viewport {
             height,
-            camera,
-            image,
+            width,
+            left_to_right,
+            top_to_bottom,
+            pixel_delta_horizontal,
+            pixel_delta_vertical,
+            upper_left,
+            pixel_00_loc,
         }
     }
 
@@ -294,33 +358,54 @@ impl<'a> Viewport<'a> {
     }
 
     pub fn width(&self) -> f64 {
-        self.height * self.image.actual_aspect_ratio()
+        self.width
     }
 
-    pub fn left_to_right(&self) -> Vec3D {
-        self.width() * &self.camera.u.0
+    pub fn left_to_right(&self) -> &Vec3D {
+        &self.left_to_right
     }
 
-    pub fn bottom_to_top(&self) -> Vec3D {
-        self.height() * &(-&self.camera.v.0)
+    pub fn top_to_bottom(&self) -> &Vec3D {
+        &self.top_to_bottom
     }
 
-    pub fn pixel_delta_u(&self) -> Vec3D {
-        self.left_to_right() / self.image.width as Real
+    pub fn pixel_delta_horizontal(&self) -> &Vec3D {
+        &self.pixel_delta_horizontal
     }
 
-    pub fn pixel_delta_v(&self) -> Vec3D {
-        self.bottom_to_top() / self.image.height() as Real
+    pub fn pixel_delta_vertical(&self) -> &Vec3D {
+        &self.pixel_delta_vertical
     }
 
-    pub fn upper_left(&self) -> Point {
-        self.camera.center()
-            - (self.camera.focal_length * &self.camera.w.0)
-            - self.left_to_right() / 2.0
-            - self.bottom_to_top() / 2.0
+    pub fn upper_left(&self) -> &Point {
+        &self.upper_left
     }
 
-    pub fn pixel_00_loc(&self) -> Point {
-        self.upper_left() + (self.pixel_delta_u() + self.pixel_delta_v()) * 0.5
+    pub fn pixel_00_loc(&self) -> &Point {
+        &self.pixel_00_loc
+    }
+}
+
+struct DefocusDisk {
+    horizontal: Vec3D,
+    vertical: Vec3D,
+}
+
+impl DefocusDisk {
+    fn empty() -> Self {
+        Self {
+            horizontal: Vec3D::zero(),
+            vertical: Vec3D::zero(),
+        }
+    }
+
+    fn from_camera(camera: &Camera) -> Self {
+        let defocus_radius =
+            camera.focus_distance * math::degrees_to_radians(camera.defocus_angle / 2.0).tan();
+
+        Self {
+            horizontal: &camera.right.0 * defocus_radius,
+            vertical: &camera.up.0 * defocus_radius,
+        }
     }
 }

@@ -17,7 +17,6 @@ type Color = Vec3D;
 #[serde(deny_unknown_fields)]
 #[derive(Clone)]
 pub struct Camera {
-    focal_length: Option<Real>,
     aspect_ratio: [Real; 2],
     image_width: u32,
     samples_per_pixel: Option<u32>,
@@ -26,6 +25,8 @@ pub struct Camera {
     field_of_view: Option<Real>,
     look_from: Option<Point>,
     look_at: Option<Point>,
+    defocus_angle: Option<Number>,
+    focus_distance: Option<Number>,
     vup: Option<Vec3D>,
 }
 
@@ -52,6 +53,16 @@ impl Camera {
         let look_from = build_vec_like_with_default(&self.look_from, defaults.look_from())?;
         let look_at = build_vec_like_with_default(&self.look_at, defaults.look_at())?;
         let vup = build_vec_like_with_default(&self.vup, defaults.vup())?;
+        let defocus_angle = self
+            .defocus_angle
+            .clone()
+            .unwrap_or(Number::Value(defaults.defocus_angle()))
+            .eval()?;
+        let focus_distance = self
+            .focus_distance
+            .clone()
+            .unwrap_or(Number::Value(defaults.focus_distance()))
+            .eval()?;
 
         Ok(CoreCamera::builder(config)
             .image(Image::new(self.image_width, self.ideal_aspect_ratio()))
@@ -64,6 +75,8 @@ impl Camera {
             .field_of_view(self.field_of_view.unwrap_or(defaults.field_of_view()))
             .look_from(look_from)
             .look_at(look_at)
+            .defocus_angle(defocus_angle)
+            .focus_distance(focus_distance)
             .vup(vup)
             .build())
     }
@@ -108,7 +121,7 @@ impl Sphere {
     fn build(&self) -> EvalResultF<shapes::Sphere> {
         let mat = self.material.build()?;
         let radius = self.radius.eval()?;
-        
+
         build_vec_like(&self.center).map(|center| shapes::Sphere::new(center, radius, mat))
     }
 }

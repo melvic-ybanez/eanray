@@ -1,27 +1,33 @@
-use crate::dsl::ast::Scene;
+use crate::interface::lua::SceneSchema;
 use config::{Config, File};
+use mlua::{FromLua, Lua, LuaSerdeExt};
+use serde::{Deserialize, Serialize};
 use std::io;
 use std::io::Read;
 
 mod core;
 mod dsl;
+pub mod interface;
 mod settings;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> mlua::Result<()> {
+    let mut scene_script = String::new();
+    io::stdin().read_to_string(&mut scene_script)?;
+
+    let lua = Lua::new();
+    interface::lua::set_engine(&lua)?;
+
+    let scene_table = lua.load(scene_script).eval()?;
+    let scene: SceneSchema = lua.from_value(scene_table)?;
+
     let settings = Config::builder()
         .add_source(File::with_name("config"))
-        .build()?
-        .try_deserialize::<settings::Config>()?;
+        .build()
+        .map_err(mlua::Error::external)?
+        .try_deserialize::<settings::Config>()
+        .map_err(mlua::Error::external)?;
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
 
-    let mut raw_scene = String::new();
-    io::stdin().read_to_string(&mut raw_scene)?;
-    let scene: Scene = serde_json::from_str(&raw_scene)?;
-    match scene.build(settings) {
-        Ok((camera, world)) => camera.render(world, settings)?,
-        Err(message) => println!("{message}"),
-    }
-
-    Ok(())
+    scene.render(settings).map_err(mlua::Error::external)
 }

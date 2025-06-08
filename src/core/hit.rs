@@ -4,6 +4,7 @@ use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::Real;
 use crate::core::ray::Ray;
 use crate::core::shapes::sphere::Sphere;
+use serde::{Deserialize, Serialize};
 
 pub struct HitRecord<'a> {
     p: Point,
@@ -57,6 +58,8 @@ pub struct Mat<'a>(pub &'a Material);
 pub struct T(pub Real);
 pub struct FrontFace(pub bool);
 
+// TODO: See if we can just use HittableList in all cases and drop the Sphere variant
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Hittable {
     Sphere(Sphere),
     List(HittableList),
@@ -71,6 +74,7 @@ impl Hittable {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HittableList {
     objects: Vec<Hittable>,
 }

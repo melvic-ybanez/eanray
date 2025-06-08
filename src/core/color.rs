@@ -1,8 +1,9 @@
+use serde::{Deserialize, Serialize};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{CanAdd, Vec3D, VecLike};
 use crate::core::math::Real;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ColorKind;
 
 pub type Color = VecLike<ColorKind>;

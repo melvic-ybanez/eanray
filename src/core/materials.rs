@@ -1,7 +1,9 @@
+use serde::{Deserialize, Serialize};
 use crate::core::hit::HitRecord;
 use crate::core::math::{Real, Vec3D};
 use crate::core::{math, Color, Ray};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
@@ -30,6 +32,7 @@ impl Material {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Lambertian {
     albedo: Color,
 }
@@ -52,6 +55,7 @@ impl Lambertian {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Metal {
     albedo: Color,
     fuzz: Real,
@@ -74,6 +78,7 @@ impl Metal {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Dielectric {
     refraction_index: Real,
 }

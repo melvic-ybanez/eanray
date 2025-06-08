@@ -37,7 +37,7 @@ impl Camera {
         CameraBuilder::new(config)
     }
 
-    pub fn render(&self, world: Hittable, config: &Config) -> io::Result<()> {
+    pub fn render(&self, world: &Hittable, config: &Config) -> io::Result<()> {
         let start = Instant::now();
         let ppm_file = File::create(config.app().scene().output_file())?;
         let viewport = self.viewport();
@@ -61,7 +61,7 @@ impl Camera {
                     // compute the average color from the sample rays
                     (0..self.samples_per_pixel)
                         .map(|_| {
-                            self.ray_color(&self.get_ray(i, j, &viewport), self.max_depth, &world)
+                            self.ray_color(&self.get_ray(i, j, &viewport), self.max_depth, world)
                         })
                         .fold(Color::black(), |acc, color| acc + color)
                         * pixel_sample_scale
@@ -71,7 +71,7 @@ impl Camera {
                         + (viewport.pixel_delta_vertical() * j as Real);
                     let ray_direction = pixel_center - self.center();
                     let ray = Ray::from_ref_origin(self.center(), ray_direction);
-                    self.ray_color(&ray, self.max_depth, &world)
+                    self.ray_color(&ray, self.max_depth, world)
                 };
 
                 ppm_content += &format!("{}\n", pixel_color.to_bytes_string());

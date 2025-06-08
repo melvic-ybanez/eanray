@@ -3,17 +3,18 @@ use crate::core::math::Real;
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Neg, Sub};
+use serde::{Deserialize, Serialize};
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VecKind;
 
-#[derive(Clone)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PointKind;
 
 pub type Vec3D = VecLike<VecKind>;
 pub type Point = VecLike<PointKind>;
 
-#[derive(Clone)]
+#[derive(Clone, Serialize, Deserialize, Debug)]
 pub struct VecLike<Kind> {
     pub(in crate::core) x: Real,
     pub(in crate::core) y: Real,

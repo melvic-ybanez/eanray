@@ -13,9 +13,8 @@ type Vec3D = [Number; 3];
 type Point = Vec3D;
 type Color = Vec3D;
 
-#[derive(Deserialize)]
+#[derive(Clone, Deserialize)]
 #[serde(deny_unknown_fields)]
-#[derive(Clone)]
 pub struct Camera {
     aspect_ratio: [Real; 2],
     image_width: u32,

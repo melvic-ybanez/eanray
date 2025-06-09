@@ -33,7 +33,7 @@ for a = -11, 10 do
         sphere_material = Dielectric:new_glass()
       end
 
-      scene.add_object(Sphere:new(center, 0.2, sphere_material))
+      scene.insert(Sphere:new(center, 0.2, sphere_material))
     end
   end
 end

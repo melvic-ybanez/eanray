@@ -134,13 +134,14 @@ fn new_dielectric_table(lua: &Lua) -> Result<Table> {
         }),
     )?;
 
-    table.set(
-        "new_glass",
-        lua.create_function(|lua, _: Table| {
-            let dielectric = Material::Dielectric(Dielectric::new(refractive_index::GLASS));
-            Ok(lua.to_value(&dielectric))
-        })?,
-    )?;
+    let refractive_index = lua.create_table()?;
+    refractive_index.set("GLASS", refractive_index::GLASS)?;
+    refractive_index.set("VACUUM", refractive_index::VACUUM)?;
+    refractive_index.set("AIR", refractive_index::AIR)?;
+    refractive_index.set("WATER", refractive_index::WATER)?;
+    refractive_index.set("DIAMOND", refractive_index::DIAMOND)?;
+    
+    table.set("RefractiveIndex", refractive_index)?;
 
     Ok(table)
 }

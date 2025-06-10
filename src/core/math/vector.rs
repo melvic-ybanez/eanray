@@ -1,9 +1,9 @@
 use crate::core::math;
 use crate::core::math::Real;
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Mul, Neg, Sub};
-use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VecKind;
@@ -36,6 +36,10 @@ impl<K> VecLike<K> {
 
     pub fn zero() -> Self {
         Self::new(0.0, 0.0, 0.0)
+    }
+
+    pub fn random() -> VecLike<K> {
+        VecLike::new(math::random(), math::random(), math::random())
     }
 }
 
@@ -110,15 +114,15 @@ impl Vec3D {
     /// is zero)
     pub fn random_in_unit_disk() -> Vec3D {
         loop {
-            let v = Vec3D::new(math::random_range(-1.0, 1.0), math::random_range(-1.0, 1.0), 0.0);
+            let v = Vec3D::new(
+                math::random_range(-1.0, 1.0),
+                math::random_range(-1.0, 1.0),
+                0.0,
+            );
             if v.length_squared() < 1.0 {
-                return v
+                return v;
             }
         }
-    }
-
-    fn random() -> Vec3D {
-        Vec3D::new(math::random(), math::random(), math::random())
     }
 
     fn random_range(min: Real, max: Real) -> Vec3D {
@@ -176,7 +180,7 @@ impl<V: CanAdd> Add<&VecLike<V>> for VecLike<V> {
 
 impl<V: CanAdd> Add<&VecLike<V>> for &VecLike<V> {
     type Output = VecLike<V>;
-    
+
     fn add(self, rhs: &VecLike<V>) -> Self::Output {
         VecLike::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
     }
@@ -289,24 +293,24 @@ impl<K> Mul<VecLike<K>> for VecLike<K> {
 impl<K> Mul<Real> for &VecLike<K> {
     type Output = VecLike<K>;
 
-    fn mul(self, t: Real) -> Self::Output {
-        self * VecLike::new(t, t, t)
+    fn mul(self, scalar: Real) -> Self::Output {
+        self * VecLike::new(scalar, scalar, scalar)
     }
 }
 
 impl<K> Mul<Real> for VecLike<K> {
     type Output = VecLike<K>;
 
-    fn mul(self, t: Real) -> Self::Output {
-        &self * VecLike::new(t, t, t)
+    fn mul(self, scalar: Real) -> Self::Output {
+        &self * VecLike::new(scalar, scalar, scalar)
     }
 }
 
 impl<K> Mul<&VecLike<K>> for Real {
     type Output = VecLike<K>;
 
-    fn mul(self, rhs: &VecLike<K>) -> Self::Output {
-        rhs * self
+    fn mul(self, scalar: &VecLike<K>) -> Self::Output {
+        scalar * self
     }
 }
 

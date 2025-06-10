@@ -1,5 +1,5 @@
 local Sphere = engine.shapes.Sphere
-local Point = engine.Point
+local Point = engine.math.Point
 local Lambertian = engine.materials.Lambertian
 local Dielectric = engine.materials.Dielectric
 local RefractiveIndex = Dielectric.RefractiveIndex

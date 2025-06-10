@@ -1,13 +1,15 @@
 use crate::core::camera::Image;
 use crate::core::color::ColorKind;
 use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
-use crate::core::math::vector::{PointKind, VecKind};
+use crate::core::math::vector::{CanAdd, PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::Sphere;
-use crate::core::{Camera, Color, Hittable, HittableList, Material};
+use crate::core::{math, Camera, Color, Hittable, HittableList, Material};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{Function, Lua, LuaSerdeExt, Result, Table, Value};
+use mlua::{
+    Function, Lua, LuaSerdeExt, MetaMethod, Result, Table, UserData, UserDataMethods, Value,
+};
 use serde::{Deserialize, Serialize};
 use std::io;
 
@@ -73,20 +75,76 @@ impl CameraSchema {
     }
 }
 
+impl UserData for Vec3D {
+    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
+        add_addable_vec_methods(methods);
+        methods.add_method("length", |_, this, ()| Ok(this.length()))
+    }
+}
+
+impl UserData for Color {
+    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
+        add_addable_vec_methods(methods);
+    }
+}
+
+impl UserData for Point {
+    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
+        methods.add_meta_method(MetaMethod::Sub, |lua, this, other: Value| {
+            let point: Point = lua.from_value(other)?;
+            Ok(this - point)
+        });
+    }
+}
+
+fn add_addable_vec_methods<K: 'static + CanAdd + Clone, M: UserDataMethods<VecLike<K>>>(
+    methods: &mut M,
+) where
+    VecLike<K>: UserData,
+{
+    methods.add_meta_method(MetaMethod::Mul, |lua, this, rhs| match rhs {
+        Value::Integer(scalar) => Ok(this * scalar as Real),
+        Value::Number(scalar) => Ok(this * scalar),
+        Value::UserData(userdata) => {
+            let other_color: VecLike<K> = userdata.borrow::<VecLike<K>>()?.clone();
+            Ok(this * other_color)
+        }
+        _ => Err(mlua::Error::RuntimeError("Invalid RHS".into())),
+    });
+    methods.add_meta_method(MetaMethod::Add, |lua, this, other: Value| {
+        let other_color: VecLike<K> = lua.from_value(other)?;
+        Ok(this + other_color)
+    });
+}
+
 fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;
     table.set("new", function?)?;
     Ok(table)
 }
 
-fn new_vec_like_table<K>(lua: &Lua) -> Result<Table> {
-    new_table(
+fn new_vec_like_table<K: 'static>(lua: &Lua) -> Result<Table>
+where
+    VecLike<K>: UserData,
+{
+    let table = new_table(
         lua,
         lua.create_function(|lua, (_, x, y, z): (Table, Real, Real, Real)| {
-            let vec3d = VecLike::<K>::new(x, y, z);
-            Ok(lua.to_value(&vec3d))
+            let vec_like: VecLike<K> = VecLike::<K>::new(x, y, z);
+            Ok(lua.create_ser_userdata(vec_like))
         }),
-    )
+    )?;
+
+    table.set("ZERO", lua.to_value(&VecLike::<K>::zero())?)?;
+    table.set(
+        "random",
+        lua.create_function(|lua, ()| {
+            let vec_like: VecLike<K> = VecLike::<K>::random();
+            Ok(lua.create_ser_userdata(vec_like))
+        })?,
+    )?;
+
+    Ok(table)
 }
 
 fn new_sphere_table(lua: &Lua) -> Result<Table> {
@@ -140,28 +198,47 @@ fn new_dielectric_table(lua: &Lua) -> Result<Table> {
     refractive_index.set("AIR", refractive_index::AIR)?;
     refractive_index.set("WATER", refractive_index::WATER)?;
     refractive_index.set("DIAMOND", refractive_index::DIAMOND)?;
-    
+
     table.set("RefractiveIndex", refractive_index)?;
 
     Ok(table)
 }
 
-pub fn set_engine(lua: &Lua) -> Result<()> {
-    let engine = lua.create_table()?;
+fn new_math_table(lua: &Lua) -> Result<Table> {
+    let table = lua.create_table()?;
 
-    engine.set("Vec", new_vec_like_table::<VecKind>(lua)?)?;
-    engine.set("Point", new_vec_like_table::<PointKind>(lua)?)?;
-    engine.set("Color", new_vec_like_table::<ColorKind>(lua)?)?;
+    table.set("Vec", new_vec_like_table::<VecKind>(lua)?)?;
 
+    table.set("Point", new_vec_like_table::<PointKind>(lua)?)?;
+    table.set("random", lua.create_function(|_, ()| Ok(math::random()))?)?;
+    table.set(
+        "random_range",
+        lua.create_function(|_, (min, max)| Ok(math::random_range(min, max)))?,
+    )?;
+    Ok(table)
+}
+
+fn new_materials_table(lua: &Lua) -> Result<Table> {
     let materials = lua.create_table()?;
     materials.set("Lambertian", new_lambertian_table(lua)?)?;
     materials.set("Metal", new_metal_table(lua)?)?;
     materials.set("Dielectric", new_dielectric_table(lua)?)?;
-    engine.set("materials", materials)?;
+    Ok(materials)
+}
 
+fn new_shapes_table(lua: &Lua) -> Result<Table> {
     let shapes = lua.create_table()?;
     shapes.set("Sphere", new_sphere_table(lua)?)?;
-    engine.set("shapes", shapes)?;
+    Ok(shapes)
+}
+
+pub fn set_engine(lua: &Lua) -> Result<()> {
+    let engine = lua.create_table()?;
+
+    engine.set("math", new_math_table(lua)?)?;
+    engine.set("Color", new_vec_like_table::<ColorKind>(lua)?)?;
+    engine.set("materials", new_materials_table(lua)?)?;
+    engine.set("shapes", new_shapes_table(lua)?)?;
 
     lua.globals().set("engine", engine)?;
 

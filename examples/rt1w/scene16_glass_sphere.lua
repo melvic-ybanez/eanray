@@ -2,7 +2,7 @@ local Sphere = engine.shapes.Sphere
 local Lambertian = engine.materials.Lambertian
 local Dielectric = engine.materials.Dielectric
 local Metal = engine.materials.Metal
-local Point = engine.Point
+local Point = engine.math.Point
 local Color = engine.Color
 
 local camera = {}

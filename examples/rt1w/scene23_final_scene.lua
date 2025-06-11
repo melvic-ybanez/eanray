@@ -51,7 +51,7 @@ camera.max_depth = 50
 
 camera.field_of_view = 20
 camera.look_from = Point:new(13, 2, 3)
-camera.look_at = Point.zero()
+camera.look_at = Point.ZERO
 camera.vup = Vec:new(0, 1, 0)
 
 camera.defocus_angle = 0.6

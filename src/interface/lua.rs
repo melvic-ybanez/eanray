@@ -7,9 +7,7 @@ use crate::core::shapes::Sphere;
 use crate::core::{math, Camera, Color, Hittable, HittableList, Material};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{
-    Function, Lua, LuaSerdeExt, MetaMethod, Result, Table, UserData, UserDataMethods, Value,
-};
+use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, MetaMethod, Result, Table, UserData, UserDataMethods, Value};
 use serde::{Deserialize, Serialize};
 use std::io;
 
@@ -102,7 +100,7 @@ fn add_addable_vec_methods<K: 'static + CanAdd + Clone, M: UserDataMethods<VecLi
 ) where
     VecLike<K>: UserData,
 {
-    methods.add_meta_method(MetaMethod::Mul, |lua, this, rhs| match rhs {
+    methods.add_meta_method(MetaMethod::Mul, |_, this, rhs| match rhs {
         Value::Integer(scalar) => Ok(this * scalar as Real),
         Value::Number(scalar) => Ok(this * scalar),
         Value::UserData(userdata) => {
@@ -164,8 +162,8 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
 fn new_lambertian_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (_, albedo): (Table, Value)| {
-            let albedo: Color = lua.from_value(albedo)?;
+        lua.create_function(|lua, (_, albedo): (Table, AnyUserData)| {
+            let albedo: Color = albedo.borrow::<Color>()?.clone();
             let lambertian = Material::Lambertian(Lambertian::new(albedo));
             Ok(lua.to_value(&lambertian))
         }),
@@ -175,8 +173,8 @@ fn new_lambertian_table(lua: &Lua) -> Result<Table> {
 fn new_metal_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (_, albedo, fuzz): (Table, Value, Real)| {
-            let albedo: Color = lua.from_value(albedo)?;
+        lua.create_function(|lua, (_, albedo, fuzz): (Table, AnyUserData, Real)| {
+            let albedo: Color = albedo.borrow::<Color>()?.clone();
             let metal = Material::Metal(Metal::new(albedo, fuzz));
             Ok(lua.to_value(&metal))
         }),

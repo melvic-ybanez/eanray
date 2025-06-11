@@ -282,7 +282,7 @@ fn new_object_list_table(lua: &Lua) -> Result<Table> {
 fn new_scene_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (this, camera, objects): (Table, Value, Value)| {
+        lua.create_function(|lua, (_, camera, objects): (Table, Value, Value)| {
             let camera: CameraSchema = lua.from_value(camera)?;
             let objects: Vec<Hittable> = lua.from_value(objects)?;
             let scene: SceneSchema = SceneSchema::new(camera, objects);

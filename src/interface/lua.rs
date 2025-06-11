@@ -7,7 +7,10 @@ use crate::core::shapes::Sphere;
 use crate::core::{math, Camera, Color, Hittable, HittableList, Material};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, MetaMethod, Result, Table, UserData, UserDataMethods, Value};
+use mlua::{
+    AnyUserData, Function, Lua, LuaSerdeExt, MetaMethod, Result, Table, UserData, UserDataMethods,
+    Value,
+};
 use serde::{Deserialize, Serialize};
 use std::io;
 
@@ -18,6 +21,10 @@ pub struct SceneSchema {
 }
 
 impl SceneSchema {
+    fn new(camera: CameraSchema, objects: Vec<Hittable>) -> Self {
+        Self { camera, objects }
+    }
+
     pub fn render(&self, config: &'static Config) -> io::Result<()> {
         let camera = self.camera.build(config);
         camera.render(
@@ -43,6 +50,22 @@ struct CameraSchema {
 }
 
 impl CameraSchema {
+    fn new(aspect_ratio: Real, image_width: u32) -> Self {
+        Self {
+            aspect_ratio,
+            image_width,
+            samples_per_pixel: None,
+            antialiasing: None,
+            max_depth: None,
+            field_of_view: None,
+            look_from: None,
+            look_at: None,
+            defocus_angle: None,
+            focus_distance: None,
+            vup: None,
+        }
+    }
+
     fn build(&self, config: &'static Config) -> Camera {
         let defaults = config.app().scene().camera().defaults();
 
@@ -230,6 +253,44 @@ fn new_shapes_table(lua: &Lua) -> Result<Table> {
     Ok(shapes)
 }
 
+fn new_camera_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(|lua, (_, image_width, aspect_ratio): (Table, u32, Real)| {
+            let camera = CameraSchema::new(aspect_ratio, image_width);
+            Ok(lua.to_value(&camera))
+        }),
+    )
+}
+
+fn new_object_list_table(lua: &Lua) -> Result<Table> {
+    let objects = new_table(lua, lua.create_function(|_, this: Table| Ok(this)))?;
+    objects.set(
+        "add",
+        lua.create_function(|lua, (this, object): (Table, Value)| {
+            // Let's do a round-trip conversion for now to validate the structure.
+            // This may not be the cleanest solution.
+            let hittable: Hittable = lua.from_value(object)?;
+
+            let next_index = this.raw_len() + 1;
+            this.set(next_index, lua.to_value(&hittable)?)
+        })?,
+    )?;
+    Ok(objects)
+}
+
+fn new_scene_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(|lua, (this, camera, objects): (Table, Value, Value)| {
+            let camera: CameraSchema = lua.from_value(camera)?;
+            let objects: Vec<Hittable> = lua.from_value(objects)?;
+            let scene: SceneSchema = SceneSchema::new(camera, objects);
+            Ok(lua.to_value(&scene))
+        }),
+    )
+}
+
 pub fn set_engine(lua: &Lua) -> Result<()> {
     let engine = lua.create_table()?;
 
@@ -237,6 +298,9 @@ pub fn set_engine(lua: &Lua) -> Result<()> {
     engine.set("Color", new_vec_like_table::<ColorKind>(lua)?)?;
     engine.set("materials", new_materials_table(lua)?)?;
     engine.set("shapes", new_shapes_table(lua)?)?;
+    engine.set("Camera", new_camera_table(lua)?)?;
+    engine.set("ObjectList", new_object_list_table(lua)?)?;
+    engine.set("Scene", new_scene_table(lua)?)?;
 
     lua.globals().set("engine", engine)?;
 

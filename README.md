@@ -2,8 +2,8 @@
 
 # Eanray
 
-Eanray is a simple Ray Tracer that takes a scene description (in a form of a script) and outputs a
-PPM file representing the rendered image.
+Eanray is a simple Ray Tracer that converts a scene description (in a form of a script) into
+a PPM file representing the rendered image.
 
 ## Features
 

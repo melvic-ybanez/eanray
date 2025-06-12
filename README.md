@@ -18,6 +18,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Antialising
 * Depth of Field (Defocus Blur)
 * Camera System
+* Lua scripting for the Scene Descriptions
 
 ## How To Run
 

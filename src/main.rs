@@ -2,7 +2,7 @@ use crate::interface::lua::SceneSchema;
 use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
 use serde::Serialize;
-use std::io;
+use std::{fs, io};
 use std::io::Read;
 
 mod core;
@@ -15,6 +15,9 @@ fn main() -> mlua::Result<()> {
 
     let lua = Lua::new();
     interface::lua::set_engine(&lua)?;
+    
+    let helpers = fs::read_to_string("scripts/helpers.lua")?;
+    lua.load(&helpers).exec()?;
 
     let scene_table = lua.load(scene_script).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;

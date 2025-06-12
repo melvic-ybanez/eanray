@@ -38,9 +38,11 @@ for a = -11, 10 do
 end
 
 make_ground()
-objects:add(Sphere:new(Point:new(0, 1, 0), 1.0, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
-objects:add(Sphere:new(Point:new(-4, 1, 0), 1.0, Lambertian:new(Color:new(0.4, 0.2, 0.1))))
-objects:add(Sphere:new(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
+objects.add_all(
+    Sphere:new(Point:new(0, 1, 0), 1.0, Dielectric:new(Dielectric.RefractiveIndex.GLASS)),
+    Sphere:new(Point:new(-4, 1, 0), 1.0, Lambertian:new(Color:new(0.4, 0.2, 0.1))),
+    Sphere:new(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0))
+)
 
 local camera = engine.Camera:new(1200, 16 / 9)
 camera.samples_per_pixel = 500

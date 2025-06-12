@@ -1,6 +1,6 @@
-use std::borrow::Cow;
 use crate::core::math::vector::{Point, Vec3D};
 use crate::core::math::Real;
+use std::borrow::Cow;
 
 #[derive(Clone)]
 pub struct Ray<'a> {
@@ -12,7 +12,7 @@ impl<'a> Ray<'a> {
     pub fn new(origin: Cow<'a, Point>, direction: Vec3D) -> Ray<'a> {
         Ray { origin, direction }
     }
-    
+
     pub fn from_ref_origin(origin: &'a Point, direction: Vec3D) -> Ray<'a> {
         Self::new(Cow::Borrowed(origin), direction)
     }

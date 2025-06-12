@@ -1,10 +1,10 @@
-use serde::{Deserialize, Serialize};
 use crate::core::hit::{self, HitRecord};
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::Real;
 use crate::core::ray::Ray;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Sphere {

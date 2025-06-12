@@ -1,12 +1,11 @@
 use crate::interface::lua::SceneSchema;
 use config::{Config, File};
-use mlua::{FromLua, Lua, LuaSerdeExt};
-use serde::{Deserialize, Serialize};
+use mlua::{Lua, LuaSerdeExt};
+use serde::Serialize;
 use std::io;
 use std::io::Read;
 
 mod core;
-mod dsl;
 pub mod interface;
 mod settings;
 

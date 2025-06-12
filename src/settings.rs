@@ -99,11 +99,11 @@ impl CameraDefaults {
     pub fn vup(&self) -> Vec3D {
         self.vup
     }
-    
+
     pub fn defocus_angle(&self) -> Real {
         self.defocus_angle
     }
-    
+
     pub fn focus_distance(&self) -> Real {
         self.focus_distance
     }

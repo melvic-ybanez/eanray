@@ -1,7 +1,7 @@
-use serde::{Deserialize, Serialize};
 use crate::core::hit::HitRecord;
 use crate::core::math::{Real, Vec3D};
 use crate::core::{math, Color, Ray};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Material {

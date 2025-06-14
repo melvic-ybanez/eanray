@@ -1,4 +1,4 @@
-![output](https://github.com/user-attachments/assets/93ee1613-c2b2-4484-bfe1-66e762ee7b83)
+![motion_blur](https://github.com/user-attachments/assets/752fdd33-bd80-4ff2-a357-615b9b588c24)
 
 # Eanray
 

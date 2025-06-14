@@ -34,7 +34,7 @@ local small_radius = 0.25
 local bouncing_radius = 0.2
 
 local function make_small_lambertian(center)
-  local albedo = Color.random() * Color.random() + Color:new(0.2, 0.2, 0)
+  local albedo = Color.random() * Color.random() + Color:new(0.1, 0.2, 0)
   objects:add(Sphere:stationary(center, small_radius, Lambertian:new(albedo)))
 end
 

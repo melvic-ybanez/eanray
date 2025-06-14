@@ -16,7 +16,6 @@ end
 
 make_ground()
 
--- big spheres
 objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:new(Color:new(0.4, 0.2, 0.1))))
 objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 
@@ -31,15 +30,14 @@ end
 make_group()
 
 local small_radius = 0.25
-local bouncing_radius = 0.2
 
 local function make_small_lambertian(center)
-  local albedo = Color.random() * Color.random() + Color:new(0.2, 0.2, 0)
+  local albedo = Color.random() * Color.random()
   objects:add(Sphere:stationary(center, small_radius, Lambertian:new(albedo)))
 end
 
 local function make_small_metal(center)
-  local albedo = Color.random_range(0.5, 1)
+  local albedo = Color.random(0.5, 1)
   local fuzz = engine.math.random_range(0, 0.5)
   objects:add(Sphere:stationary(center, small_radius, Metal:new(albedo, fuzz)))
 end
@@ -47,18 +45,6 @@ end
 local function make_small_glass(center)
   local sphere_material = Dielectric:new(Dielectric.RefractiveIndex.GLASS)
   objects:add(Sphere:stationary(center, small_radius, sphere_material))
-end
-
-local function make_small_moving_sphere(center, horizontal)
-  local albedo = Color.random() * Color.random()
-  local moving_comp = engine.math.random_range(0.1, 0.25)
-  local moving_vec = Vec:new(0, moving_comp, 0)
-  if horizontal then
-    -- we are moving the z component instead of x to consider the angle we are looking from
-    moving_vec = Vec:new(0, 0, moving_comp)
-  end
-  local center2 = center + moving_vec
-  objects:add(Sphere:moving(center, center2, bouncing_radius, Lambertian:new(albedo)))
 end
 
 make_small_lambertian(Point:new(5.5, small_radius, 0))
@@ -69,12 +55,8 @@ make_small_lambertian(Point:new(2, small_radius, -2.5))
 make_small_lambertian(Point:new(-3.8, small_radius, 3.3))
 make_small_lambertian(Point:new(-3.5, small_radius, 2.5))
 make_small_metal(Point:new(-4.1, small_radius, 1.4))
-
-make_small_moving_sphere(Point:new(6.5, bouncing_radius, -0.7), false)
-make_small_moving_sphere(Point:new(-0.5, bouncing_radius, 1), true)
-make_small_moving_sphere(Point:new(7.2, bouncing_radius, 3.2), true)
-
 objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:new(Color.random() * Color.random())))
+
 objects:add(Sphere:stationary(Point:new(5.7, small_radius, 1), small_radius, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
 
 local camera = engine.Camera:new(1200, 16 / 9)

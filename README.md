@@ -7,8 +7,6 @@ a PPM file representing the rendered image.
 
 ## Features
 
-Eanray's core is currently based on the ray tracer implementation from the
-book [Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
 There is a plan to add more features in the future, but for now, the most relevant ones are the following:
 
 * Ray-sphere intersection
@@ -17,8 +15,9 @@ There is a plan to add more features in the future, but for now, the most releva
 * Materials (Dielectrics, Lambertians, Metals)
 * Antialising
 * Depth of Field (Defocus Blur)
-* Camera System
+* Configurable Camera System
 * Lua scripting for the Scene Descriptions
+* Motion Blur
 
 ## How To Run
 
@@ -45,6 +44,10 @@ More examples can be found [here](examples), including some [scenes](examples/rt
 ## Technologies
 
 The core renderer is written in [Rust](https://www.rust-lang.org/). Scene descriptions
-provided by the should be written in [Lua](https://www.lua.org/)
+provided by the user should be written in [Lua](https://www.lua.org/)
+
+## References and Resources
+
+[Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
 
 

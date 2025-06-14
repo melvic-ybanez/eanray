@@ -15,15 +15,15 @@ local objects = engine.ObjectList:new()
 
 objects:add_all(
 -- ground
-    Sphere:new(Point:new(0, -100.5, -1), 100, Lambertian:new(Color:new(0.8, 0.8, 0))),
+    Sphere:stationary(Point:new(0, -100.5, -1), 100, Lambertian:new(Color:new(0.8, 0.8, 0))),
 -- center (slightly further)
-    Sphere:new(Point:new(0, 0, -1.2), 0.5, Lambertian:new(Color:new(0.1, 0.2, 0.5))),
+    Sphere:stationary(Point:new(0, 0, -1.2), 0.5, Lambertian:new(Color:new(0.1, 0.2, 0.5))),
 -- left
-    Sphere:new(Point:new(-1, 0, -1), 0.5, Dielectric:new(RefractiveIndex.GLASS)),
+    Sphere:stationary(Point:new(-1, 0, -1), 0.5, Dielectric:new(RefractiveIndex.GLASS)),
 -- bubble
-    Sphere:new(Point:new(-1.0, 0.0, -1.0), 0.4, Dielectric:new(1 / 1.5)),
+    Sphere:stationary(Point:new(-1.0, 0.0, -1.0), 0.4, Dielectric:new(1 / 1.5)),
 -- right
-    Sphere:new(Point:new(1, 0, -1), 0.5, Metal:new(Color:new(0.8, 0.6, 0.2), 1))
+    Sphere:stationary(Point:new(1, 0, -1), 0.5, Metal:new(Color:new(0.8, 0.6, 0.2), 1))
 )
 
 return engine.Scene:new(camera, objects)

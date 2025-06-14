@@ -60,12 +60,12 @@ pub struct FrontFace(pub bool);
 
 // TODO: See if we can just use HittableList in all cases and drop the Sphere variant
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Hittable {
-    Sphere(Sphere),
-    List(HittableList),
+pub enum Hittable<'a> {
+    Sphere(Sphere<'a>),
+    List(HittableList<'a>),
 }
 
-impl Hittable {
+impl<'a> Hittable<'a> {
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         match self {
             Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),
@@ -75,12 +75,12 @@ impl Hittable {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct HittableList {
-    objects: Vec<Hittable>,
+pub struct HittableList<'a> {
+    objects: Vec<Hittable<'a>>,
 }
 
-impl HittableList {
-    pub fn new() -> HittableList {
+impl<'a> HittableList<'a> {
+    pub fn new() -> HittableList<'a> {
         HittableList { objects: vec![] }
     }
 
@@ -88,7 +88,7 @@ impl HittableList {
         HittableList { objects }
     }
 
-    pub fn add(&mut self, object: Hittable) {
+    pub fn add(&mut self, object: Hittable<'a>) {
         self.objects.push(object);
     }
 

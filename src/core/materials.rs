@@ -13,7 +13,7 @@ pub enum Material {
 impl Material {
     pub fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         match self {
-            Material::Lambertian(lambertian) => lambertian.scatter(rec),
+            Material::Lambertian(lambertian) => lambertian.scatter(ray_in, rec),
             Material::Metal(metal) => metal.scatter(ray_in, rec),
             Material::Dielectric(dielectric) => dielectric.scatter(ray_in, rec),
         }
@@ -42,14 +42,14 @@ impl Lambertian {
         Self { albedo }
     }
 
-    fn scatter<'a>(&self, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
+    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         let scatter_direction = &rec.normal().0 + Vec3D::random_unit().0;
         let scatter_direction = if scatter_direction.near_zero() {
             rec.normal().0.clone()
         } else {
             scatter_direction
         };
-        let scattered = Ray::from_ref_origin(rec.p(), scatter_direction);
+        let scattered = Ray::from_ref_origin_timed(rec.p(), scatter_direction, ray_in.time());
         let attenuation = self.albedo.clone();
         Some((scattered, attenuation))
     }
@@ -72,7 +72,7 @@ impl Metal {
     fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         let reflected = ray_in.direction().reflect(&rec.normal());
         let reflected = reflected.to_unit().0 + Vec3D::random_unit().0 * self.fuzz;
-        let scattered = Ray::from_ref_origin(rec.p(), reflected);
+        let scattered = Ray::from_ref_origin_timed(rec.p(), reflected, ray_in.time());
         let attenuation = self.albedo.clone();
         Some((scattered, attenuation))
     }
@@ -106,7 +106,7 @@ impl Dielectric {
             Vec3D::refract(&unit_direction, rec.normal(), ri)
         };
 
-        let scattered = Ray::from_ref_origin(rec.p(), direction);
+        let scattered = Ray::from_ref_origin_timed(rec.p(), direction, ray_in.time());
 
         Some((scattered, Color::white()))
     }

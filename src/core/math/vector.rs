@@ -41,6 +41,14 @@ impl<K> VecLike<K> {
     pub fn random() -> VecLike<K> {
         VecLike::new(math::random(), math::random(), math::random())
     }
+
+    pub fn random_range(min: Real, max: Real) -> VecLike<K> {
+        VecLike::new(
+            math::random_range(min, max),
+            math::random_range(min, max),
+            math::random_range(min, max),
+        )
+    }
 }
 
 impl Vec3D {
@@ -123,14 +131,6 @@ impl Vec3D {
                 return v;
             }
         }
-    }
-
-    fn random_range(min: Real, max: Real) -> Vec3D {
-        Vec3D::new(
-            math::random_range(min, max),
-            math::random_range(min, max),
-            math::random_range(min, max),
-        )
     }
 }
 

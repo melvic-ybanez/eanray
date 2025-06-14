@@ -11,7 +11,6 @@ use std::io::{self, Write};
 use std::time::Instant;
 
 pub struct Camera {
-    focal_length: f64,
     image: Image,
     samples_per_pixel: u32,
     antialiasing: bool,
@@ -81,7 +80,7 @@ impl Camera {
         writeln!(&ppm_file, "{}", ppm_content)?;
 
         let duration = start.elapsed();
-        println!("Done. Running time: {:?}", duration);
+        println!("Done. Rendering time: {:?}", duration);
 
         Ok(())
     }
@@ -98,8 +97,9 @@ impl Camera {
             Cow::Owned(self.defocus_disk_sample())
         };
         let direction = pixel_sample - origin.as_ref();
+        let ray_time = math::random();
 
-        Ray::new(origin, direction)
+        Ray::timed(origin, direction, ray_time)
     }
 
     fn defocus_disk_sample(&self) -> Point {
@@ -250,7 +250,6 @@ impl CameraBuilder {
         let up = UnitVec3D(out.0.cross(&right.0));
 
         let mut camera = Camera {
-            focal_length: looks_delta.length(),
             image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
             samples_per_pixel: self
                 .samples_per_pixel

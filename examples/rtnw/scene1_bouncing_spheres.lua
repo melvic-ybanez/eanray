@@ -18,21 +18,23 @@ for a = -11, 10 do
   for b = -11, 10 do
     local chooseMat = engine.math.random()
     local center = Point:new(a + 0.9 * engine.math.random(), 0.2, b + 0.9 * engine.math.random())
-    local sphere_material
+    local material
 
     if (center - Point:new(4, 0.2, 0)):length() > 0.9 then
       if chooseMat < 0.8 then
         local albedo = Color.random() * Color.random()
-        sphere_material = Lambertian:new(albedo)
+        material = Lambertian:new(albedo)
+        local center2 = center + Vec:new(0, engine.math.random_range(0, 0.5), 0)
+        objects:add(Sphere:moving(center, center2, 0.2, material))
       elseif chooseMat < 0.95 then
         local albedo = Color.random_range(0.5, 1)
         local fuzz = engine.math.random_range(0, 0.5)
-        sphere_material = Metal:new(albedo, fuzz)
+        material = Metal:new(albedo, fuzz)
+        objects:add(Sphere:stationary(center, 0.2, material))
       else
-        sphere_material = Dielectric:new(Dielectric.RefractiveIndex.GLASS)
+        material = Dielectric:new(Dielectric.RefractiveIndex.GLASS)
+        objects:add(Sphere:stationary(center, 0.2, material))
       end
-
-      objects:add(Sphere:stationary(center, 0.2, sphere_material))
     end
   end
 end
@@ -44,8 +46,8 @@ objects:add_all(
     Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0))
 )
 
-local camera = engine.Camera:new(1200, 16 / 9)
-camera.samples_per_pixel = 500
+local camera = engine.Camera:new(400, 16 / 9)
+camera.samples_per_pixel = 100
 camera.max_depth = 50
 
 camera.field_of_view = 20

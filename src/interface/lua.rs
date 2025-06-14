@@ -15,13 +15,13 @@ use serde::{Deserialize, Serialize};
 use std::io;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SceneSchema {
+pub struct SceneSchema<'a> {
     camera: CameraSchema,
-    objects: Vec<Hittable>,
+    objects: Vec<Hittable<'a>>,
 }
 
-impl SceneSchema {
-    fn new(camera: CameraSchema, objects: Vec<Hittable>) -> Self {
+impl<'a> SceneSchema<'a> {
+    fn new(camera: CameraSchema, objects: Vec<Hittable<'a>>) -> Self {
         Self { camera, objects }
     }
 
@@ -115,6 +115,10 @@ impl UserData for Point {
             let point: Point = lua.from_value(other)?;
             Ok(this - point)
         });
+        methods.add_meta_method(MetaMethod::Add, |lua, this, other: Value| {
+            let other_vec3: Vec3D = lua.from_value(other)?;
+            Ok(this + other_vec3)
+        });
     }
 }
 
@@ -127,14 +131,14 @@ fn add_addable_vec_methods<K: 'static + CanAdd + Clone, M: UserDataMethods<VecLi
         Value::Integer(scalar) => Ok(this * scalar as Real),
         Value::Number(scalar) => Ok(this * scalar),
         Value::UserData(userdata) => {
-            let other_color: VecLike<K> = userdata.borrow::<VecLike<K>>()?.clone();
-            Ok(this * other_color)
+            let other_vec_like: VecLike<K> = userdata.borrow::<VecLike<K>>()?.clone();
+            Ok(this * other_vec_like)
         }
         _ => Err(mlua::Error::RuntimeError("Invalid RHS".into())),
     });
     methods.add_meta_method(MetaMethod::Add, |lua, this, other: Value| {
-        let other_color: VecLike<K> = lua.from_value(other)?;
-        Ok(this + other_color)
+        let other_vec_like: VecLike<K> = lua.from_value(other)?;
+        Ok(this + other_vec_like)
     });
 }
 
@@ -164,22 +168,50 @@ where
             Ok(lua.create_ser_userdata(vec_like))
         })?,
     )?;
+    table.set(
+        "random_range",
+        lua.create_function(|lua, (min, max): (Real, Real)| {
+            let vec_like: VecLike<K> = VecLike::<K>::random_range(min, max);
+            Ok(lua.create_ser_userdata(vec_like))
+        })?,
+    )?;
 
     Ok(table)
 }
 
 fn new_sphere_table(lua: &Lua) -> Result<Table> {
-    new_table(
-        lua,
+    let table = lua.create_table()?;
+    table.set(
+        "stationary",
         lua.create_function(
-            |lua, (_, center, radius, material): (Table, Value, Real, Value)| {
-                let center: Point = lua.from_value(center)?;
+            |lua, (_, center, radius, material): (Table, AnyUserData, Real, Value)| {
+                let center: Point = center.borrow::<Point>()?.clone();
                 let material: Material = lua.from_value(material)?;
-                let sphere = Hittable::Sphere(Sphere::new(center, radius, material));
+                let sphere = Hittable::Sphere(Sphere::stationary(center, radius, material));
                 Ok(lua.to_value(&sphere))
             },
-        ),
-    )
+        )?,
+    )?;
+    table.set(
+        "moving",
+        lua.create_function(
+            |lua,
+             (_, center1, center2, radius, material): (
+                Table,
+                AnyUserData,
+                AnyUserData,
+                Real,
+                Value,
+            )| {
+                let center1: Point = center1.borrow::<Point>()?.clone();
+                let center2: Point = center2.borrow::<Point>()?.clone();
+                let material: Material = lua.from_value(material)?;
+                let sphere = Hittable::Sphere(Sphere::moving(center1, center2, radius, material));
+                Ok(lua.to_value(&sphere))
+            },
+        )?,
+    )?;
+    Ok(table)
 }
 
 fn new_lambertian_table(lua: &Lua) -> Result<Table> {

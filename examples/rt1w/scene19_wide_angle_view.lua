@@ -8,8 +8,8 @@ local radius = math.cos(math.pi / 4)
 local objects = engine.ObjectList:new()
 
 objects:add_all(
-    Sphere:new(Point:new(-radius, 0, -1), radius, Lambertian:new(Color:new(0, 0, 1))),
-    Sphere:new(Point:new(radius, 0, -1), radius, Lambertian:new(Color:new(1, 0, 0)))
+    Sphere:stationary(Point:new(-radius, 0, -1), radius, Lambertian:new(Color:new(0, 0, 1))),
+    Sphere:stationary(Point:new(radius, 0, -1), radius, Lambertian:new(Color:new(1, 0, 0)))
 )
 
 local camera = engine.Camera:new(400, 16 / 9)

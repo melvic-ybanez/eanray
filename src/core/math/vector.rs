@@ -1,9 +1,9 @@
 use crate::core::math;
-use crate::core::math::Real;
+use crate::core::math::{Axis, Real};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
-use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{Add, Div, Index, Mul, Neg, Sub};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VecKind;
@@ -34,12 +34,20 @@ impl<K> VecLike<K> {
         }
     }
 
+    pub fn from_scalar(scalar: Real) -> Self {
+        Self::new(scalar, scalar, scalar)
+    }
+
     pub fn zero() -> Self {
-        Self::new(0.0, 0.0, 0.0)
+        Self::from_scalar(0.0)
     }
 
     pub fn random() -> VecLike<K> {
-        VecLike::new(math::random(), math::random(), math::random())
+        VecLike::new(
+            math::random_real(),
+            math::random_real(),
+            math::random_real(),
+        )
     }
 
     pub fn random_range(min: Real, max: Real) -> VecLike<K> {
@@ -202,11 +210,19 @@ impl<V: CanAdd> Add<Real> for &VecLike<V> {
     }
 }
 
+impl Add<&Vec3D> for &Point {
+    type Output = Point;
+
+    fn add(self, rhs: &Vec3D) -> Self::Output {
+        Point::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+    }
+}
+
 impl Add<Vec3D> for &Point {
     type Output = Point;
 
     fn add(self, rhs: Vec3D) -> Self::Output {
-        Point::new(self.x + rhs.x, self.y + rhs.y, self.z + rhs.z)
+        self + &rhs
     }
 }
 
@@ -214,6 +230,14 @@ impl Add<Vec3D> for Point {
     type Output = Point;
 
     fn add(self, rhs: Vec3D) -> Self::Output {
+        &self + rhs
+    }
+}
+
+impl Add<&Vec3D> for Point {
+    type Output = Point;
+
+    fn add(self, rhs: &Vec3D) -> Self::Output {
         &self + rhs
     }
 }
@@ -262,6 +286,14 @@ impl Sub<Vec3D> for &Point {
     type Output = Point;
 
     fn sub(self, rhs: Vec3D) -> Self::Output {
+        self - &rhs
+    }
+}
+
+impl Sub<&Vec3D> for &Point {
+    type Output = Point;
+
+    fn sub(self, rhs: &Vec3D) -> Self::Output {
         self + -rhs
     }
 }
@@ -336,27 +368,22 @@ impl<K> fmt::Display for VecLike<K> {
     }
 }
 
-trait HasCoordinates {}
+impl<K> Index<&Axis> for VecLike<K> {
+    type Output = Real;
 
-pub trait Coordinates {
-    fn x(&self) -> Real;
-    fn y(&self) -> Real;
-    fn z(&self) -> Real;
+    fn index(&self, index: &Axis) -> &Self::Output {
+        match index {
+            Axis::X => &self.x,
+            Axis::Y => &self.y,
+            Axis::Z => &self.z,
+        }
+    }
 }
 
-impl HasCoordinates for VecKind {}
-impl HasCoordinates for PointKind {}
+impl<K> Index<Axis> for VecLike<K> {
+    type Output = Real;
 
-impl<K: HasCoordinates> Coordinates for VecLike<K> {
-    fn x(&self) -> Real {
-        self.x
-    }
-
-    fn y(&self) -> Real {
-        self.y
-    }
-
-    fn z(&self) -> Real {
-        self.z
+    fn index(&self, index: Axis) -> &Self::Output {
+        &self[&index]
     }
 }

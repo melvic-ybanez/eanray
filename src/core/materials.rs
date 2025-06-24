@@ -100,7 +100,7 @@ impl Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.0;
-        let direction = if cannot_refract || Self::reflectance(cos_theta, ri) > math::random() {
+        let direction = if cannot_refract || Self::reflectance(cos_theta, ri) > math::random_real() {
             unit_direction.0.reflect(rec.normal())
         } else {
             Vec3D::refract(&unit_direction, rec.normal(), ri)

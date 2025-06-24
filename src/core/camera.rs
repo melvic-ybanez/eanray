@@ -97,7 +97,7 @@ impl Camera {
             Cow::Owned(self.defocus_disk_sample())
         };
         let direction = pixel_sample - origin.as_ref();
-        let ray_time = math::random();
+        let ray_time = math::random_real();
 
         Ray::timed(origin, direction, ray_time)
     }
@@ -109,13 +109,13 @@ impl Camera {
 
     /// A vector to a random point within half the unit square.
     fn sample_square() -> Vec3D {
-        Vec3D::new(math::random() - 0.5, math::random() - 0.5, 0.0)
+        Vec3D::new(math::random_real() - 0.5, math::random_real() - 0.5, 0.0)
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &Hittable) -> Color {
         if depth <= 0 {
             Color::black()
-        } else if let Some(record) = world.hit(ray, &Interval::new(0.001, math::INFINITY)) {
+        } else if let Some(record) = world.hit(ray, &mut Interval::new(0.001, math::INFINITY)) {
             if let Some((scattered, attenuation)) = record.material().scatter(ray, &record) {
                 self.ray_color(&scattered, depth - 1, world) * attenuation
             } else {

@@ -5,6 +5,8 @@ pub mod materials;
 pub mod math;
 mod ray;
 pub mod shapes;
+mod aabb;
+pub mod bvh;
 
 pub use camera::Camera;
 pub use color::Color;

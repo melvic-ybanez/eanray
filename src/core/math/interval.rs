@@ -1,8 +1,10 @@
+use serde::{Deserialize, Serialize};
 use crate::core::math::{self, Real};
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Interval {
-    min: Real,
-    max: Real,
+    pub min: Real,
+    pub max: Real,
 }
 
 impl Interval {
@@ -22,6 +24,10 @@ impl Interval {
     pub fn universe() -> Self {
         Self::new(-math::INFINITY, math::INFINITY)
     }
+    
+    pub fn from_intervals(a: &Interval, b: &Interval) -> Self {
+        Self::new(a.min.min(b.min), a.max.max(b.max))
+    }
 
     pub fn size(&self) -> Real {
         self.max - self.min
@@ -35,14 +41,6 @@ impl Interval {
         self.min < x && x < self.max
     }
 
-    pub fn min(&self) -> Real {
-        self.min
-    }
-
-    pub fn max(&self) -> Real {
-        self.max
-    }
-
     pub fn clamp(&self, x: Real) -> Real {
         if x < self.min {
             self.min
@@ -51,5 +49,10 @@ impl Interval {
         } else {
             x
         }
+    }
+
+    pub fn expand(&self, delta: Real) -> Interval {
+        let padding = delta / 2.0;
+        Self::new(self.min - padding, self.max + padding)
     }
 }

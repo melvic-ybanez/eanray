@@ -1,3 +1,5 @@
+use crate::core::aabb::AABB;
+use crate::core::bvh::BVH;
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
@@ -50,6 +52,10 @@ impl<'a> HitRecord<'a> {
     pub fn front_face(&self) -> bool {
         self.front_face
     }
+
+    pub fn t(&self) -> Real {
+        self.t
+    }
 }
 
 pub struct P(pub Point);
@@ -58,11 +64,11 @@ pub struct Mat<'a>(pub &'a Material);
 pub struct T(pub Real);
 pub struct FrontFace(pub bool);
 
-// TODO: See if we can just use HittableList in all cases and drop the Sphere variant
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Hittable<'a> {
     Sphere(Sphere<'a>),
     List(HittableList<'a>),
+    BVH(BVH<'a>),
 }
 
 impl<'a> Hittable<'a> {
@@ -70,6 +76,15 @@ impl<'a> Hittable<'a> {
         match self {
             Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),
             Hittable::List(list) => list.hit(ray, ray_t),
+            Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
+        }
+    }
+
+    pub fn bounding_box(&self) -> &AABB {
+        match self {
+            Hittable::Sphere(sphere) => sphere.bounding_box(),
+            Hittable::List(list) => list.bounding_box(),
+            Hittable::BVH(bvh) => bvh.bounding_box(),
         }
     }
 }
@@ -77,18 +92,25 @@ impl<'a> Hittable<'a> {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct HittableList<'a> {
     objects: Vec<Hittable<'a>>,
+    bbox: AABB,
 }
 
 impl<'a> HittableList<'a> {
-    pub fn new() -> HittableList<'a> {
-        HittableList { objects: vec![] }
-    }
-
-    pub fn from_vec(objects: Vec<Hittable>) -> HittableList {
-        HittableList { objects }
+    pub fn from_vec(objects: Vec<Hittable<'a>>) -> HittableList<'a> {
+        let mut this = Self {
+            objects: vec![],
+            bbox: AABB::empty(),
+        };
+        
+        // call `add` for each item to update the bbox
+        for object in objects {
+            this.add(object);
+        }
+        this
     }
 
     pub fn add(&mut self, object: Hittable<'a>) {
+        self.bbox = AABB::from_boxes(&self.bbox, object.bounding_box());
         self.objects.push(object);
     }
 
@@ -96,11 +118,23 @@ impl<'a> HittableList<'a> {
         self.objects.iter().fold(None, |maybe_prev_record, object| {
             if let Some(prev_record) = maybe_prev_record {
                 object
-                    .hit(ray, &Interval::new(ray_t.min(), prev_record.t))
+                    .hit(ray, &mut Interval::new(ray_t.min, prev_record.t))
                     .or(Some(prev_record))
             } else {
                 object.hit(ray, ray_t)
             }
         })
+    }
+
+    pub fn bounding_box(&self) -> &AABB {
+        &self.bbox
+    }
+
+    pub fn objects(&self) -> &Vec<Hittable<'a>> {
+        &self.objects
+    }
+
+    pub fn objects_mut(&mut self) -> &mut Vec<Hittable<'a>> {
+        &mut self.objects
     }
 }

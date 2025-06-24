@@ -5,9 +5,8 @@ local Lambertian = engine.materials.Lambertian
 local Metal = engine.materials.Metal
 local Dielectric = engine.materials.Dielectric
 local Sphere = engine.shapes.Sphere
-local ObjectList = engine.ObjectList
 
-local objects = ObjectList:new()
+local objects = engine.ObjectList:new()
 
 local function make_ground()
   local radius = 1000
@@ -89,9 +88,5 @@ camera.vup = Vec:new(0, 1, 0)
 
 camera.defocus_angle = 0.6
 camera.focus_distance = 10
-
-local world = engine.BVH:new(objects)
-objects = ObjectList:new()
-objects:add(world)
 
 return engine.Scene:new(camera, objects)

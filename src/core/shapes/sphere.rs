@@ -1,4 +1,4 @@
-use std::borrow::Cow;
+use crate::core::aabb::AABB;
 use crate::core::hit::{self, HitRecord};
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
@@ -6,28 +6,55 @@ use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
 use serde::{Deserialize, Serialize};
+use std::borrow::Cow;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Sphere<'a> {
-    center: Ray<'a>,    // this is to allow for "motion" effects
+    // we are using a Ray for the center as opposed to a Point to allow for "motion" effects
+    center: Ray<'a>,
+
     radius: Real,
     mat: Material,
+    bbox: AABB,
 }
 
 impl<'a> Sphere<'a> {
     pub fn stationary(center: Point, radius: Real, mat: Material) -> Self {
-        Self::from_ray_props(center, Vec3D::zero(), radius, mat)
+        let r_vec = Vec3D::from_scalar(radius);
+        let bbox = AABB::from_points(&center - &r_vec, &center + r_vec);
+        Self::from_ray_props(center, Vec3D::zero(), radius, mat, bbox)
     }
 
     pub fn moving(center1: Point, center2: Point, radius: Real, mat: Material) -> Self {
-        Self::from_ray_props(center1.clone(), center2 - center1, radius, mat)
+        let r_vec = Vec3D::from_scalar(radius);
+        let mut this = Self::from_ray_props(
+            center1.clone(),
+            center2 - center1,
+            radius,
+            mat.clone(),
+            AABB::empty(),
+        );
+
+        let box1 = AABB::from_points(&this.center.at(0.0) - &r_vec, this.center.at(0.0) + &r_vec);
+        let box2 = AABB::from_points(&this.center.at(1.0) - &r_vec, this.center.at(1.0) + &r_vec);
+
+        this.bbox = AABB::from_boxes(&box1, &box2);
+
+        this
     }
 
-    fn from_ray_props(center: Point, direction: Vec3D, radius: Real, mat: Material) -> Self {
+    fn from_ray_props(
+        center: Point,
+        direction: Vec3D,
+        radius: Real,
+        mat: Material,
+        bbox: AABB,
+    ) -> Self {
         Self {
             center: Ray::new(Cow::Owned(center), direction),
             radius: Real::max(0.0, radius),
             mat,
+            bbox,
         }
     }
 
@@ -67,5 +94,9 @@ impl<'a> Sphere<'a> {
                 )
             })
         }
+    }
+
+    pub fn bounding_box(&self) -> &AABB {
+        &self.bbox
     }
 }

@@ -30,6 +30,31 @@ pub fn random_range(min: Real, max: Real) -> Real {
     rng.random_range(min..max)
 }
 
-pub fn random() -> Real {
+pub fn random_real() -> Real {
     random_range(0.0, 1.0)
+}
+
+pub fn random_int(min: i32, max: i32) -> i32 {
+    random_range(min as Real, (max + 1) as Real) as i32
+}
+
+pub enum Axis {
+    X,
+    Y,
+    Z,
+}
+
+impl Axis {
+    pub const fn from_usize(i: usize) -> Option<Axis> {
+        match i {
+            0 => Some(Axis::X),
+            1 => Some(Axis::Y),
+            2 => Some(Axis::Z),
+            _ => None,
+        }
+    }
+
+    pub const fn from_usize_unsafe(i: usize) -> Axis {
+        Self::from_usize(i).unwrap()
+    }
 }

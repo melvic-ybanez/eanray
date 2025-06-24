@@ -4,7 +4,8 @@ use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
 use crate::core::math::vector::{CanAdd, PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::Sphere;
-use crate::core::{math, Camera, Color, Hittable, HittableList, Material};
+use crate::core::Hittable::BVH;
+use crate::core::{bvh, math, Camera, Color, Hittable, HittableList, Material};
 use crate::settings;
 use crate::settings::Config;
 use mlua::{
@@ -263,7 +264,10 @@ fn new_math_table(lua: &Lua) -> Result<Table> {
     table.set("Vec", new_vec_like_table::<VecKind>(lua)?)?;
 
     table.set("Point", new_vec_like_table::<PointKind>(lua)?)?;
-    table.set("random", lua.create_function(|_, ()| Ok(math::random()))?)?;
+    table.set(
+        "random",
+        lua.create_function(|_, ()| Ok(math::random_real()))?,
+    )?;
     table.set(
         "random_range",
         lua.create_function(|_, (min, max)| Ok(math::random_range(min, max)))?,
@@ -311,6 +315,17 @@ fn new_object_list_table(lua: &Lua) -> Result<Table> {
     Ok(objects)
 }
 
+fn new_bvh_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(|lua, (_, h_list): (Table, Value)| {
+            let hittable_list: HittableList = HittableList::from_vec(lua.from_value(h_list)?);
+            let bvh = bvh::BVH::from_list(hittable_list);
+            Ok(lua.to_value(&BVH(bvh)))
+        }),
+    )
+}
+
 fn new_scene_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
@@ -333,6 +348,7 @@ pub fn set_engine(lua: &Lua) -> Result<()> {
     engine.set("Camera", new_camera_table(lua)?)?;
     engine.set("ObjectList", new_object_list_table(lua)?)?;
     engine.set("Scene", new_scene_table(lua)?)?;
+    engine.set("BVH", new_bvh_table(lua)?)?;
 
     lua.globals().set("engine", engine)?;
 

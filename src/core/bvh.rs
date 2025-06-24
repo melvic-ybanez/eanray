@@ -1,25 +1,31 @@
 use crate::core::aabb::AABB;
 use crate::core::hit::HitRecord;
 use crate::core::math::interval::Interval;
+use crate::core::math::Axis;
 use crate::core::{math, Hittable, HittableList, Ray};
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
-use crate::core::math::Axis;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BVH<'a> {
-    left: Box<Hittable<'a>>,
-    right: Box<Hittable<'a>>,
+    left: Arc<Hittable<'a>>,
+    right: Arc<Hittable<'a>>,
     bbox: AABB,
 }
 
 impl<'a> BVH<'a> {
     pub fn from_list(mut list: HittableList<'a>) -> Self {
-        let objects = list.objects_mut();
+        let mut objects = list
+            .objects_mut()
+            .iter()
+            .map(|object| Arc::new(object.clone()))
+            .collect::<Vec<Arc<Hittable<'a>>>>();
+        let objects = &mut objects;
         Self::from_objects(objects, 0, objects.len())
     }
 
-    pub fn from_objects(objects: &mut Vec<Hittable<'a>>, start: usize, end: usize) -> Self {
+    pub fn from_objects(objects: &mut Vec<Arc<Hittable<'a>>>, start: usize, end: usize) -> Self {
         let axis = math::random_int(0, 2);
 
         let comparator = if axis == Axis::X as i32 {
@@ -32,21 +38,27 @@ impl<'a> BVH<'a> {
 
         let object_span = end - start;
         let (left, right) = if object_span == 1 {
-            (&objects[start], &objects[start])
+            (objects[start].clone(), objects[start].clone())
         } else if object_span == 2 {
-            (&objects[start], &objects[start + 1])
+            (objects[start].clone(), objects[start + 1].clone())
         } else {
             objects[start..end].sort_by(comparator);
             let mid = start + object_span / 2;
             let left = BVH::from_objects(objects, start, mid);
             let right = BVH::from_objects(objects, mid, end);
-            (&Hittable::BVH(left), &Hittable::BVH(right))
+            (
+                Arc::new(Hittable::BVH(left)),
+                Arc::new(Hittable::BVH(right)),
+            )
         };
 
+        let left_bbox = left.bounding_box();
+        let right_bbox = right.bounding_box();
+
         Self {
-            left: Box::new(left.clone()),
-            right: Box::new(right.clone()),
-            bbox: AABB::from_boxes(left.bounding_box(), right.bounding_box()),
+            left: left.clone(),
+            right: right.clone(),
+            bbox: AABB::from_boxes(left_bbox, right_bbox),
         }
     }
 
@@ -70,19 +82,19 @@ impl<'a> BVH<'a> {
         &self.bbox
     }
 
-    pub fn box_x_compare(a: &Hittable, b: &Hittable) -> Ordering {
+    pub fn box_x_compare(a: &Arc<Hittable>, b: &Arc<Hittable>) -> Ordering {
         Self::box_compare(a, b, &Axis::X)
     }
 
-    pub fn box_y_compare(a: &Hittable, b: &Hittable) -> Ordering {
+    pub fn box_y_compare(a: &Arc<Hittable>, b: &Arc<Hittable>) -> Ordering {
         Self::box_compare(a, b, &Axis::Y)
     }
 
-    pub fn box_z_compare(a: &Hittable, b: &Hittable) -> Ordering {
+    pub fn box_z_compare(a: &Arc<Hittable>, b: &Arc<Hittable>) -> Ordering {
         Self::box_compare(a, b, &Axis::Z)
     }
 
-    pub fn box_compare(a: &Hittable, b: &Hittable, axis_index: &Axis) -> Ordering {
+    pub fn box_compare(a: &Arc<Hittable>, b: &Arc<Hittable>, axis_index: &Axis) -> Ordering {
         let a_axis_interval = a.bounding_box().axis_interval(axis_index);
         let b_axis_interval = b.bounding_box().axis_interval(axis_index);
         if a_axis_interval.min < b_axis_interval.min {

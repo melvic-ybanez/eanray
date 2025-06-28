@@ -1,13 +1,13 @@
 use crate::interface::lua::SceneSchema;
 use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
-use serde::Serialize;
-use std::{fs, io};
 use std::io::Read;
+use std::{fs, io};
 
 mod core;
 pub mod interface;
 mod settings;
+mod diagnostics;
 
 fn main() -> mlua::Result<()> {
     let mut scene_script = String::new();
@@ -15,7 +15,7 @@ fn main() -> mlua::Result<()> {
 
     let lua = Lua::new();
     interface::lua::set_engine(&lua)?;
-    
+
     let helpers = fs::read_to_string("scripts/helpers.lua")?;
     lua.load(&helpers).exec()?;
 

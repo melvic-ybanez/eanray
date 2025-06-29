@@ -300,19 +300,24 @@ fn new_camera_table(lua: &Lua) -> Result<Table> {
 }
 
 fn new_object_list_table(lua: &Lua) -> Result<Table> {
-    let objects = new_table(lua, lua.create_function(|_, this: Table| Ok(this)))?;
-    objects.set(
-        "add",
-        lua.create_function(|lua, (this, object): (Table, Value)| {
-            // Let's do a round-trip conversion for now to validate the structure.
-            // This may not be the cleanest solution.
-            let hittable: Hittable = lua.from_value(object)?;
+    new_table(
+        lua,
+        lua.create_function(|lua, this: Table| {
+            let object_list_table = lua.create_table()?;
+            object_list_table.set(
+                "add",
+                lua.create_function(|lua, (this, object): (Table, Value)| {
+                    // Let's do a round-trip conversion for now to validate the structure.
+                    // This may not be the cleanest solution.
+                    let hittable: Hittable = lua.from_value(object)?;
 
-            let next_index = this.raw_len() + 1;
-            this.set(next_index, lua.to_value(&hittable)?)
-        })?,
-    )?;
-    Ok(objects)
+                    let next_index = this.raw_len() + 1;
+                    this.set(next_index, lua.to_value(&hittable)?)
+                })?,
+            )?;
+            Ok(object_list_table)
+        }),
+    )
 }
 
 fn new_bvh_table(lua: &Lua) -> Result<Table> {

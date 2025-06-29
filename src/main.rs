@@ -31,8 +31,10 @@ fn main() -> mlua::Result<()> {
         .map_err(mlua::Error::external)?;
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
+
+    metrics::enable_metrics(false);
+    env_logger::init();
     
-    metrics::enable_metrics(true);
     let result = scene.render(settings).map_err(mlua::Error::external);
     metrics::report();
     result

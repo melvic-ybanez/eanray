@@ -1,5 +1,4 @@
 use crate::define_metric;
-use crate::diagnostics::logger;
 use std::sync::atomic::{AtomicBool, Ordering};
 
 define_metric!(AABB_HIT_COUNT);
@@ -27,9 +26,9 @@ pub fn report() {
                 let ratio = aabb_hit_count.get() as f64 / object_hit_count.get() as f64;
 
                 if ratio < 4.0 {
-                    logger::info(format!("AABB/Object ratio: {:.2}", ratio).as_str());
+                    log::info!("AABB/Object ratio: {:.2}", ratio);
                 } else {
-                    logger::warning(format!("AABB/Object ratio too big: {ratio}").as_str())
+                    log::warn!("AABB/Object ratio too big: {ratio}")
                 }
             })
         });

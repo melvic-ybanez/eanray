@@ -21,13 +21,13 @@ macro_rules! define_metric {
                     None
                 }
             }
-            
+
             #[inline]
             pub fn [<report_$name:lower>]() {
                 if $crate::diagnostics::metrics::metrics_enabled() {
                     let label = stringify!($name);
                     let label = label.replace("_", " ");
-                    $name.with(|c| println!("{label}: {}", c.get()))
+                    $name.with(|c| log::info!("{label}: {}", c.get()))
                 }
             }
         }

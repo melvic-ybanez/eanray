@@ -8,6 +8,7 @@ serde = { version = "1.0", features = ["derive", "rc"] }
 rand = "0.9"
 config = "0.15.11"
 mlua = { version = "0.10.5", features = ["lua54", "vendored", "serialize"] }
+paste = "1.0"
 
 [profile.release]
 debug = 1

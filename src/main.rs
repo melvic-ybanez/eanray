@@ -3,6 +3,7 @@ use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
 use std::io::Read;
 use std::{fs, io};
+use crate::diagnostics::metrics;
 
 mod core;
 pub mod interface;
@@ -30,6 +31,9 @@ fn main() -> mlua::Result<()> {
         .map_err(mlua::Error::external)?;
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
-
-    scene.render(settings).map_err(mlua::Error::external)
+    
+    metrics::enable_metrics(true);
+    let result = scene.render(settings).map_err(mlua::Error::external);
+    metrics::report();
+    result
 }

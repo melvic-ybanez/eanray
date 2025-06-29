@@ -74,7 +74,7 @@ pub enum Hittable<'a> {
 
 impl<'a> Hittable<'a> {
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        // metrics::OBJECT_HIT_COUNT.with(metrics::bump_count());
+        metrics::increment_object_hit_count();
         
         match self {
             Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),

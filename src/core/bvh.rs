@@ -3,6 +3,7 @@ use crate::core::hit::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::Axis;
 use crate::core::{math, Hittable, HittableList, Ray};
+use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::rc::Rc;
@@ -60,16 +61,26 @@ impl<'a> BVH<'a> {
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        metrics::increment_bvh_hit_count();
+
         if !self.bbox.hit(ray, ray_t) {
             return None;
         }
 
-        if let Some(left_rec) = self.left.hit(ray, ray_t) {
+        let hit_right = |t_max| {
             self.right
-                .hit(ray, &Interval::new(ray_t.min, left_rec.t()))
-                .or(Some(left_rec))
+                .hit(ray, &Interval::new(ray_t.min, t_max))
+                .and_then(|hit| {
+                    metrics::increment_right_node_hit_count();
+                    Some(hit)
+                })
+        };
+
+        if let Some(left_rec) = self.left.hit(ray, ray_t) {
+            metrics::increment_left_node_hit_count();
+            hit_right(left_rec.t()).or(Some(left_rec))
         } else {
-            self.right.hit(ray, &Interval::new(ray_t.min, ray_t.max))
+            hit_right(ray_t.max)
         }
     }
 

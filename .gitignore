@@ -4,3 +4,5 @@ output.ppm
 outputs
 
 profile.json.gz
+
+examples/scratch.lua

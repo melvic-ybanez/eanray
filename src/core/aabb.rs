@@ -2,7 +2,6 @@ use crate::core::math::interval::Interval;
 use crate::core::math::{Axis, Point};
 use crate::core::Ray;
 use serde::{Deserialize, Serialize};
-use crate::diagnostics::metrics;
 
 /// Axis-aligned Bounding Box
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -58,8 +57,6 @@ impl AABB {
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> bool {
-        metrics::AABB_HIT_COUNT.with(metrics::bump_count());
-
         let ray_orig = ray.origin();
         let ray_dir = ray.direction();
 

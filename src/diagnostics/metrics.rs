@@ -4,6 +4,8 @@ use crate::diagnostics::logger;
 thread_local! {
     pub static AABB_HIT_COUNT: Cell<usize> = Cell::new(0);
     pub static OBJECT_HIT_COUNT: Cell<usize> = Cell::new(0);
+    pub static LEFT_NODE_HIT_COUNT: Cell<usize> = Cell::new(0);
+    pub static RIGHT_NODE_HIT_COUNT: Cell<usize> = Cell::new(0);
 }
 
 pub fn report() {
@@ -24,6 +26,8 @@ pub fn report() {
             }
         })
     });
+    LEFT_NODE_HIT_COUNT.with(report_count("Left nodes"));
+    RIGHT_NODE_HIT_COUNT.with(report_count("Right nodes"));
 }
 
 pub fn bump_count() -> impl Fn(&Cell<usize>) {

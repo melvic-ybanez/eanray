@@ -9,7 +9,6 @@ use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
-use crate::diagnostics::metrics;
 
 pub struct Camera {
     image: Image,
@@ -82,8 +81,6 @@ impl Camera {
 
         let duration = start.elapsed();
         println!("Done. Rendering time: {:?}", duration);
-
-        metrics::report();
 
         Ok(())
     }

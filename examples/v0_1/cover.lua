@@ -78,8 +78,8 @@ make_small_moving_sphere(Point:new(7.2, bouncing_radius, 3.2), true)
 objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:new(Color.random() * Color.random())))
 objects:add(Sphere:stationary(Point:new(5.7, small_radius, 1), small_radius, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
 
-local camera = engine.Camera:new(400, 16 / 9)
-camera.samples_per_pixel = 100
+local camera = engine.Camera:new(1200, 16 / 9)
+camera.samples_per_pixel = 500
 camera.max_depth = 50
 
 camera.field_of_view = 20

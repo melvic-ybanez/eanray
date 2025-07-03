@@ -27,6 +27,8 @@ impl<'a> BVH<'a> {
     }
 
     pub fn from_objects(objects: &mut Vec<Rc<Hittable<'a>>>, start: usize, end: usize) -> Self {
+        metrics::increment_bvh_init_count();
+
         let axis = math::random_int(0, 2);
 
         let comparator = if axis == Axis::X as i32 {
@@ -61,9 +63,10 @@ impl<'a> BVH<'a> {
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        metrics::increment_bvh_hit_count();
+        metrics::increment_bvh_hit_attempt_count();
 
         if !self.bbox.hit(ray, ray_t) {
+            metrics::increment_bvh_miss_count();
             return None;
         }
 
@@ -71,13 +74,13 @@ impl<'a> BVH<'a> {
             self.right
                 .hit(ray, &Interval::new(ray_t.min, t_max))
                 .and_then(|hit| {
-                    metrics::increment_right_node_hit_count();
+                    metrics::increment_right_node_hit_attempt_count();
                     Some(hit)
                 })
         };
 
         if let Some(left_rec) = self.left.hit(ray, ray_t) {
-            metrics::increment_left_node_hit_count();
+            metrics::increment_left_node_hit_attempt_count();
             hit_right(left_rec.t()).or(Some(left_rec))
         } else {
             hit_right(ray_t.max)

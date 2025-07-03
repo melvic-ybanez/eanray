@@ -14,7 +14,7 @@ macro_rules! define_metric {
             }
 
             #[inline]
-            pub fn [<get_$name>]() -> Option<u64> {
+            pub fn [<get_$name:lower>]() -> Option<u64> {
                 if $crate::diagnostics::metrics::metrics_enabled() {
                     Some($name.with(|c| c.get()))
                 } else {

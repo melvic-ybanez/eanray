@@ -11,31 +11,32 @@ mod settings;
 mod diagnostics;
 
 fn main() -> mlua::Result<()> {
+    metrics::enable_metrics(true);
+    env_logger::init();
+    
     let mut scene_script = String::new();
     io::stdin().read_to_string(&mut scene_script)?;
-
+    
     let lua = Lua::new();
     interface::lua::set_engine(&lua)?;
-
+    
     let helpers = fs::read_to_string("scripts/helpers.lua")?;
     lua.load(&helpers).exec()?;
-
+    
     let scene_table = lua.load(scene_script).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;
-
+    
     let settings = Config::builder()
         .add_source(File::with_name("config"))
         .build()
         .map_err(mlua::Error::external)?
         .try_deserialize::<settings::Config>()
         .map_err(mlua::Error::external)?;
-
+    
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
-
-    metrics::enable_metrics(false);
-    env_logger::init();
     
     let result = scene.render(settings).map_err(mlua::Error::external);
+    
     metrics::report();
     result
 }

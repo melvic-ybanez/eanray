@@ -58,7 +58,7 @@ impl AABB {
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> bool {
-        metrics::increment_aabb_hit_count();
+        metrics::increment_aabb_hit_attempt_count();
         
         let ray_orig = ray.origin();
         let ray_dir = ray.direction();

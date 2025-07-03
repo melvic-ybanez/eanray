@@ -7,6 +7,7 @@ use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use crate::diagnostics::metrics;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Sphere<'a> {
@@ -59,6 +60,8 @@ impl<'a> Sphere<'a> {
     }
 
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        metrics::increment_object_hit_attempt_count();
+        
         let current_center = self.center.at(ray.time());
         let oc = &current_center - ray.origin();
         let a = ray.direction().dot(&ray.direction());

@@ -12,7 +12,7 @@ mod diagnostics;
 
 fn main() -> mlua::Result<()> {
     // TODO: This should be a command line param
-    diagnostics::enable_all(true);  
+    diagnostics::enable_all(false);  
     
     env_logger::init();
     

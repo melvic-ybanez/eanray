@@ -305,6 +305,10 @@ fn new_object_list_table(lua: &Lua) -> Result<Table> {
         lua,
         lua.create_function(|lua, this: Table| {
             let object_list_table = lua.create_table()?;
+            
+            object_list_table.set_metatable(Some(this.clone()));
+            this.set("__index", this.clone())?;
+            
             object_list_table.set(
                 "add",
                 lua.create_function(|lua, (this, object): (Table, Value)| {

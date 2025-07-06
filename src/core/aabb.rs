@@ -75,11 +75,11 @@ impl AABB {
             let t1 = (ax.max - ray_orig[axis]) * dir_inverse;
 
             if t0 < t1 {
-                t_min = t0.max(ray_t.min);
-                t_max = t1.min(ray_t.max);
+                if t0 > t_min { t_min = t0 }
+                if t1 < t_max { t_max = t1 }
             } else {
-                t_min = t1.max(ray_t.min);
-                t_max = t0.min(ray_t.max);
+                if t1 > t_min { t_min = t1 }
+                if t0 < t_max { t_max = t0 }
             }
 
             if t_max <= t_min {

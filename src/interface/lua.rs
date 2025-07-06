@@ -14,6 +14,7 @@ use mlua::{
 };
 use serde::{Deserialize, Serialize};
 use std::io;
+use crate::diagnostics::stats;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SceneSchema<'a> {

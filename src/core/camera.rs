@@ -9,6 +9,7 @@ use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
+use crate::diagnostics::stats;
 
 pub struct Camera {
     image: Image,
@@ -41,6 +42,8 @@ impl Camera {
         let ppm_file = File::create(config.app().scene().output_file())?;
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
+        
+        stats::report(world);
 
         // output the PPM contents
         writeln!(

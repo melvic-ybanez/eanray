@@ -11,7 +11,9 @@ mod settings;
 mod diagnostics;
 
 fn main() -> mlua::Result<()> {
-    metrics::enable_metrics(true);
+    // TODO: This should be a command line param
+    diagnostics::enable_all(true);  
+    
     env_logger::init();
     
     let mut scene_script = String::new();

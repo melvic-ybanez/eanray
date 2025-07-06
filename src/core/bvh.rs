@@ -8,25 +8,29 @@ use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::rc::Rc;
 
+pub type SharedNode<'a> = Rc<Hittable<'a>>;
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BVH<'a> {
-    left: Rc<Hittable<'a>>,
-    right: Rc<Hittable<'a>>,
+    left: SharedNode<'a>,
+    right: SharedNode<'a>,
     bbox: AABB,
 }
 
 impl<'a> BVH<'a> {
+    pub const PRIMITIVE_COUNT_PER_LEAF: u32 = 1;
+    
     pub fn from_list(mut list: HittableList<'a>) -> Self {
         let mut objects = list
             .objects_mut()
             .iter()
             .map(|object| Rc::new(object.clone()))
-            .collect::<Vec<Rc<Hittable<'a>>>>();
+            .collect::<Vec<SharedNode<'a>>>();
         let objects = &mut objects;
         Self::from_objects(objects, 0, objects.len())
     }
 
-    pub fn from_objects(objects: &mut Vec<Rc<Hittable<'a>>>, start: usize, end: usize) -> Self {
+    pub fn from_objects(objects: &mut Vec<SharedNode<'a>>, start: usize, end: usize) -> Self {
         metrics::increment_bvh_init_count();
 
         let axis = math::random_int(0, 2);
@@ -91,19 +95,19 @@ impl<'a> BVH<'a> {
         &self.bbox
     }
 
-    pub fn box_x_compare(a: &Rc<Hittable>, b: &Rc<Hittable>) -> Ordering {
+    pub fn box_x_compare(a: &SharedNode, b: &SharedNode) -> Ordering {
         Self::box_compare(a, b, &Axis::X)
     }
 
-    pub fn box_y_compare(a: &Rc<Hittable>, b: &Rc<Hittable>) -> Ordering {
+    pub fn box_y_compare(a: &SharedNode, b: &SharedNode) -> Ordering {
         Self::box_compare(a, b, &Axis::Y)
     }
 
-    pub fn box_z_compare(a: &Rc<Hittable>, b: &Rc<Hittable>) -> Ordering {
+    pub fn box_z_compare(a: &SharedNode, b: &SharedNode) -> Ordering {
         Self::box_compare(a, b, &Axis::Z)
     }
 
-    pub fn box_compare(a: &Rc<Hittable>, b: &Rc<Hittable>, axis_index: &Axis) -> Ordering {
+    pub fn box_compare(a: &SharedNode, b: &SharedNode, axis_index: &Axis) -> Ordering {
         let a_axis_interval = a.bounding_box().axis_interval(axis_index);
         let b_axis_interval = b.bounding_box().axis_interval(axis_index);
         if a_axis_interval.min < b_axis_interval.min {
@@ -113,5 +117,13 @@ impl<'a> BVH<'a> {
         } else {
             Ordering::Equal
         }
+    }
+    
+    pub fn left(&self) -> SharedNode<'a> {
+        self.left.clone()
+    } 
+    
+    pub fn right(&self) -> SharedNode<'a> {
+        self.right.clone()
     }
 }

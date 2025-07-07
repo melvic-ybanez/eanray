@@ -1,8 +1,8 @@
 use crate::core::math::interval::Interval;
 use crate::core::math::{Axis, Point};
 use crate::core::Ray;
-use serde::{Deserialize, Serialize};
 use crate::diagnostics::metrics;
+use serde::{Deserialize, Serialize};
 
 /// Axis-aligned Bounding Box
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -15,6 +15,14 @@ pub struct AABB {
 impl AABB {
     pub fn empty() -> Self {
         Self::new(Interval::empty(), Interval::empty(), Interval::empty())
+    }
+
+    pub fn universe() -> Self {
+        Self::new(
+            Interval::universe(),
+            Interval::universe(),
+            Interval::universe(),
+        )
     }
 
     pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
@@ -75,11 +83,19 @@ impl AABB {
             let t1 = (ax.max - ray_orig[axis]) * dir_inverse;
 
             if t0 < t1 {
-                if t0 > t_min { t_min = t0 }
-                if t1 < t_max { t_max = t1 }
+                if t0 > t_min {
+                    t_min = t0
+                }
+                if t1 < t_max {
+                    t_max = t1
+                }
             } else {
-                if t1 > t_min { t_min = t1 }
-                if t0 < t_max { t_max = t0 }
+                if t1 > t_min {
+                    t_min = t1
+                }
+                if t0 < t_max {
+                    t_max = t0
+                }
             }
 
             if t_max <= t_min {
@@ -88,5 +104,19 @@ impl AABB {
         }
 
         true
+    }
+
+    pub fn longest_axis(&self) -> Axis {
+        if self.x.size() > self.y.size() {
+            if self.x.size() > self.z.size() {
+                Axis::X
+            } else {
+                Axis::Z
+            }
+        } else if self.y.size() > self.z.size() {
+            Axis::Y
+        } else {
+            Axis::Z
+        }
     }
 }

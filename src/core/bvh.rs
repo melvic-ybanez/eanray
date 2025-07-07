@@ -19,7 +19,7 @@ pub struct BVH<'a> {
 
 impl<'a> BVH<'a> {
     pub const PRIMITIVE_COUNT_PER_LEAF: u32 = 1;
-    
+
     pub fn from_list(mut list: HittableList<'a>) -> Self {
         let mut objects = list
             .objects_mut()
@@ -33,11 +33,16 @@ impl<'a> BVH<'a> {
     pub fn from_objects(objects: &mut Vec<SharedNode<'a>>, start: usize, end: usize) -> Self {
         metrics::increment_bvh_init_count();
 
-        let axis = math::random_int(0, 2);
+        let mut bbox = AABB::empty();
+        for i in start..end {
+            bbox = AABB::from_boxes(&bbox, objects[i].bounding_box());
+        }
 
-        let comparator = if axis == Axis::X as i32 {
+        let axis = bbox.longest_axis();
+
+        let comparator = if axis == Axis::X {
             Self::box_x_compare
-        } else if axis == Axis::Y as i32 {
+        } else if axis == Axis::Y {
             Self::box_y_compare
         } else {
             Self::box_z_compare
@@ -56,13 +61,10 @@ impl<'a> BVH<'a> {
             (Rc::new(Hittable::BVH(left)), Rc::new(Hittable::BVH(right)))
         };
 
-        let left_bbox = left.bounding_box();
-        let right_bbox = right.bounding_box();
-
         Self {
             left: left.clone(),
             right: right.clone(),
-            bbox: AABB::from_boxes(left_bbox, right_bbox),
+            bbox,
         }
     }
 
@@ -118,11 +120,11 @@ impl<'a> BVH<'a> {
             Ordering::Equal
         }
     }
-    
+
     pub fn left(&self) -> SharedNode<'a> {
         self.left.clone()
-    } 
-    
+    }
+
     pub fn right(&self) -> SharedNode<'a> {
         self.right.clone()
     }

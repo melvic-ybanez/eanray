@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use rand::Rng;
 use std::ops::{Add, Mul};
 
@@ -38,6 +39,7 @@ pub fn random_int(min: i32, max: i32) -> i32 {
     random_range(min as Real, (max + 1) as Real) as i32
 }
 
+#[derive(PartialEq, Debug)]
 pub enum Axis {
     X,
     Y,

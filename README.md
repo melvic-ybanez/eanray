@@ -19,6 +19,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Lua scripting for the Scene Descriptions
 * Motion Blur
 * Bounding Volume Hierarchy
+* Diagnostics (Metrics, Statistics)
 
 ## How To Run
 
@@ -48,6 +49,8 @@ The core renderer is written in [Rust](https://www.rust-lang.org/). Scene descri
 provided by the user should be written in [Lua](https://www.lua.org/)
 
 ## References and Resources
+
+![rtnw_image_1](https://github.com/user-attachments/assets/95cc6833-c36d-4dd0-a1f9-4410d9eaeda7)
 
 [Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
 

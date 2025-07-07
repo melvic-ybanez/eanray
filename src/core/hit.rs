@@ -15,6 +15,8 @@ pub struct HitRecord<'a> {
     mat: &'a Material,
     t: Real,
     front_face: bool,
+    u: Real,
+    v: Real,
 }
 
 impl<'a> HitRecord<'a> {
@@ -25,6 +27,8 @@ impl<'a> HitRecord<'a> {
             mat: mat.0,
             t: t.0,
             front_face: front_face.0,
+            u: 0.0,
+            v: 0.0
         }
     }
 
@@ -56,6 +60,14 @@ impl<'a> HitRecord<'a> {
 
     pub fn t(&self) -> Real {
         self.t
+    }
+
+    pub fn u(&self) -> Real {
+        self.u
+    }
+
+    pub fn v(&self) -> Real {
+        self.v
     }
 }
 

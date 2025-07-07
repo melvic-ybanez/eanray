@@ -10,14 +10,14 @@ local objects = engine.ObjectList:new()
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(Color:new(0.76, 0.70, 0.50)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.76, 0.70, 0.50)))
   objects:add(ground)
 end
 
 make_ground()
 
 -- big spheres
-objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:new(Color:new(0.4, 0.2, 0.1))))
+objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:from_albedo(Color:new(0.4, 0.2, 0.1))))
 objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 
 local function make_group()
@@ -35,7 +35,7 @@ local bouncing_radius = 0.2
 
 local function make_small_lambertian(center)
   local albedo = Color.random() * Color.random() + Color:new(0.1, 0.2, 0)
-  objects:add(Sphere:stationary(center, small_radius, Lambertian:new(albedo)))
+  objects:add(Sphere:stationary(center, small_radius, Lambertian:from_albedo(albedo)))
 end
 
 local function make_small_metal(center)
@@ -58,7 +58,7 @@ local function make_small_moving_sphere(center, horizontal)
     moving_vec = Vec:new(0, 0, moving_comp)
   end
   local center2 = center + moving_vec
-  objects:add(Sphere:moving(center, center2, bouncing_radius, Lambertian:new(albedo)))
+  objects:add(Sphere:moving(center, center2, bouncing_radius, Lambertian:from_albedo(albedo)))
 end
 
 make_small_lambertian(Point:new(5.5, small_radius, 0))
@@ -74,7 +74,7 @@ make_small_moving_sphere(Point:new(6.5, bouncing_radius, -0.7), false)
 make_small_moving_sphere(Point:new(-0.5, bouncing_radius, 1), true)
 make_small_moving_sphere(Point:new(7.2, bouncing_radius, 3.2), true)
 
-objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:new(Color.random() * Color.random())))
+objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:from_albedo(Color.random() * Color.random())))
 objects:add(Sphere:stationary(Point:new(5.7, small_radius, 1), small_radius, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
 
 local camera = engine.Camera:new(1200, 16 / 9)

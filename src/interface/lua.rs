@@ -4,6 +4,7 @@ use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
 use crate::core::math::vector::{CanAdd, PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::Sphere;
+use crate::core::textures::{Checker, Texture};
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Camera, Color, Hittable, HittableList, Material};
 use crate::settings;
@@ -14,7 +15,6 @@ use mlua::{
 };
 use serde::{Deserialize, Serialize};
 use std::io;
-use crate::diagnostics::stats;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SceneSchema<'a> {
@@ -217,14 +217,25 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
 }
 
 fn new_lambertian_table(lua: &Lua) -> Result<Table> {
-    new_table(
+    let table = new_table(
         lua,
-        lua.create_function(|lua, (_, albedo): (Table, AnyUserData)| {
-            let albedo: Color = albedo.borrow::<Color>()?.clone();
-            let lambertian = Material::Lambertian(Lambertian::new(albedo));
+        lua.create_function(|lua, (_, texture): (Table, Value)| {
+            let texture: Texture = lua.from_value(texture)?;
+            let lambertian = Material::Lambertian(Lambertian::new(texture));
             Ok(lua.to_value(&lambertian))
         }),
-    )
+    )?;
+
+    table.set(
+        "from_albedo",
+        lua.create_function(|lua, (_, albedo): (Table, AnyUserData)| {
+            let albedo: Color = albedo.borrow::<Color>()?.clone();
+            let lambertian = Material::Lambertian(Lambertian::from_albedo(albedo));
+            Ok(lua.to_value(&lambertian))
+        })?,
+    )?;
+
+    Ok(table)
 }
 
 fn new_metal_table(lua: &Lua) -> Result<Table> {
@@ -284,6 +295,29 @@ fn new_materials_table(lua: &Lua) -> Result<Table> {
     Ok(materials)
 }
 
+fn new_checker_table(lua: &Lua) -> Result<Table> {
+    let table = lua.create_table()?;
+    table.set(
+        "from_colors",
+        lua.create_function(
+            |lua, (_, scale, c1, c2): (Table, Real, AnyUserData, AnyUserData)| {
+                let c1: Color = c1.borrow::<Color>()?.clone();
+                let c2: Color = c2.borrow::<Color>()?.clone();
+                let checker = Texture::Checker(Checker::from_colors(scale, c1, c2));
+                Ok(lua.to_value(&checker))
+            },
+        )?,
+    )?;
+
+    Ok(table)
+}
+
+fn new_textures_table(lua: &Lua) -> Result<Table> {
+    let textures = lua.create_table()?;
+    textures.set("Checker", new_checker_table(lua)?)?;
+    Ok(textures)
+}
+
 fn new_shapes_table(lua: &Lua) -> Result<Table> {
     let shapes = lua.create_table()?;
     shapes.set("Sphere", new_sphere_table(lua)?)?;
@@ -305,10 +339,10 @@ fn new_object_list_table(lua: &Lua) -> Result<Table> {
         lua,
         lua.create_function(|lua, this: Table| {
             let object_list_table = lua.create_table()?;
-            
+
             object_list_table.set_metatable(Some(this.clone()));
             this.set("__index", this.clone())?;
-            
+
             object_list_table.set(
                 "add",
                 lua.create_function(|lua, (this, object): (Table, Value)| {
@@ -354,6 +388,7 @@ pub fn set_engine(lua: &Lua) -> Result<()> {
     engine.set("math", new_math_table(lua)?)?;
     engine.set("Color", new_vec_like_table::<ColorKind>(lua)?)?;
     engine.set("materials", new_materials_table(lua)?)?;
+    engine.set("textures", new_textures_table(lua)?)?;
     engine.set("shapes", new_shapes_table(lua)?)?;
     engine.set("Camera", new_camera_table(lua)?)?;
     engine.set("ObjectList", new_object_list_table(lua)?)?;

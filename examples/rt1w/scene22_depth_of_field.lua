@@ -21,9 +21,9 @@ local objects = engine.ObjectList:new()
 
 objects:add_all(
 -- ground
-    Sphere:stationary(Point:new(0, -100.5, -1), 100, Lambertian:new(Color:new(0.8, 0.8, 0))),
+    Sphere:stationary(Point:new(0, -100.5, -1), 100, Lambertian:from_albedo(Color:new(0.8, 0.8, 0))),
 -- center (slightly further)
-    Sphere:stationary(Point:new(0, 0, -1.2), 0.5, Lambertian:new(Color:new(0.1, 0.2, 0.5))),
+    Sphere:stationary(Point:new(0, 0, -1.2), 0.5, Lambertian:from_albedo(Color:new(0.1, 0.2, 0.5))),
 -- left
     Sphere:stationary(Point:new(-1, 0, -1), 0.5, Dielectric:new(RefractiveIndex.GLASS)),
 -- bubble

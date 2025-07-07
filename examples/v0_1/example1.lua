@@ -10,13 +10,13 @@ local objects = engine.ObjectList:new()
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(Color:new(0.76, 0.70, 0.50)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.76, 0.70, 0.50)))
   objects:add(ground)
 end
 
 make_ground()
 
-objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:new(Color:new(0.4, 0.2, 0.1))))
+objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:from_albedo(Color:new(0.4, 0.2, 0.1))))
 objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 
 local function make_group()
@@ -33,7 +33,7 @@ local small_radius = 0.25
 
 local function make_small_lambertian(center)
   local albedo = Color.random() * Color.random()
-  objects:add(Sphere:stationary(center, small_radius, Lambertian:new(albedo)))
+  objects:add(Sphere:stationary(center, small_radius, Lambertian:from_albedo(albedo)))
 end
 
 local function make_small_metal(center)
@@ -55,7 +55,7 @@ make_small_lambertian(Point:new(2, small_radius, -2.5))
 make_small_lambertian(Point:new(-3.8, small_radius, 3.3))
 make_small_lambertian(Point:new(-3.5, small_radius, 2.5))
 make_small_metal(Point:new(-4.1, small_radius, 1.4))
-objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:new(Color.random() * Color.random())))
+objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:from_albedo(Color.random() * Color.random())))
 
 objects:add(Sphere:stationary(Point:new(5.7, small_radius, 1), small_radius, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
 

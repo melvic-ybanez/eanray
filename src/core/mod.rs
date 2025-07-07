@@ -7,8 +7,8 @@ mod ray;
 pub mod shapes;
 mod aabb;
 pub mod bvh;
+pub mod textures;
 
-use std::cell::Cell;
 pub use camera::Camera;
 pub use color::Color;
 pub use hit::Hittable;

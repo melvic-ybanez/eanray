@@ -11,7 +11,7 @@ local objects = ObjectList:new()
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(Color:new(0.5, 0.5, 0.5)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.5, 0.5, 0.5)))
   objects:add(ground)
 end
 
@@ -24,7 +24,7 @@ for a = -11, 10 do
     if (center - Point:new(4, 0.2, 0)):length() > 0.9 then
       if chooseMat < 0.8 then
         local albedo = Color.random() * Color.random()
-        material = Lambertian:new(albedo)
+        material = Lambertian:from_albedo(albedo)
         local center2 = center + Vec:new(0, engine.math.random_range(0, 0.5), 0)
         objects:add(Sphere:moving(center, center2, 0.2, material))
       elseif chooseMat < 0.95 then
@@ -43,7 +43,7 @@ end
 make_ground()
 objects:add_all(
     Sphere:stationary(Point:new(0, 1, 0), 1.0, Dielectric:new(Dielectric.RefractiveIndex.GLASS)),
-    Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:new(Color:new(0.4, 0.2, 0.1))),
+    Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:from_albedo(Color:new(0.4, 0.2, 0.1))),
     Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0))
 )
 

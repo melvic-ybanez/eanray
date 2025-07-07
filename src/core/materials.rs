@@ -2,6 +2,7 @@ use crate::core::hit::HitRecord;
 use crate::core::math::{Real, Vec3D};
 use crate::core::{math, Color, Ray};
 use serde::{Deserialize, Serialize};
+use crate::core::textures::{SolidColor, Texture};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Material {
@@ -20,7 +21,7 @@ impl Material {
     }
 
     pub fn new_lambertian(albedo: Color) -> Self {
-        Material::Lambertian(Lambertian::new(albedo))
+        Material::Lambertian(Lambertian::from_albedo(albedo))
     }
 
     pub fn new_metal(albedo: Color, fuzz: Real) -> Self {
@@ -34,12 +35,16 @@ impl Material {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Lambertian {
-    albedo: Color,
+    texture: Texture,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
-        Self { albedo }
+    pub fn new(texture: Texture) -> Self {
+        Self { texture }
+    }
+
+    pub fn from_albedo(albedo: Color) -> Self {
+        Self::new(Texture::SolidColor(SolidColor::new(albedo)))
     }
 
     fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
@@ -50,7 +55,7 @@ impl Lambertian {
             scatter_direction
         };
         let scattered = Ray::from_ref_origin_timed(rec.p(), scatter_direction, ray_in.time());
-        let attenuation = self.albedo.clone();
+        let attenuation = self.texture.value(rec.u(), rec.v(), rec.p());
         Some((scattered, attenuation))
     }
 }

@@ -19,6 +19,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Lua scripting for the Scene Descriptions
 * Motion Blur
 * Bounding Volume Hierarchy
+* Texture Mapping
 * Diagnostics (Metrics, Statistics)
 
 ## How To Run

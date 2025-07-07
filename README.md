@@ -18,6 +18,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Configurable Camera System
 * Lua scripting for the Scene Descriptions
 * Motion Blur
+* Bounding Volume Hierarchy
 
 ## How To Run
 

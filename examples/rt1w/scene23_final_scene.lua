@@ -1,3 +1,5 @@
+local final_scene = require("examples.rt1w.final_scene_utils")
+
 local Color = engine.Color
 local Point = engine.math.Point
 local Vec = engine.math.Vec
@@ -38,11 +40,7 @@ for a = -11, 10 do
 end
 
 make_ground()
-objects:add_all(
-    Sphere:stationary(Point:new(0, 1, 0), 1.0, Dielectric:new(Dielectric.RefractiveIndex.GLASS)),
-    Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:from_albedo(Color:new(0.4, 0.2, 0.1))),
-    Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0))
-)
+final_scene.make_big_3_spheres(objects)
 
 local camera = engine.Camera:new(1200, 16 / 9)
 camera.samples_per_pixel = 500

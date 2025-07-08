@@ -1,9 +1,8 @@
+use crate::diagnostics::metrics;
 use crate::interface::lua::SceneSchema;
 use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
-use std::io::Read;
-use std::{fs, io};
-use crate::diagnostics::metrics;
+use std::{env, fs};
 
 mod core;
 pub mod interface;
@@ -11,34 +10,53 @@ mod settings;
 mod diagnostics;
 
 fn main() -> mlua::Result<()> {
+    let args: Vec<String> = env::args().collect();
+
+    if args.len() != 2 {
+        let error_message = "Usage: {} <script_name>";
+        eprintln!("{} {}", error_message, args[0]);
+        return mlua::Result::Err(mlua::Error::external(error_message))
+    }
+
     // TODO: This should be a command line param
-    diagnostics::enable_all(false);  
-    
+    diagnostics::enable_all(false);
+
     env_logger::init();
-    
-    let mut scene_script = String::new();
-    io::stdin().read_to_string(&mut scene_script)?;
-    
     let lua = Lua::new();
-    interface::lua::set_engine(&lua)?;
-    
-    let helpers = fs::read_to_string("scripts/helpers.lua")?;
-    lua.load(&helpers).exec()?;
-    
-    let scene_table = lua.load(scene_script).eval()?;
+
+    path_setup(&lua)?;
+    engine_setup(&lua)?;
+
+    let script_name = args[1].clone();
+    let script_content = fs::read_to_string(script_name)?;
+
+    let scene_table = lua.load(script_content).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;
-    
+
     let settings = Config::builder()
         .add_source(File::with_name("config"))
         .build()
         .map_err(mlua::Error::external)?
         .try_deserialize::<settings::Config>()
         .map_err(mlua::Error::external)?;
-    
+
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
-    
+
     let result = scene.render(settings).map_err(mlua::Error::external);
-    
+
     metrics::report();
     result
+}
+
+/// Adds the current directory to the package paths
+fn path_setup(lua: &Lua) -> mlua::Result<()> {
+    let cwd = env::current_dir()?;
+    let scripts_dir = format!("{}/?.lua", cwd.display());
+    lua.load(&format!(r#"package.path = "{};" .. package.path"#, scripts_dir)).exec()
+}
+
+fn engine_setup(lua: &Lua) -> mlua::Result<()> {
+    interface::lua::set_engine(&lua)?;
+    let helpers = fs::read_to_string("scripts/helpers.lua")?;
+    lua.load(&helpers).exec()
 }

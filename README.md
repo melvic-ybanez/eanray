@@ -29,8 +29,10 @@ input stream. To make it easier for users to write and modify scenes, it's recom
 write them in files and feed the contents into Eanray:
 
 ```shell
-$ caro run < <path-to-lua-script> --release
+$ caro run <lua-script> --release
 ```
+
+or `RUST_LOG=info caro run <lua-script> --release` if you want to set the logging level to `INFO`.
 
 You should get an `output.ppm` that you can open with any image viewing program that
 supports PPM.

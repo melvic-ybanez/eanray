@@ -10,12 +10,6 @@ local Sphere = engine.shapes.Sphere
 
 local objects = engine.ObjectList:new()
 
-local function make_ground()
-  local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.5, 0.5, 0.5)))
-  objects:add(ground)
-end
-
 for a = -11, 10 do
   for b = -11, 10 do
     local chooseMat = engine.math.random()
@@ -39,19 +33,7 @@ for a = -11, 10 do
   end
 end
 
-make_ground()
+final_scene.make_ground(objects)
 final_scene.make_big_3_spheres(objects)
 
-local camera = engine.Camera:new(1200, 16 / 9)
-camera.samples_per_pixel = 500
-camera.max_depth = 50
-
-camera.field_of_view = 20
-camera.look_from = Point:new(13, 2, 3)
-camera.look_at = Point.ZERO
-camera.vup = Vec:new(0, 1, 0)
-
-camera.defocus_angle = 0.6
-camera.focus_distance = 10
-
-return engine.Scene:new(camera, objects)
+return engine.Scene:new(final_scene.setup_camera(true), objects)

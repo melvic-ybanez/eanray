@@ -2,7 +2,6 @@ local final_scene = require("examples.rt1w.final_scene_utils")
 
 local Color = engine.Color
 local Point = engine.math.Point
-local Vec = engine.math.Vec
 local Lambertian = engine.materials.Lambertian
 local Metal = engine.materials.Metal
 local Dielectric = engine.materials.Dielectric

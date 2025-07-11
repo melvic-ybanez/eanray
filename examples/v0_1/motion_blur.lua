@@ -6,30 +6,27 @@ local Metal = engine.materials.Metal
 local Dielectric = engine.materials.Dielectric
 local Sphere = engine.shapes.Sphere
 local ObjectList = engine.ObjectList
-local Image = engine.textures.Image
 
 local objects = ObjectList:new()
 
-local planets_dir = "examples/images/planets/"
-
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.8, 0.72, 0.62)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.76, 0.70, 0.50)))
   objects:add(ground)
 end
 
 make_ground()
 
 -- big spheres
-objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:new(Image:new(planets_dir .. "jupiter.jpg"))))
-objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, Lambertian:new(Image:new("examples/images/moon.jpg"))))
+objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:from_albedo(Color:new(0.4, 0.2, 0.1))))
+objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 
 local function make_group()
   local base_radius = 0.6
   local head_radius = 0.4
   local z = 2.5
-  objects:add(Sphere:stationary(Point:new(3, base_radius, z), base_radius, Lambertian:new(Image:new(planets_dir .. "venus_surface.jpg"))))
-  objects:add(Sphere:stationary(Point:new(3, base_radius * 2 + head_radius, z), head_radius, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
+  objects:add(Sphere:stationary(Point:new(3, base_radius, z), base_radius, Metal:new(Color:new(1, 0.5, 0.5), 0)))
+  objects:add(Sphere:stationary(Point:new(3, base_radius * 2 + head_radius, z), head_radius, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
 end
 
 make_group()
@@ -65,13 +62,9 @@ local function make_small_moving_sphere(center, horizontal)
   objects:add(Sphere:moving(center, center2, bouncing_radius, Lambertian:from_albedo(albedo)))
 end
 
-local function make_small_planet(center, filename)
-  objects:add(Sphere:stationary(center, small_radius, Lambertian:new(Image:new(planets_dir .. filename))))
-end
-
-make_small_planet(Point:new(5.5, small_radius, 0), "mars.jpg")
-make_small_planet(Point:new(2.5, small_radius, 1), "venus_atmosphere.jpg")
-make_small_planet(Point:new(5, small_radius, 2), "earth.jpg")
+make_small_lambertian(Point:new(5.5, small_radius, 0))
+make_small_lambertian(Point:new(2.5, small_radius, 1))
+make_small_metal(Point:new(5, small_radius, 2))
 make_small_glass(Point:new(4, small_radius, 3.3))
 make_small_lambertian(Point:new(2, small_radius, -2.5))
 make_small_lambertian(Point:new(-3.8, small_radius, 3.3))

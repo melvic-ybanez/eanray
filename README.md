@@ -1,4 +1,4 @@
-![motion_blur](https://github.com/user-attachments/assets/752fdd33-bd80-4ff2-a357-615b9b588c24)
+<img width="1200" height="675" alt="planets_on_ground2" src="https://github.com/user-attachments/assets/3d4a1ab1-eb82-4d01-8c17-d2f1ffb50cc9" />
 
 # Eanray
 

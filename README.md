@@ -57,4 +57,8 @@ provided by the user should be written in [Lua](https://www.lua.org/)
 
 [Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
 
+## Assets
+
+Planet textures by Solar System Scope, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+
 

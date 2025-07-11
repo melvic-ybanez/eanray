@@ -3,10 +3,11 @@ use crate::core::hit::{self, HitRecord};
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
-use crate::core::math::{Real, Vec3D};
+use crate::core::math::{Real, Vec3D, VecLike};
 use crate::core::ray::Ray;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use crate::core::math;
 use crate::diagnostics::metrics;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -87,16 +88,32 @@ impl<'a> Sphere<'a> {
             root.map(|root| {
                 let p = ray.at(root);
                 let outward_normal = UnitVec3D((&p - current_center) / self.radius);
+                let (u, v) = self.compute_uv(&outward_normal.0);
                 let (front_face, face_normal) = HitRecord::face_normal(&ray, outward_normal);
+                
                 HitRecord::new(
                     hit::P(p),
                     hit::Normal(face_normal),
                     hit::Mat(&self.mat),
                     hit::T(root),
                     hit::FrontFace(front_face),
+                    hit::U(u),
+                    hit::V(v)
                 )
             })
         }
+    }
+    
+    fn compute_uv(&self, p: &Vec3D) -> (Real, Real) {
+        // NOTE: `p` should have been a Point by definition, but I'll allow a Vec
+        // this time to avoid having to cast
+        
+        let theta = (-p.y).acos();
+        let phi = (-p.z).atan2(p.x) + math::PI;
+        
+        let u = phi / (2.0 * math::PI);
+        let v = theta / math::PI;
+        (u, v)
     }
 
     pub fn bounding_box(&self) -> &AABB {

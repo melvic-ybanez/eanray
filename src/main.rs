@@ -1,5 +1,5 @@
 use crate::diagnostics::metrics;
-use crate::interface::lua::SceneSchema;
+use crate::interface::schemas::SceneSchema;
 use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
 use std::{env, fs};

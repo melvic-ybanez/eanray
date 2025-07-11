@@ -20,15 +20,15 @@ pub struct HitRecord<'a> {
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(p: P, normal: Normal, mat: Mat<'a>, t: T, front_face: FrontFace) -> HitRecord {
+    pub fn new(p: P, normal: Normal, mat: Mat<'a>, t: T, front_face: FrontFace, u: U, v: V) -> HitRecord {
         HitRecord {
             p: p.0,
             normal: normal.0,
             mat: mat.0,
             t: t.0,
             front_face: front_face.0,
-            u: 0.0,
-            v: 0.0
+            u: u.0,
+            v: v.0
         }
     }
 
@@ -76,6 +76,8 @@ pub struct Normal(pub UnitVec3D);
 pub struct Mat<'a>(pub &'a Material);
 pub struct T(pub Real);
 pub struct FrontFace(pub bool);
+pub struct U(pub Real);
+pub struct V(pub Real);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Hittable<'a> {

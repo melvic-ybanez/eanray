@@ -1,5 +1,6 @@
 use crate::core::math::interval::Interval;
 use crate::core::math::{Point, Real};
+use crate::core::perlin::Perlin;
 use crate::core::Color;
 use image::{ImageReader, ImageResult, RgbImage};
 use serde::{Deserialize, Serialize};
@@ -10,6 +11,7 @@ pub enum Texture {
     SolidColor(SolidColor),
     Checker(Checker),
     Image(ImageTexture),
+    Noise(NoiseTexture),
 }
 
 impl Texture {
@@ -18,6 +20,7 @@ impl Texture {
             Texture::SolidColor(solid) => solid.value().clone(),
             Texture::Checker(checker) => checker.value(u, v, p),
             Texture::Image(image) => image.value(u, v, p),
+            Texture::Noise(noise) => noise.value(u, v, p),
         }
     }
 }
@@ -111,7 +114,6 @@ impl ImageTexture {
             let j = (v * self.image.height as f64) as u32;
             let pixel = self.image.get_pixel(i, j);
 
-
             let color_scale = 1.0 / 255.0;
             Color::new(
                 Self::linear_color(color_scale * pixel[0] as f64),
@@ -175,5 +177,20 @@ impl From<SerializeableImage> for RgbImage {
             log::error!("Unable to create image from raw");
             RgbImage::default()
         }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct NoiseTexture {
+    noise: Perlin,
+}
+
+impl NoiseTexture {
+    pub fn new() -> Self {
+        Self { noise: Perlin::new() }    
+    }
+    
+    fn value(&self, u: Real, v: Real, p: &Point) -> Color {
+        Color::white() * self.noise.noise(p)
     }
 }

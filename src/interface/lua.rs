@@ -3,14 +3,11 @@ use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
 use crate::core::math::vector::{PointKind, VecKind};
 use crate::core::math::{Point, Real, VecLike};
 use crate::core::shapes::Sphere;
-use crate::core::textures::{Checker, ImageTexture, Texture};
+use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
-use mlua::{
-    AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData,
-    Value,
-};
 use crate::interface::schemas::{CameraSchema, SceneSchema};
+use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 
 fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;
@@ -190,10 +187,21 @@ fn new_image_texture_table(lua: &Lua) -> Result<Table> {
     )
 }
 
+fn new_noise_texture_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(|lua, _: Table| {
+            let noise_texture = Texture::Noise(NoiseTexture::new());
+            Ok(lua.to_value(&noise_texture))
+        }),
+    )
+}
+
 fn new_textures_table(lua: &Lua) -> Result<Table> {
     let textures = lua.create_table()?;
     textures.set("Checker", new_checker_table(lua)?)?;
     textures.set("Image", new_image_texture_table(lua)?)?;
+    textures.set("Noise", new_noise_texture_table(lua)?)?;
     Ok(textures)
 }
 

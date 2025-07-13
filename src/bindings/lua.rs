@@ -6,7 +6,7 @@ use crate::core::shapes::Sphere;
 use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
-use crate::interface::schemas::{CameraSchema, SceneSchema};
+use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 
 fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {

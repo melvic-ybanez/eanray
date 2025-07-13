@@ -1,11 +1,11 @@
 use crate::diagnostics::metrics;
-use crate::interface::schemas::SceneSchema;
+use crate::bindings::schemas::SceneSchema;
 use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
 use std::{env, fs};
 
 mod core;
-pub mod interface;
+pub mod bindings;
 mod settings;
 mod diagnostics;
 
@@ -56,7 +56,7 @@ fn path_setup(lua: &Lua) -> mlua::Result<()> {
 }
 
 fn engine_setup(lua: &Lua) -> mlua::Result<()> {
-    interface::lua::set_engine(&lua)?;
+    bindings::lua::set_engine(&lua)?;
     let helpers = fs::read_to_string("scripts/helpers.lua")?;
     lua.load(&helpers).exec()
 }

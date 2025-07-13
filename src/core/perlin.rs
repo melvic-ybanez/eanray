@@ -1,12 +1,13 @@
 use crate::core::math;
-use crate::core::math::Point;
+use crate::core::math::vector::UnitVec3D;
+use crate::core::math::{Point, Vec3D};
 use serde::{Deserialize, Serialize};
 
 type Perm = Vec<usize>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Perlin {
-    rand_floats: Vec<f64>,
+    rand_vecs: Vec<UnitVec3D>,
     perm_x: Perm,
     perm_y: Perm,
     perm_z: Perm,
@@ -16,13 +17,13 @@ impl Perlin {
     pub const POINT_COUNT: usize = 256;
 
     pub fn new() -> Self {
-        let mut rand_floats = vec![0.0; Self::POINT_COUNT];
+        let mut rand_vecs = vec![UnitVec3D(Vec3D::zero()); Self::POINT_COUNT];
         for i in 0..Self::POINT_COUNT {
-            rand_floats[i] = math::random_real();
+            rand_vecs[i] = Vec3D::random_range(-1.0, 1.0).to_unit();
         }
 
         Self {
-            rand_floats,
+            rand_vecs,
             perm_x: Self::perlin_generate_perm(),
             perm_y: Self::perlin_generate_perm(),
             perm_z: Self::perlin_generate_perm(),
@@ -38,19 +39,20 @@ impl Perlin {
         let j = p.y.floor() as i32;
         let k = p.z.floor() as i32;
 
-        let mut c = [[[0.0; 2]; 2]; 2];
+        let mut c = vec![vec![vec![UnitVec3D(Vec3D::zero()); 2]; 2]; 2];
 
         for di in 0..2 {
             for dj in 0..2 {
                 for dk in 0..2 {
-                    c[di][dj][dk] = self.rand_floats[self.perm_x[((i + di as i32) & 255) as usize]
+                    c[di][dj][dk] = self.rand_vecs[self.perm_x[((i + di as i32) & 255) as usize]
                         ^ self.perm_y[((j + dj as i32) & 255) as usize]
                         ^ self.perm_z[((k + dk as i32) & 255) as usize]]
+                        .clone()
                 }
             }
         }
 
-        Self::trilinear_interp(c, u, v, w)
+        Self::perlin_interp(&c, u, v, w)
     }
 
     fn perlin_generate_perm() -> Perm {
@@ -71,15 +73,20 @@ impl Perlin {
         }
     }
 
-    fn trilinear_interp(c: [[[f64; 2]; 2]; 2], u: f64, v: f64, w: f64) -> f64 {
+    fn perlin_interp(c: &Vec<Vec<Vec<UnitVec3D>>>, u: f64, v: f64, w: f64) -> f64 {
+        let uu = u * u * (3.0 - 2.0 * u);
+        let vv = v * v * (3.0 - 2.0 * v);
+        let ww = w * w * (3.0 - 2.0 * w);
+
         let mut accum = 0.0;
         for i in 0..2 {
             for j in 0..2 {
                 for k in 0..2 {
-                    accum += (i as f64 * u + (1 - i) as f64 * (1.0 - u))
-                        * (j as f64 * v + (1 - j) as f64 * (1.0 - v))
-                        * (k as f64 * w + (1 - k) as f64 * (1.0 - w))
-                        * c[i as usize][j as usize][k as usize]
+                    let weight_v = Vec3D::new(u - i as f64, v - j as f64, w - k as f64);
+                    accum += (i as f64 * uu + (1 - i) as f64 * (1.0 - uu))
+                        * (j as f64 * vv + (1 - j) as f64 * (1.0 - vv))
+                        * (k as f64 * ww + (1 - k) as f64 * (1.0 - ww))
+                        * c[i as usize][j as usize][k as usize].0.dot(&weight_v)
                 }
             }
         }

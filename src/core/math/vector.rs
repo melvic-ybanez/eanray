@@ -22,6 +22,7 @@ pub struct VecLike<Kind> {
     _kind: PhantomData<Kind>,
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UnitVec3D(pub Vec3D);
 
 impl<K> VecLike<K> {

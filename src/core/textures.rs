@@ -195,6 +195,6 @@ impl NoiseTexture {
     }
 
     fn value(&self, u: Real, v: Real, p: &Point) -> Color {
-        Color::white() * 0.5 * (1.0 + self.noise.noise(&(self.scale * p)))
+        Color::new(0.5, 0.5, 0.5) * (1.0 + (self.scale * p.z + 10.0 * self.noise.turbolence(p, 7)).sin())
     }
 }

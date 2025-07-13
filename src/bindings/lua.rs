@@ -1,3 +1,4 @@
+use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::core::color::ColorKind;
 use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
 use crate::core::math::vector::{PointKind, VecKind};
@@ -6,7 +7,6 @@ use crate::core::shapes::Sphere;
 use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
-use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 
 fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
@@ -190,8 +190,8 @@ fn new_image_texture_table(lua: &Lua) -> Result<Table> {
 fn new_noise_texture_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, _: Table| {
-            let noise_texture = Texture::Noise(NoiseTexture::new());
+        lua.create_function(|lua, (_, scale): (Table, f64)| {
+            let noise_texture = Texture::Noise(NoiseTexture::new(scale));
             Ok(lua.to_value(&noise_texture))
         }),
     )

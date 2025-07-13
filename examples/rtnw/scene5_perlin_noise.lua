@@ -2,7 +2,7 @@ local Point = engine.math.Point
 local Lambertian = engine.materials.Lambertian
 local Sphere = engine.shapes.Sphere
 
-local pertext = engine.textures.Noise:new()
+local pertext = engine.textures.Noise:new(4)
 local objects = engine.ObjectList:new()
 
 objects:add(Sphere:stationary(Point:new(0, -1000, 0), 1000, Lambertian:new(pertext)))

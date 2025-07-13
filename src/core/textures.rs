@@ -183,14 +183,18 @@ impl From<SerializeableImage> for RgbImage {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct NoiseTexture {
     noise: Perlin,
+    scale: f64,
 }
 
 impl NoiseTexture {
-    pub fn new() -> Self {
-        Self { noise: Perlin::new() }    
+    pub fn new(scale: f64) -> Self {
+        Self {
+            noise: Perlin::new(),
+            scale,
+        }
     }
-    
+
     fn value(&self, u: Real, v: Real, p: &Point) -> Color {
-        Color::white() * self.noise.noise(p)
+        Color::white() * self.noise.noise(&(self.scale * p))
     }
 }

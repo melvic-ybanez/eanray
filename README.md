@@ -20,6 +20,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Motion Blur
 * Bounding Volume Hierarchy
 * Texture Mapping
+* Perlin Noise
 * Diagnostics (Metrics, Statistics)
 
 ## How To Run

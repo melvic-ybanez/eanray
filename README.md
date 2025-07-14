@@ -25,9 +25,8 @@ There is a plan to add more features in the future, but for now, the most releva
 
 ## How To Run
 
-At the time of this writing, Eanray can only accept scene descriptions from the standard
-input stream. To make it easier for users to write and modify scenes, it's recommended to
-write them in files and feed the contents into Eanray:
+At the time of this writing, Eanray can only accept Lua scripts as scene descriptions. To provide the Lua script you
+want to render, you need to pass its path as a command line argument:
 
 ```shell
 $ caro run <lua-script> --release
@@ -37,6 +36,8 @@ or `RUST_LOG=info caro run <lua-script> --release` if you want to set the loggin
 
 You should get an `output.ppm` that you can open with any image viewing program that
 supports PPM.
+
+Note: Instructions on running executables will be provided after the first release. 
 
 ### Examples
 
@@ -56,10 +57,10 @@ provided by the user should be written in [Lua](https://www.lua.org/)
 
 ![rtnw_image_1](https://github.com/user-attachments/assets/95cc6833-c36d-4dd0-a1f9-4410d9eaeda7)
 
-[Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
+[Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al.  
 
 ## Assets
 
-Planet textures by Solar System Scope, licensed under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Planet textures by Solar System Scope, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
 
 

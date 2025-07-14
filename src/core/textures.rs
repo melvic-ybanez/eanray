@@ -195,6 +195,10 @@ impl NoiseTexture {
     }
 
     fn value(&self, u: Real, v: Real, p: &Point) -> Color {
-        Color::new(0.5, 0.5, 0.5) * (1.0 + (self.scale * p.z + 10.0 * self.noise.turbolence(p, 7)).sin())
+        let base = Color::new(0.8, 0.72, 0.62); // TODO: Make this configurable
+
+        let noise = (self.scale * p.z + 10.0 * self.noise.turbulence(p, 7)).sin();
+        let brightness = 0.85 + 0.15 * noise; // 0.85 - 1.0
+        base * brightness
     }
 }

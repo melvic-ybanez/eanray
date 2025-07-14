@@ -6,7 +6,8 @@ local Metal = engine.materials.Metal
 local Dielectric = engine.materials.Dielectric
 local Sphere = engine.shapes.Sphere
 local ObjectList = engine.ObjectList
-local Image = engine.textures.Image
+local textures = engine.textures
+local Image = textures.Image
 
 local objects = ObjectList:new()
 
@@ -14,7 +15,7 @@ local planets_dir = "examples/images/planets/"
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.8, 0.72, 0.62)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(textures.Noise:new(4)))
   objects:add(ground)
 end
 

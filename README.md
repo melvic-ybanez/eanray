@@ -1,4 +1,4 @@
-<img width="1200" height="675" alt="planets_on_ground2" src="https://github.com/user-attachments/assets/3d4a1ab1-eb82-4d01-8c17-d2f1ffb50cc9" />
+<img width="1200" height="675" alt="planets_on_ground6" src="https://github.com/user-attachments/assets/d41e347b-2421-4722-9646-617c2f277193" />
 
 # Eanray
 

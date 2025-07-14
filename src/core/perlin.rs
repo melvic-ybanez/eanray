@@ -93,7 +93,7 @@ impl Perlin {
         accum
     }
 
-    pub fn turbolence(&self, p: &Point, depth: u32) -> f64 {
+    pub fn turbulence(&self, p: &Point, depth: u32) -> f64 {
         let mut accum = 0.0;
         let mut temp_p = p.clone();
         let mut weight = 1.0;

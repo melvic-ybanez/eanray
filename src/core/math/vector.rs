@@ -4,6 +4,7 @@ use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, Mul, Neg, Sub};
+use crate::impl_from_for_vec_like;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VecKind;
@@ -388,3 +389,6 @@ impl<K> Index<Axis> for VecLike<K> {
         &self[&index]
     }
 }
+
+impl_from_for_vec_like!(PointKind, VecKind);
+impl_from_for_vec_like!(VecKind, PointKind);

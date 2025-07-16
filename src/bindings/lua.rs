@@ -2,7 +2,8 @@ use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::core::color::ColorKind;
 use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
 use crate::core::math::vector::{PointKind, VecKind};
-use crate::core::math::{Point, Real, VecLike};
+use crate::core::math::{Point, Real, Vec3D, VecLike};
+use crate::core::shapes::quad::Quad;
 use crate::core::shapes::Sphere;
 use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::Hittable::BVH;
@@ -85,6 +86,22 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
         )?,
     )?;
     Ok(table)
+}
+
+fn new_quad_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(
+            |lua, (_, q, u, v, mat): (Table, AnyUserData, AnyUserData, AnyUserData, Value)| {
+                let q = from_user_data!(q, Point);
+                let u = from_user_data!(u, Vec3D);
+                let v = from_user_data!(v, Vec3D);
+                let mat: Material = lua.from_value(mat)?;
+                let quad = Hittable::Quad(Quad::new(q, u, v, mat));
+                Ok(lua.to_value(&quad))
+            },
+        ),
+    )
 }
 
 fn new_lambertian_table(lua: &Lua) -> Result<Table> {
@@ -215,6 +232,7 @@ fn new_textures_table(lua: &Lua) -> Result<Table> {
 fn new_shapes_table(lua: &Lua) -> Result<Table> {
     let shapes = lua.create_table()?;
     shapes.set("Sphere", new_sphere_table(lua)?)?;
+    shapes.set("Quad", new_quad_table(lua)?)?;
     Ok(shapes)
 }
 

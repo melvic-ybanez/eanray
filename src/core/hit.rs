@@ -5,9 +5,9 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::Real;
 use crate::core::ray::Ray;
+use crate::core::shapes::quad::Quad;
 use crate::core::shapes::sphere::Sphere;
 use serde::{Deserialize, Serialize};
-use crate::diagnostics::metrics;
 
 pub struct HitRecord<'a> {
     p: Point,
@@ -20,7 +20,15 @@ pub struct HitRecord<'a> {
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(p: P, normal: Normal, mat: Mat<'a>, t: T, front_face: FrontFace, u: U, v: V) -> HitRecord {
+    pub fn new(
+        p: P,
+        normal: Normal,
+        mat: Mat<'a>,
+        t: T,
+        front_face: FrontFace,
+        u: U,
+        v: V,
+    ) -> HitRecord {
         HitRecord {
             p: p.0,
             normal: normal.0,
@@ -28,7 +36,7 @@ impl<'a> HitRecord<'a> {
             t: t.0,
             front_face: front_face.0,
             u: u.0,
-            v: v.0
+            v: v.0,
         }
     }
 
@@ -84,6 +92,7 @@ pub enum Hittable<'a> {
     Sphere(Sphere<'a>),
     List(HittableList<'a>),
     BVH(BVH<'a>),
+    Quad(Quad),
 }
 
 impl<'a> Hittable<'a> {
@@ -92,6 +101,7 @@ impl<'a> Hittable<'a> {
             Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),
             Hittable::List(list) => list.hit(ray, ray_t),
             Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
+            Hittable::Quad(quad) => quad.hit(ray, ray_t),
         }
     }
 
@@ -100,6 +110,7 @@ impl<'a> Hittable<'a> {
             Hittable::Sphere(sphere) => sphere.bounding_box(),
             Hittable::List(list) => list.bounding_box(),
             Hittable::BVH(bvh) => bvh.bounding_box(),
+            Hittable::Quad(quad) => quad.bounding_box(),
         }
     }
 }
@@ -116,7 +127,7 @@ impl<'a> HittableList<'a> {
             objects: vec![],
             bbox: AABB::empty(),
         };
-        
+
         // call `add` for each item to update the bbox
         for object in objects {
             this.add(object);

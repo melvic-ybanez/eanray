@@ -14,7 +14,9 @@ pub struct AABB {
 
 impl AABB {
     pub fn empty() -> Self {
-        Self::new(Interval::empty(), Interval::empty(), Interval::empty())
+        let mut this = Self::new(Interval::empty(), Interval::empty(), Interval::empty());
+        this.pad_to_minimus();
+        this
     }
 
     pub fn universe() -> Self {
@@ -117,6 +119,19 @@ impl AABB {
             Axis::Y
         } else {
             Axis::Z
+        }
+    }
+
+    fn pad_to_minimus(&mut self) {
+        let delta = 0.0001;
+        if self.x.size() < delta {
+            self.x = self.x.expand(delta);
+        }
+        if self.y.size() < delta {
+            self.y = self.y.expand(delta);
+        }
+        if self.z.size() < delta {
+            self.z = self.z.expand(delta);
         }
     }
 }

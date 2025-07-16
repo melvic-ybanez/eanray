@@ -1,5 +1,5 @@
+use crate::core::bvh::{SharedNode, BVH};
 use crate::core::Hittable;
-use crate::core::bvh::{BVH, SharedNode};
 use crate::define_flag;
 use std::fmt::Display;
 
@@ -34,7 +34,7 @@ impl BVHStats {
 
     fn inspect_hittable(&mut self, hittable: &Hittable, depth: u32) {
         match hittable {
-            Hittable::Sphere(_) => {
+            Hittable::Sphere(_) | Hittable::Quad(_) => {
                 self.leaf_count += 1;
                 if depth > self.max_depth {
                     self.max_depth = depth;
@@ -118,7 +118,7 @@ impl BVHStats {
             "Average primitives per leaf",
             ideal_primitives_per_leaf,
             avg_primitives_per_leaf,
-            avg_primitives_per_leaf / ideal_primitives_per_leaf > 0.9
+            avg_primitives_per_leaf / ideal_primitives_per_leaf > 0.9,
         );
     }
 }

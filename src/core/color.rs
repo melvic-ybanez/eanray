@@ -1,7 +1,8 @@
 use crate::core::math::interval::Interval;
-use crate::core::math::vector::{CanAdd, Vec3D, VecLike};
+use crate::core::math::vector::{CanAdd, PointKind, Vec3D, VecKind, VecLike};
 use crate::core::math::Real;
 use serde::{Deserialize, Serialize};
+use crate::impl_from_for_vec_like;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ColorKind;
@@ -64,8 +65,7 @@ impl Color {
 
 impl CanAdd for ColorKind {}
 
-impl From<Vec3D> for Color {
-    fn from(v: Vec3D) -> Self {
-        Color::new(v.x, v.y, v.z)
-    }
-}
+impl_from_for_vec_like!(VecKind, ColorKind);
+impl_from_for_vec_like!(ColorKind, VecKind);
+impl_from_for_vec_like!(PointKind, ColorKind);
+impl_from_for_vec_like!(ColorKind, PointKind);

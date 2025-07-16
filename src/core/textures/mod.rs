@@ -1,10 +1,12 @@
 use crate::core::math::interval::Interval;
 use crate::core::math::{Point, Real};
-use crate::core::perlin::Perlin;
+use perlin::Perlin;
 use crate::core::Color;
 use image::{ImageReader, ImageResult, RgbImage};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
+
+mod perlin;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Texture {

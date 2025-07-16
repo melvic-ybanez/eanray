@@ -9,7 +9,7 @@ a PPM file representing the rendered image.
 
 There is a plan to add more features in the future, but for now, the most relevant ones are the following:
 
-* Ray-sphere intersection
+* Ray-object intersection
 * Color Shading
 * Objects/Hittables
 * Materials (Dielectrics, Lambertians, Metals)

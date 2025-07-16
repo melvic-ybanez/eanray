@@ -52,7 +52,7 @@ impl Perlin {
             }
         }
 
-        Self::perlin_interp(&c, u, v, w)
+        Self::perlin_interpolation(&c, u, v, w)
     }
 
     fn perlin_generate_perm() -> Perm {
@@ -73,7 +73,7 @@ impl Perlin {
         }
     }
 
-    fn perlin_interp(c: &Vec<Vec<Vec<UnitVec3D>>>, u: f64, v: f64, w: f64) -> f64 {
+    fn perlin_interpolation(c: &Vec<Vec<Vec<UnitVec3D>>>, u: f64, v: f64, w: f64) -> f64 {
         let uu = u * u * (3.0 - 2.0 * u);
         let vv = v * v * (3.0 - 2.0 * v);
         let ww = w * w * (3.0 - 2.0 * w);

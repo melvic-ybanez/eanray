@@ -15,7 +15,7 @@ local planets_dir = "examples/images/planets/"
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(textures.Noise:new(4)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(textures.Noise:new(4, Color:new(0.8, 0.72, 0.62))))
   objects:add(ground)
 end
 

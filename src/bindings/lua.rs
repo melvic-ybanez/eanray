@@ -9,6 +9,12 @@ use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 
+macro_rules! from_user_data {
+    ($name: ident, $t: ty) => {
+        $name.borrow::<$t>()?.clone()
+    };
+}
+
 fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;
     table.set("new", function?)?;
@@ -52,7 +58,7 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
         "stationary",
         lua.create_function(
             |lua, (_, center, radius, material): (Table, AnyUserData, Real, Value)| {
-                let center: Point = center.borrow::<Point>()?.clone();
+                let center: Point = from_user_data!(center, Point);
                 let material: Material = lua.from_value(material)?;
                 let sphere = Hittable::Sphere(Sphere::stationary(center, radius, material));
                 Ok(lua.to_value(&sphere))
@@ -70,8 +76,8 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
                 Real,
                 Value,
             )| {
-                let center1: Point = center1.borrow::<Point>()?.clone();
-                let center2: Point = center2.borrow::<Point>()?.clone();
+                let center1 = from_user_data!(center1, Point);
+                let center2 = from_user_data!(center2, Point);
                 let material: Material = lua.from_value(material)?;
                 let sphere = Hittable::Sphere(Sphere::moving(center1, center2, radius, material));
                 Ok(lua.to_value(&sphere))
@@ -94,7 +100,7 @@ fn new_lambertian_table(lua: &Lua) -> Result<Table> {
     table.set(
         "from_albedo",
         lua.create_function(|lua, (_, albedo): (Table, AnyUserData)| {
-            let albedo: Color = albedo.borrow::<Color>()?.clone();
+            let albedo: Color = from_user_data!(albedo, Color);
             let lambertian = Material::Lambertian(Lambertian::from_albedo(albedo));
             Ok(lua.to_value(&lambertian))
         })?,
@@ -107,7 +113,7 @@ fn new_metal_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
         lua.create_function(|lua, (_, albedo, fuzz): (Table, AnyUserData, Real)| {
-            let albedo: Color = albedo.borrow::<Color>()?.clone();
+            let albedo: Color = from_user_data!(albedo, Color);
             let metal = Material::Metal(Metal::new(albedo, fuzz));
             Ok(lua.to_value(&metal))
         }),
@@ -166,8 +172,8 @@ fn new_checker_table(lua: &Lua) -> Result<Table> {
         "from_colors",
         lua.create_function(
             |lua, (_, scale, c1, c2): (Table, Real, AnyUserData, AnyUserData)| {
-                let c1: Color = c1.borrow::<Color>()?.clone();
-                let c2: Color = c2.borrow::<Color>()?.clone();
+                let c1 = from_user_data!(c1, Color);
+                let c2 = from_user_data!(c2, Color);
                 let checker = Texture::Checker(Checker::from_colors(scale, c1, c2));
                 Ok(lua.to_value(&checker))
             },
@@ -190,8 +196,9 @@ fn new_image_texture_table(lua: &Lua) -> Result<Table> {
 fn new_noise_texture_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (_, scale): (Table, f64)| {
-            let noise_texture = Texture::Noise(NoiseTexture::new(scale));
+        lua.create_function(|lua, (_, scale, base_color): (Table, f64, AnyUserData)| {
+            let base_color: Color = from_user_data!(base_color, Color);
+            let noise_texture = Texture::Noise(NoiseTexture::new(scale, base_color));
             Ok(lua.to_value(&noise_texture))
         }),
     )

@@ -18,7 +18,7 @@ fn main() -> mlua::Result<()> {
         return mlua::Result::Err(mlua::Error::external(error_message))
     }
 
-    // TODO: This should be a command line param
+    // TODO: This should be a command line arg
     diagnostics::enable_all(false);
 
     env_logger::init();

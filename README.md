@@ -67,6 +67,6 @@ The result should look like the following image, except for the changes in the s
 
 ## Assets
 
-Planet textures by Solar System Scope, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Planet textures by [Solar System Scope](https://www.solarsystemscope.com/textures/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 

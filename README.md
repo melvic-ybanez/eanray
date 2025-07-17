@@ -2,7 +2,7 @@
 
 # Eanray
 
-Eanray is a simple Ray Tracer that converts a scene description (in a form of a script) into
+Eanray is a simple Ray Tracer that converts a scene description (in the form of a script) into
 a PPM file representing the rendered image.
 
 ## Features
@@ -10,6 +10,7 @@ a PPM file representing the rendered image.
 There is a plan to add more features in the future, but for now, the most relevant ones are the following:
 
 * Ray-object intersection
+  * Primitives: Spheres, Planar (Triangles, Quadrilaterals)
 * Color Shading
 * Objects/Hittables
 * Materials (Dielectrics, Lambertians, Metals)
@@ -29,7 +30,7 @@ At the time of this writing, Eanray can only accept Lua scripts as scene descrip
 want to render, you need to pass its path as a command line argument:
 
 ```shell
-$ caro run <lua-script> --release
+$ caro run <path-to-lua-script> --release
 ```
 
 or `RUST_LOG=info caro run <lua-script> --release` if you want to set the logging level to `INFO`.
@@ -55,12 +56,17 @@ provided by the user should be written in [Lua](https://www.lua.org/)
 
 ## References and Resources
 
+[Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
+
+[Here](examples/rt1w/scene23_final_scene.lua) is the Lua script that renders the Final Scene from the first book.
+
+The result should look like the following image, except for the changes in the small spheres' positions and materials caused by randomization:
+
 ![rtnw_image_1](https://github.com/user-attachments/assets/95cc6833-c36d-4dd0-a1f9-4410d9eaeda7)
 
-[Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al.  
 
 ## Assets
 
-Planet textures by Solar System Scope, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/)
+Planet textures by Solar System Scope, licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 

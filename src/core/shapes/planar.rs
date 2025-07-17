@@ -1,17 +1,21 @@
-use serde::{Deserialize, Serialize};
 use crate::core::aabb::AABB;
 use crate::core::hit::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::{hit, Material, Ray};
+use serde::{Deserialize, Serialize};
 
-/// Quadrilaterals. This is technically a parallelogram, but for some reason,
-/// Peter Shirley named it quad in his books, and I intend to adapt that name here. Also,
-/// I'm under the impression that `q`, `u`, and `v` are standard names in ray
-/// tracing, so I'll use them here as well.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Quad {
+pub enum Kind {
+    Quad(Quad),
+    Triangle(Triangle),
+}
+
+/// Represents any 2D planar primitive. I'm under the impression that `q`, `u`, and `v` are standard
+/// names in ray tracing, so I'll use them here as well.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Planar {
     q: Point,
     u: Vec3D,
     v: Vec3D,
@@ -20,10 +24,19 @@ pub struct Quad {
     normal: UnitVec3D,
     d: Real, // this is the D in Ax + By + Cz = D
     w: Vec3D,
+    kind: Kind,
 }
 
-impl Quad {
-    pub fn new(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
+impl Planar {
+    pub fn quad(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
+        Self::new(q, u, v, mat, Kind::Quad(Quad))
+    }
+
+    pub fn triangle(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
+        Self::new(q, u, v, mat, Kind::Triangle(Triangle))
+    }
+
+    pub fn new(q: Point, u: Vec3D, v: Vec3D, mat: Material, kind: Kind) -> Self {
         let n = u.cross(&v);
         let normal = n.to_unit();
         let d = normal.0.dot(&q.clone().into());
@@ -37,6 +50,7 @@ impl Quad {
             normal,
             d,
             w,
+            kind,
         };
         this.compute_bounding_box();
         this
@@ -86,12 +100,39 @@ impl Quad {
     }
 
     fn is_interior(&self, a: Real, b: Real) -> Option<(Real, Real)> {
+        match self.kind {
+            Kind::Quad(_) => Quad::is_interior(a, b),
+            Kind::Triangle(_) => Triangle::is_interior(a, b),
+        }
+    }
+}
+
+/// Quadrilaterals. This is technically a parallelogram, but for some reason,
+/// Peter Shirley named it quad in his books, and I intend to adapt that name here.
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Quad;
+
+impl Quad {
+    fn is_interior(a: Real, b: Real) -> Option<(Real, Real)> {
         let unit_interval = Interval::new(0.0, 1.0);
 
         if !unit_interval.contains(a) || !unit_interval.contains(b) {
             None
         } else {
             Some((a, b))
+        }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Triangle;
+
+impl Triangle {
+    fn is_interior(a: Real, b: Real) -> Option<(Real, Real)> {
+        if a > 0.0 && b > 0.0 && a + b < 1.0 {
+            Some((a, b))
+        } else {
+            None
         }
     }
 }

@@ -5,9 +5,9 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::Real;
 use crate::core::ray::Ray;
-use crate::core::shapes::quad::Quad;
 use crate::core::shapes::sphere::Sphere;
 use serde::{Deserialize, Serialize};
+use crate::core::shapes::planar::Planar;
 
 pub struct HitRecord<'a> {
     p: Point,
@@ -92,7 +92,7 @@ pub enum Hittable<'a> {
     Sphere(Sphere<'a>),
     List(HittableList<'a>),
     BVH(BVH<'a>),
-    Quad(Quad),
+    Planar(Planar),
 }
 
 impl<'a> Hittable<'a> {
@@ -101,7 +101,7 @@ impl<'a> Hittable<'a> {
             Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),
             Hittable::List(list) => list.hit(ray, ray_t),
             Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
-            Hittable::Quad(quad) => quad.hit(ray, ray_t),
+            Hittable::Planar(quad) => quad.hit(ray, ray_t),
         }
     }
 
@@ -110,7 +110,7 @@ impl<'a> Hittable<'a> {
             Hittable::Sphere(sphere) => sphere.bounding_box(),
             Hittable::List(list) => list.bounding_box(),
             Hittable::BVH(bvh) => bvh.bounding_box(),
-            Hittable::Quad(quad) => quad.bounding_box(),
+            Hittable::Planar(quad) => quad.bounding_box(),
         }
     }
 }

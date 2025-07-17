@@ -1,4 +1,4 @@
 pub mod sphere;
-pub mod quad;
+pub mod planar;
 
 pub use sphere::Sphere;

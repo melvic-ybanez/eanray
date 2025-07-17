@@ -34,7 +34,7 @@ impl BVHStats {
 
     fn inspect_hittable(&mut self, hittable: &Hittable, depth: u32) {
         match hittable {
-            Hittable::Sphere(_) | Hittable::Quad(_) => {
+            Hittable::Sphere(_) | Hittable::Planar(_) => {
                 self.leaf_count += 1;
                 if depth > self.max_depth {
                     self.max_depth = depth;

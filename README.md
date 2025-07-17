@@ -2,8 +2,8 @@
 
 # Eanray
 
-Eanray is a simple Ray Tracer that converts a scene description (in the form of a script) into
-a PPM file representing the rendered image.
+Eanray is a simple Ray Tracer, currently being written in Rust, that converts a Lua script describing the scene into a 
+PPM file representing the rendered image.
 
 ## Features
 

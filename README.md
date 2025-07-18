@@ -1,4 +1,4 @@
-<img width="1200" height="675" alt="planets_on_ground6" src="https://github.com/user-attachments/assets/d41e347b-2421-4722-9646-617c2f277193" />
+<img width="1200" height="675" alt="planets_on_ground8" src="https://github.com/user-attachments/assets/bea42041-ab0d-447a-92a5-1b69daef3ef9" />
 
 # Eanray
 
@@ -22,6 +22,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Bounding Volume Hierarchy
 * Texture Mapping
 * Perlin Noise
+* Light Sources
 * Diagnostics (Metrics, Statistics)
 
 ## How To Run

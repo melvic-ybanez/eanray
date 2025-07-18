@@ -1,6 +1,6 @@
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::core::color::ColorKind;
-use crate::core::materials::{refractive_index, Dielectric, Lambertian, Metal};
+use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::core::math::vector::{PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::planar::{Planar, Quad, Triangle};
@@ -59,7 +59,7 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
         "stationary",
         lua.create_function(
             |lua, (_, center, radius, material): (Table, AnyUserData, Real, Value)| {
-                let center: Point = from_user_data!(center, Point);
+                let center = from_user_data!(center, Point);
                 let material: Material = lua.from_value(material)?;
                 let sphere = Hittable::Sphere(Sphere::stationary(center, radius, material));
                 Ok(lua.to_value(&sphere))
@@ -158,6 +158,29 @@ fn new_dielectric_table(lua: &Lua) -> Result<Table> {
     Ok(table)
 }
 
+fn new_diffuse_light_table(lua: &Lua) -> Result<Table> {
+    let table = lua.create_table()?;
+
+    table.set(
+        "from_emission",
+        lua.create_function(|lua, (_, emission_color): (Table, AnyUserData)| {
+            let emission_color: Color = from_user_data!(emission_color, Color);
+            let diffuse_light = Material::DiffuseLight(DiffuseLight::from_emission(emission_color));
+            Ok(lua.to_value(&diffuse_light))
+        })?,
+    )?;
+    table.set(
+        "from_texture",
+        lua.create_function(|lua, (_, texture): (Table, Value)| {
+            let texture: Texture = lua.from_value(texture)?;
+            let diffuse_light = Material::DiffuseLight(DiffuseLight::from_texture(texture));
+            Ok(lua.to_value(&diffuse_light))
+        })?,
+    )?;
+
+    Ok(table)
+}
+
 fn new_math_table(lua: &Lua) -> Result<Table> {
     let table = lua.create_table()?;
 
@@ -180,6 +203,7 @@ fn new_materials_table(lua: &Lua) -> Result<Table> {
     materials.set("Lambertian", new_lambertian_table(lua)?)?;
     materials.set("Metal", new_metal_table(lua)?)?;
     materials.set("Dielectric", new_dielectric_table(lua)?)?;
+    materials.set("DiffuseLight", new_diffuse_light_table(lua)?)?;
     Ok(materials)
 }
 

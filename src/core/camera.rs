@@ -4,12 +4,13 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D, Vec3D, VecLike};
 use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
+use crate::diagnostics::stats;
+use crate::generate_optional_setter;
 use crate::settings::Config;
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
-use crate::diagnostics::stats;
 
 pub struct Camera {
     image: Image,
@@ -30,6 +31,8 @@ pub struct Camera {
     focus_distance: Real,
 
     defocus_disk: DefocusDisk,
+
+    background: Color,
 }
 
 impl Camera {
@@ -42,7 +45,7 @@ impl Camera {
         let ppm_file = File::create(config.app().scene().output_file())?;
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
-        
+
         stats::report(world);
 
         // output the PPM contents
@@ -119,15 +122,18 @@ impl Camera {
         if depth <= 0 {
             Color::black()
         } else if let Some(record) = world.hit(ray, &mut Interval::new(0.001, math::INFINITY)) {
+            let color_from_emission = record
+                .material()
+                .emitted(record.u(), record.v(), record.p());
+
             if let Some((scattered, attenuation)) = record.material().scatter(ray, &record) {
-                self.ray_color(&scattered, depth - 1, world) * attenuation
+                let color_from_scatter = self.ray_color(&scattered, depth - 1, world) * attenuation;
+                color_from_emission + color_from_scatter
             } else {
-                Color::black()
+                color_from_emission
             }
         } else {
-            let unit_direction = ray.direction().to_unit().0;
-            let a = math::normalize_to_01(unit_direction.y);
-            Color::white() * (1.0 - a) + Color::new(0.5, 0.7, 1.0) * a
+            self.background.clone()
         }
     }
 
@@ -158,6 +164,7 @@ pub struct CameraBuilder {
     vup: Option<Vec3D>,
     defocus_angle: Option<Real>,
     focus_distance: Option<Real>,
+    background: Option<Color>,
     config: &'static Config,
 }
 
@@ -174,59 +181,22 @@ impl CameraBuilder {
             vup: None,
             defocus_angle: None,
             focus_distance: None,
+            background: None,
             config,
         }
     }
 
-    pub fn image(&mut self, image: Image) -> &mut Self {
-        self.image = Some(image);
-        self
-    }
-
-    pub fn samples_per_pixel(&mut self, samples_per_pixel: u32) -> &mut Self {
-        self.samples_per_pixel = Some(samples_per_pixel);
-        self
-    }
-
-    pub fn antialiasing(&mut self, antialiasing: bool) -> &mut Self {
-        self.antialiasing = Some(antialiasing);
-        self
-    }
-
-    pub fn max_depth(&mut self, max_depth: u32) -> &mut Self {
-        self.max_depth = Some(max_depth);
-        self
-    }
-
-    pub fn field_of_view(&mut self, field_of_view: Real) -> &mut Self {
-        self.field_of_view = Some(field_of_view);
-        self
-    }
-
-    pub fn look_from(&mut self, look_from: Point) -> &mut Self {
-        self.look_from = Some(look_from);
-        self
-    }
-
-    pub fn look_at(&mut self, look_at: Point) -> &mut Self {
-        self.look_at = Some(look_at);
-        self
-    }
-
-    pub fn vup(&mut self, vup: Vec3D) -> &mut Self {
-        self.vup = Some(vup);
-        self
-    }
-
-    pub fn defocus_angle(&mut self, defocus_angle: Real) -> &mut Self {
-        self.defocus_angle = Some(defocus_angle);
-        self
-    }
-
-    pub fn focus_distance(&mut self, focus_distance: Real) -> &mut Self {
-        self.focus_distance = Some(focus_distance);
-        self
-    }
+    generate_optional_setter!(image, Image);
+    generate_optional_setter!(samples_per_pixel, u32);
+    generate_optional_setter!(antialiasing, bool);
+    generate_optional_setter!(max_depth, u32);
+    generate_optional_setter!(field_of_view, Real);
+    generate_optional_setter!(look_from, Point);
+    generate_optional_setter!(look_at, Point);
+    generate_optional_setter!(vup, Vec3D);
+    generate_optional_setter!(defocus_angle, Real);
+    generate_optional_setter!(focus_distance, Real);
+    generate_optional_setter!(background, Color);
 
     pub fn build(&self) -> Camera {
         fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
@@ -269,6 +239,10 @@ impl CameraBuilder {
             defocus_angle: self.defocus_angle.unwrap_or(defaults.defocus_angle()),
             focus_distance: self.focus_distance.unwrap_or(defaults.focus_distance()),
             defocus_disk: DefocusDisk::empty(),
+            background: self
+                .background
+                .clone()
+                .unwrap_or(build_vec_like(defaults.background())),
         };
 
         camera.defocus_disk = DefocusDisk::from_camera(&camera);

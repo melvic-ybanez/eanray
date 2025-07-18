@@ -3,6 +3,7 @@ use serde::Deserialize;
 
 pub type Vec3D = [Real; 3];
 pub type Point = Vec3D;
+pub type Color = Vec3D;
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
@@ -69,6 +70,7 @@ pub struct CameraDefaults {
     vup: Vec3D,
     defocus_angle: Real,
     focus_distance: Real,
+    background: Color,
 }
 
 impl CameraDefaults {
@@ -106,5 +108,9 @@ impl CameraDefaults {
 
     pub fn focus_distance(&self) -> Real {
         self.focus_distance
+    }
+
+    pub fn background(&self) -> Color {
+        self.background
     }
 }

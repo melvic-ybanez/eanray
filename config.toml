@@ -14,3 +14,4 @@ look_at = [0, 0, -1]
 vup = [0, 1, 0]
 defocus_angle = 0
 focus_distance = 10
+background = [0, 0, 0]

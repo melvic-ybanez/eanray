@@ -1,35 +1,36 @@
 use crate::core::hit::HitRecord;
-use crate::core::math::{Real, Vec3D};
+use crate::core::math::{Point, Real, Vec3D};
+use crate::core::textures::{SolidColor, Texture};
 use crate::core::{math, Color, Ray};
 use serde::{Deserialize, Serialize};
-use crate::core::textures::{SolidColor, Texture};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
     Dielectric(Dielectric),
+    DiffuseLight(DiffuseLight),
 }
 
 impl Material {
     pub fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         match self {
-            Material::Lambertian(lambertian) => lambertian.scatter(ray_in, rec),
-            Material::Metal(metal) => metal.scatter(ray_in, rec),
-            Material::Dielectric(dielectric) => dielectric.scatter(ray_in, rec),
+            Self::Lambertian(lambertian) => lambertian.scatter(ray_in, rec),
+            Self::Metal(metal) => metal.scatter(ray_in, rec),
+            Self::Dielectric(dielectric) => dielectric.scatter(ray_in, rec),
+            _ => None,
         }
-    }
-
-    pub fn new_lambertian(albedo: Color) -> Self {
-        Material::Lambertian(Lambertian::from_albedo(albedo))
-    }
-
-    pub fn new_metal(albedo: Color, fuzz: Real) -> Self {
-        Material::Metal(Metal::new(albedo, fuzz))
     }
 
     pub fn new_dielectric(refraction_index: Real) -> Self {
         Material::Dielectric(Dielectric::new(refraction_index))
+    }
+
+    pub fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
+        match self {
+            Self::DiffuseLight(diffuse_light) => diffuse_light.emitted(u, v, p),
+            _ => Color::black(),
+        }
     }
 }
 
@@ -105,7 +106,8 @@ impl Dielectric {
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let cannot_refract = ri * sin_theta > 1.0;
-        let direction = if cannot_refract || Self::reflectance(cos_theta, ri) > math::random_real() {
+        let direction = if cannot_refract || Self::reflectance(cos_theta, ri) > math::random_real()
+        {
             unit_direction.0.reflect(rec.normal())
         } else {
             Vec3D::refract(&unit_direction, rec.normal(), ri)
@@ -121,6 +123,25 @@ impl Dielectric {
         let r0 = (1.0 - refraction_index) / (1.0 + refraction_index);
         let r0 = r0 * r0;
         r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct DiffuseLight {
+    texture: Texture,
+}
+
+impl DiffuseLight {
+    pub fn from_texture(texture: Texture) -> Self {
+        Self { texture }
+    }
+
+    pub fn from_emission(emission_color: Color) -> Self {
+        Self::from_texture(Texture::SolidColor(SolidColor::new(emission_color)))
+    }
+
+    pub fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
+        self.texture.value(u, v, p)
     }
 }
 

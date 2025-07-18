@@ -1,13 +1,14 @@
-use crate::diagnostics::metrics;
 use crate::bindings::schemas::SceneSchema;
+use crate::diagnostics::metrics;
 use config::{Config, File};
-use mlua::{Lua, LuaSerdeExt};
+use mlua::{Error, Lua, LuaSerdeExt};
 use std::{env, fs};
 
-mod core;
 pub mod bindings;
-mod settings;
+mod common;
+mod core;
 mod diagnostics;
+mod settings;
 
 fn main() -> mlua::Result<()> {
     let args: Vec<String> = env::args().collect();
@@ -15,7 +16,7 @@ fn main() -> mlua::Result<()> {
     if args.len() != 2 {
         let error_message = "Usage: {} <script_name>";
         eprintln!("{} {}", error_message, args[0]);
-        return mlua::Result::Err(mlua::Error::external(error_message))
+        return mlua::Result::Err(mlua::Error::external(error_message));
     }
 
     // TODO: This should be a command line arg
@@ -52,7 +53,11 @@ fn main() -> mlua::Result<()> {
 fn path_setup(lua: &Lua) -> mlua::Result<()> {
     let cwd = env::current_dir()?;
     let scripts_dir = format!("{}/?.lua", cwd.display());
-    lua.load(&format!(r#"package.path = "{};" .. package.path"#, scripts_dir)).exec()
+    lua.load(&format!(
+        r#"package.path = "{};" .. package.path"#,
+        scripts_dir
+    ))
+    .exec()
 }
 
 fn engine_setup(lua: &Lua) -> mlua::Result<()> {

@@ -1,7 +1,7 @@
 use crate::core::math::interval::Interval;
 use crate::core::math::{Point, Real};
 use perlin::Perlin;
-use crate::core::Color;
+use crate::core::{math, Color};
 use image::{ImageReader, ImageResult, RgbImage};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
@@ -127,7 +127,7 @@ impl ImageTexture {
 
     /// Gamma correction (gamma = 1)
     fn linear_color(value: f64) -> f64 {
-        value.powf(2.2)
+        value.powf(math::GAMMA as f64)
     }
 }
 

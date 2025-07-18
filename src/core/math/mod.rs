@@ -14,6 +14,7 @@ pub use vector::VecLike;
 
 pub const INFINITY: Real = Real::INFINITY;
 pub const PI: Real = std::f64::consts::PI;
+pub const GAMMA: f32 = 2.2;
 
 pub fn degrees_to_radians(degrees: Real) -> Real {
     degrees * PI / 180.0

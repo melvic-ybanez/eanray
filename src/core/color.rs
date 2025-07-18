@@ -2,6 +2,7 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::{CanAdd, PointKind, Vec3D, VecKind, VecLike};
 use crate::core::math::Real;
 use serde::{Deserialize, Serialize};
+use crate::core::math;
 use crate::impl_from_for_vec_like;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -56,7 +57,7 @@ impl Color {
 
     fn linear_to_gamma(linear_component: Real) -> Real {
         if linear_component > 0.0 {
-            linear_component.sqrt()
+            linear_component.powf(1.0 / math::GAMMA as f64)
         } else {
             0.0
         }

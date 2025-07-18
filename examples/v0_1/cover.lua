@@ -8,6 +8,7 @@ local Sphere = engine.shapes.Sphere
 local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
+local DiffuseLight = engine.materials.DiffuseLight
 
 local objects = ObjectList:new()
 
@@ -15,25 +16,32 @@ local planets_dir = "examples/images/planets/"
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(textures.Noise:new(4, Color:new(0.8, 0.72, 0.62))))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(textures.Noise:new(4, Color:new(0.5, 0.5, 0.5))))
   objects:add(ground)
 end
 
 make_ground()
 
 -- big spheres
-objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, Lambertian:new(Image:new(planets_dir .. "jupiter.jpg"))))
-objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, Lambertian:new(Image:new("examples/images/moon.jpg"))))
+local moon = Lambertian:new(Image:new("examples/images/moon.jpg"))
+local jupiter = Lambertian:new(Image:new(planets_dir .. "jupiter.jpg"))
+objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, jupiter))
+objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, moon))
 
 local function make_group()
   local base_radius = 0.6
   local head_radius = 0.4
   local z = 2.5
-  objects:add(Sphere:stationary(Point:new(3, base_radius, z), base_radius, Lambertian:new(Image:new(planets_dir .. "venus_surface.jpg"))))
+  local sun = DiffuseLight:from_texture(Image:new("examples/images/sun.jpg"))
+  objects:add(Sphere:stationary(Point:new(3, base_radius, z), base_radius, sun))
   objects:add(Sphere:stationary(Point:new(3, base_radius * 2 + head_radius, z), head_radius, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 end
 
 make_group()
+
+local outer_light_radius = 7
+local outer_light = DiffuseLight:from_emission(Color:new(1, 1, 1))
+objects:add(Sphere:stationary(Point:new(4, outer_light_radius + 3, 2.3), outer_light_radius, outer_light))
 
 local small_radius = 0.25
 local bouncing_radius = 0.2

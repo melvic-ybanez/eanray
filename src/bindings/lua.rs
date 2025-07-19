@@ -1,4 +1,5 @@
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
+use crate::core::camera::Background;
 use crate::core::color::ColorKind;
 use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::core::math::vector::{PointKind, VecKind};
@@ -274,6 +275,30 @@ fn new_camera_table(lua: &Lua) -> Result<Table> {
     )
 }
 
+fn new_background_table(lua: &Lua) -> Result<Table> {
+    let table = lua.create_table()?;
+
+    table.set(
+        "from_color",
+        lua.create_function(|lua, (_, color): (Table, AnyUserData)| {
+            let color = from_user_data!(color, Color);
+            let background = Background::from_color(color);
+            Ok(lua.to_value(&background))
+        })?,
+    )?;
+    table.set(
+        "from_lerp",
+        lua.create_function(|lua, (_, start, end): (Table, AnyUserData, AnyUserData)| {
+            let start = from_user_data!(start, Color);
+            let end = from_user_data!(end, Color);
+            let background = Background::from_lerp(start, end);
+            Ok(lua.to_value(&background))
+        })?,
+    )?;
+
+    Ok(table)
+}
+
 fn new_object_list_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
@@ -331,6 +356,7 @@ pub fn set_engine(lua: &Lua) -> Result<()> {
     engine.set("textures", new_textures_table(lua)?)?;
     engine.set("shapes", new_shapes_table(lua)?)?;
     engine.set("Camera", new_camera_table(lua)?)?;
+    engine.set("Background", new_background_table(lua)?)?;
     engine.set("ObjectList", new_object_list_table(lua)?)?;
     engine.set("Scene", new_scene_table(lua)?)?;
     engine.set("BVH", new_bvh_table(lua)?)?;

@@ -1,3 +1,5 @@
+local common = require("examples.rt1w.common")
+
 local Sphere = engine.shapes.Sphere
 local Point = engine.math.Point
 local Lambertian = engine.materials.Lambertian
@@ -14,6 +16,7 @@ camera.field_of_view = 20
 camera.look_from = Point:new(-2, 2, 1)
 camera.look_at = Point:new(0, 0, -1)
 camera.vup = engine.math.Vec:new(0, 1, 0)
+camera.background = common.background
 
 local objects = engine.ObjectList:new()
 

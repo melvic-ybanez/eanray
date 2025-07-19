@@ -1,3 +1,5 @@
+local common = require("examples.rt1w.common")
+
 local Color = engine.Color
 local Point = engine.math.Point
 local Vec = engine.math.Vec
@@ -32,6 +34,8 @@ local function setup_camera(is_high)
 
   camera.defocus_angle = 0.6
   camera.focus_distance = 10
+  camera.background = common.background
+
   return camera
 end
 

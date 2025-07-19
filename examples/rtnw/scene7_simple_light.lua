@@ -1,3 +1,5 @@
+local common = require("examples.rt1w.common")
+
 local Point = engine.math.Point
 local Lambertian = engine.materials.Lambertian
 local Color = engine.Color
@@ -24,5 +26,7 @@ cam.look_at = Point:new(0, 2, 0)
 cam.vup = Vec:new(0, 1, 0)
 
 cam.defocus_angle = 0
+
+cam.background = common.background
 
 return engine.Scene:new(cam, objects)

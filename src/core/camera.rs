@@ -7,6 +7,7 @@ use crate::core::ray::Ray;
 use crate::diagnostics::stats;
 use crate::generate_optional_setter;
 use crate::settings::Config;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
@@ -32,7 +33,7 @@ pub struct Camera {
 
     defocus_disk: DefocusDisk,
 
-    background: Color,
+    background: Background,
 }
 
 impl Camera {
@@ -133,7 +134,14 @@ impl Camera {
                 color_from_emission
             }
         } else {
-            self.background.clone()
+            match &self.background {
+                Background::Color(color) => color.clone(),
+                Background::Lerp { start, end } => {
+                    let unit_direction = ray.direction().to_unit().0;
+                    let a = math::normalize_to_01(unit_direction.y);
+                    start * (1.0 - a) + end * a
+                }
+            }
         }
     }
 
@@ -164,7 +172,7 @@ pub struct CameraBuilder {
     vup: Option<Vec3D>,
     defocus_angle: Option<Real>,
     focus_distance: Option<Real>,
-    background: Option<Color>,
+    background: Option<Background>,
     config: &'static Config,
 }
 
@@ -196,7 +204,7 @@ impl CameraBuilder {
     generate_optional_setter!(vup, Vec3D);
     generate_optional_setter!(defocus_angle, Real);
     generate_optional_setter!(focus_distance, Real);
-    generate_optional_setter!(background, Color);
+    generate_optional_setter!(background, Background);
 
     pub fn build(&self) -> Camera {
         fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
@@ -242,7 +250,7 @@ impl CameraBuilder {
             background: self
                 .background
                 .clone()
-                .unwrap_or(build_vec_like(defaults.background())),
+                .unwrap_or(Background::from_color(build_vec_like(defaults.background()))),
         };
 
         camera.defocus_disk = DefocusDisk::from_camera(&camera);
@@ -383,5 +391,21 @@ impl DefocusDisk {
             horizontal: &camera.right.0 * defocus_radius,
             vertical: &camera.up.0 * defocus_radius,
         }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub enum Background {
+    Color(Color),
+    Lerp { start: Color, end: Color },
+}
+
+impl Background {
+    pub fn from_color(color: Color) -> Self {
+        Self::Color(color)
+    }
+
+    pub fn from_lerp(start: Color, end: Color) -> Self {
+        Self::Lerp { start, end }
     }
 }

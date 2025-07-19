@@ -2,7 +2,7 @@ use std::io;
 use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataMethods, Value};
 use serde::{Deserialize, Serialize};
 use crate::core::{Camera, Color, Hittable, HittableList};
-use crate::core::camera::Image;
+use crate::core::camera::{Background, Image};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::math::vector::CanAdd;
 use crate::settings;
@@ -40,6 +40,7 @@ pub struct CameraSchema {
     look_at: Option<Point>,
     defocus_angle: Option<Real>,
     focus_distance: Option<Real>,
+    background: Option<Background>,
     vup: Option<Vec3D>,
 }
 
@@ -56,6 +57,7 @@ impl CameraSchema {
             look_at: None,
             defocus_angle: None,
             focus_distance: None,
+            background: None,
             vup: None,
         }
     }
@@ -86,6 +88,10 @@ impl CameraSchema {
             .defocus_angle(self.defocus_angle.unwrap_or(defaults.defocus_angle()))
             .focus_distance(self.focus_distance.unwrap_or(defaults.focus_distance()))
             .vup(build_vec_like(&self.vup, defaults.vup()))
+            .background({
+                let default = defaults.background();
+                self.background.clone().unwrap_or(Background::from_color(Color::new(default[0], default[1], default[2])))
+            })
             .build()
     }
 }

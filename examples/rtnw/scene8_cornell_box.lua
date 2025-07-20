@@ -1,5 +1,6 @@
 local Lambertian = engine.materials.Lambertian
 local Quad = engine.shapes.Quad
+local Box = engine.shapes.Box
 local Point = engine.math.Point
 local Color = engine.Color
 local Vec = engine.math.Vec
@@ -17,18 +18,22 @@ objects:add_all(
     Quad:new(Point:new(343, 554, 332), Vec:new(-130, 0, 0), Vec:new(0, 0, -105), light),
     Quad:new(Point:new(0, 0, 0), Vec:new(555, 0, 0), Vec:new(0, 0, 555), white),
     Quad:new(Point:new(555, 555, 555), Vec:new(-555, 0, 0), Vec:new(0, 0, -555), white),
-    Quad:new(Point:new(0, 0, 555), Vec:new(555, 0, 0), Vec:new(0, 555, 0), white)
+    Quad:new(Point:new(0, 0, 555), Vec:new(555, 0, 0), Vec:new(0, 555, 0), white),
+
+-- boxes
+    Box:new(Point:new(130, 0, 65), Point:new(295, 165, 230), white),
+    Box:new(Point:new(265, 0, 295), Point:new(430, 330, 460), white)
 )
 
 local cam = engine.Camera:new(600, 1)
 cam.samples_per_pixel = 200
-cam.max_depth         = 50
-cam.background        = engine.Background:from_color(Color:new(0, 0, 0))
+cam.max_depth = 50
+cam.background = engine.Background:from_color(Color:new(0, 0, 0))
 
-cam.field_of_view     = 40
+cam.field_of_view = 40
 cam.look_from = Point:new(278, 278, -800)
-cam.look_at   = Point:new(278, 278, 0)
-cam.vup      = Vec:new(0, 1, 0)
+cam.look_at = Point:new(278, 278, 0)
+cam.vup = Vec:new(0, 1, 0)
 
 cam.defocus_angle = 0
 

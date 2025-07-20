@@ -3,11 +3,11 @@ use crate::core::bvh::BVH;
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
-use crate::core::math::Real;
+use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
+use crate::core::shapes::planar::Planar;
 use crate::core::shapes::sphere::Sphere;
 use serde::{Deserialize, Serialize};
-use crate::core::shapes::planar::Planar;
 
 pub struct HitRecord<'a> {
     p: Point,
@@ -150,6 +150,61 @@ impl<'a> HittableList<'a> {
                 object.hit(ray, ray_t)
             }
         })
+    }
+
+    pub fn make_box(a: Point, b: Point, mat: Material) -> Self {
+        let min = Point::new(a.x.min(b.x), a.y.min(b.y), a.z.min(b.z));
+        let max = Point::new(a.x.max(b.x), a.y.max(b.y), a.z.max(b.z));
+
+        let dx = Vec3D::new(max.x - min.x, 0.0, 0.0);
+        let dy = Vec3D::new(0.0, max.y - min.y, 0.0);
+        let dz = Vec3D::new(0.0, 0.0, max.z - min.z);
+
+        let sides = vec![
+            Planar::quad(
+                Point::new(min.x, min.y, max.z),
+                dx.clone(),
+                dy.clone(),
+                mat.clone(),
+            ), // front
+            Planar::quad(
+                Point::new(max.x, min.y, min.z),
+                -dx.clone(),
+                dy.clone(),
+                mat.clone(),
+            ), // back
+            Planar::quad(
+                Point::new(min.x, min.y, min.z),
+                dz.clone(),
+                dy.clone(),
+                mat.clone(),
+            ), // left
+            Planar::quad(
+                Point::new(max.x, min.y, max.z),
+                -dz.clone(),
+                dy.clone(),
+                mat.clone(),
+            ), // right
+            Planar::quad(
+                Point::new(min.x, max.y, max.z),
+                dx.clone(),
+                -dz.clone(),
+                mat.clone(),
+            ), // top
+            Planar::quad(
+                Point::new(min.x, min.y, min.z),
+                dx.clone(),
+                dz.clone(),
+                mat.clone(),
+            ), // bottom
+        ];
+
+        Self::from_vec(
+            sides
+                .iter()
+                .map(|side| Hittable::Planar(side.clone()))
+                .collect(),
+        )
     }
 
     pub fn bounding_box(&self) -> &AABB {

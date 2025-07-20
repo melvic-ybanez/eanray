@@ -105,6 +105,21 @@ fn new_planar_table(lua: &Lua, kind: planar::Kind) -> Result<Table> {
     )
 }
 
+fn new_box_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(
+            |lua, (_, a, b, mat): (Table, AnyUserData, AnyUserData, Value)| {
+                let a = from_user_data!(a, Point);
+                let b = from_user_data!(b, Point);
+                let mat = lua.from_value(mat)?;
+                let hl_box = Hittable::List(HittableList::make_box(a, b, mat));
+                Ok(lua.to_value(&hl_box))
+            },
+        ),
+    )
+}
+
 fn new_lambertian_table(lua: &Lua) -> Result<Table> {
     let table = new_table(
         lua,
@@ -262,6 +277,7 @@ fn new_shapes_table(lua: &Lua) -> Result<Table> {
         "Triangle",
         new_planar_table(lua, planar::Kind::Triangle(Triangle))?,
     )?;
+    shapes.set("Box", new_box_table(lua)?)?;
     Ok(shapes)
 }
 

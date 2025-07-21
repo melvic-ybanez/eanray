@@ -1,5 +1,6 @@
+use std::ops::Add;
 use crate::core::math::interval::Interval;
-use crate::core::math::{Axis, Point};
+use crate::core::math::{Axis, Point, Vec3D};
 use crate::core::Ray;
 use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
@@ -133,5 +134,21 @@ impl AABB {
         if self.z.size() < delta {
             self.z = self.z.expand(delta);
         }
+    }
+}
+
+impl Add<&Vec3D> for &AABB {
+    type Output = AABB;
+
+    fn add(self, offset: &Vec3D) -> Self::Output {
+        AABB::new(&self.x + offset.x, &self.y + offset.y, &self.z + offset.z)
+    }
+}
+
+impl Add<&AABB> for &Vec3D {
+    type Output = AABB;
+
+    fn add(self, bbox: &AABB) -> Self::Output {
+        bbox + self
     }
 }

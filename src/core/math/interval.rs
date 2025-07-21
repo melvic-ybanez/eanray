@@ -1,5 +1,7 @@
+use std::ops::Add;
 use serde::{Deserialize, Serialize};
 use crate::core::math::{self, Real};
+use crate::settings::Vec3D;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Interval {
@@ -49,5 +51,21 @@ impl Interval {
     pub fn expand(&self, delta: Real) -> Interval {
         let padding = delta / 2.0;
         Self::new(self.min - padding, self.max + padding)
+    }
+}
+
+impl Add<Real> for &Interval {
+    type Output = Interval;
+
+    fn add(self, displacement: Real) -> Self::Output {
+        Interval::new(self.min + displacement, self.max + displacement)
+    }
+}
+
+impl Add<&Interval> for Real {
+    type Output = Interval;
+
+    fn add(self, rhs: &Interval) -> Self::Output {
+        rhs + self
     }
 }

@@ -10,19 +10,19 @@ PPM file representing the rendered image.
 There is a plan to add more features in the future, but for now, the most relevant ones are the following:
 
 * Ray-object intersection
-  * Primitives: Spheres, Planar (Triangles, Quadrilaterals)
+  * Primitives: Spheres, Planar (Triangles, Quadrilaterals, Boxes)
 * Color Shading
-* Objects/Hittables
 * Materials (Dielectrics, Lambertians, Metals)
 * Antialising
 * Depth of Field (Defocus Blur)
 * Configurable Camera System
 * Lua scripting for the Scene Descriptions
-* Motion Blur
+* Motion Blur (currently supported only for Spheres)
 * Bounding Volume Hierarchy
 * Texture Mapping
 * Perlin Noise
 * Light Sources
+* Transformations (Translation)
 * Diagnostics (Metrics, Statistics)
 
 ## How To Run

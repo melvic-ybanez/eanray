@@ -219,3 +219,24 @@ impl<'a> HittableList<'a> {
         &mut self.objects
     }
 }
+
+pub struct Translate<'a> {
+    object: &'a Hittable<'a>,
+    offset: Vec3D,
+    bbox: AABB
+}
+
+impl<'a> Translate<'a> {
+    pub fn new(object: &'a Hittable<'a>, offset: Vec3D) -> Self {
+        let bbox = object.bounding_box() + &offset;
+        Self { object, offset, bbox }
+    }
+
+    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        let offset_origin = &(ray.origin() - &self.offset);
+        let offset_ray = Ray::from_ref_origin_timed(offset_origin, ray.direction().clone(), ray.time());
+        let mut hit_record = self.object.hit(&offset_ray, ray_t)?;
+        hit_record.p = hit_record.p + &self.offset;
+        Some(hit_record)
+    }
+}

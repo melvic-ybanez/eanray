@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::core::aabb::AABB;
 use crate::core::bvh::BVH;
 use crate::core::materials::Material;
@@ -93,6 +94,7 @@ pub enum Hittable<'a> {
     List(HittableList<'a>),
     BVH(BVH<'a>),
     Planar(Planar),
+    Translate(Translate<'a>)
 }
 
 impl<'a> Hittable<'a> {
@@ -102,6 +104,7 @@ impl<'a> Hittable<'a> {
             Hittable::List(list) => list.hit(ray, ray_t),
             Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
             Hittable::Planar(quad) => quad.hit(ray, ray_t),
+            Hittable::Translate(translate) => translate.hit(ray, ray_t)
         }
     }
 
@@ -111,6 +114,7 @@ impl<'a> Hittable<'a> {
             Hittable::List(list) => list.bounding_box(),
             Hittable::BVH(bvh) => bvh.bounding_box(),
             Hittable::Planar(quad) => quad.bounding_box(),
+            Hittable::Translate(translate) => translate.bounding_box()
         }
     }
 }
@@ -220,14 +224,15 @@ impl<'a> HittableList<'a> {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Translate<'a> {
-    object: &'a Hittable<'a>,
+    object: Rc<Hittable<'a>>,
     offset: Vec3D,
     bbox: AABB
 }
 
 impl<'a> Translate<'a> {
-    pub fn new(object: &'a Hittable<'a>, offset: Vec3D) -> Self {
+    pub fn new(object: Rc<Hittable<'a>>, offset: Vec3D) -> Self {
         let bbox = object.bounding_box() + &offset;
         Self { object, offset, bbox }
     }
@@ -238,5 +243,9 @@ impl<'a> Translate<'a> {
         let mut hit_record = self.object.hit(&offset_ray, ray_t)?;
         hit_record.p = hit_record.p + &self.offset;
         Some(hit_record)
+    }
+
+    pub fn bounding_box(&self) -> &AABB {
+        &self.bbox
     }
 }

@@ -1,18 +1,21 @@
-use std::rc::Rc;
 use crate::core::aabb::AABB;
 use crate::core::bvh::BVH;
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
+use crate::core::math::transforms::{RotateY, Translate};
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
 use crate::core::shapes::planar::Planar;
 use crate::core::shapes::sphere::Sphere;
 use serde::{Deserialize, Serialize};
+use std::rc::Rc;
+
+pub type ObjectRef<'a> = Rc<Hittable<'a>>;
 
 pub struct HitRecord<'a> {
-    p: Point,
-    normal: UnitVec3D,
+    pub p: Point,
+    pub normal: UnitVec3D,
     mat: &'a Material,
     t: Real,
     front_face: bool,
@@ -94,7 +97,8 @@ pub enum Hittable<'a> {
     List(HittableList<'a>),
     BVH(BVH<'a>),
     Planar(Planar),
-    Translate(Translate<'a>)
+    Translate(Translate<'a>),
+    RotateY(RotateY<'a>),
 }
 
 impl<'a> Hittable<'a> {
@@ -104,7 +108,8 @@ impl<'a> Hittable<'a> {
             Hittable::List(list) => list.hit(ray, ray_t),
             Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
             Hittable::Planar(quad) => quad.hit(ray, ray_t),
-            Hittable::Translate(translate) => translate.hit(ray, ray_t)
+            Hittable::Translate(translate) => translate.hit(ray, ray_t),
+            Hittable::RotateY(rotate_y) => rotate_y.hit(ray, ray_t),
         }
     }
 
@@ -114,7 +119,8 @@ impl<'a> Hittable<'a> {
             Hittable::List(list) => list.bounding_box(),
             Hittable::BVH(bvh) => bvh.bounding_box(),
             Hittable::Planar(quad) => quad.bounding_box(),
-            Hittable::Translate(translate) => translate.bounding_box()
+            Hittable::Translate(translate) => translate.bounding_box(),
+            Hittable::RotateY(rotate_y) => rotate_y.bounding_box(),
         }
     }
 }
@@ -221,31 +227,5 @@ impl<'a> HittableList<'a> {
 
     pub fn objects_mut(&mut self) -> &mut Vec<Hittable<'a>> {
         &mut self.objects
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Translate<'a> {
-    object: Rc<Hittable<'a>>,
-    offset: Vec3D,
-    bbox: AABB
-}
-
-impl<'a> Translate<'a> {
-    pub fn new(object: Rc<Hittable<'a>>, offset: Vec3D) -> Self {
-        let bbox = object.bounding_box() + &offset;
-        Self { object, offset, bbox }
-    }
-
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let offset_origin = &(ray.origin() - &self.offset);
-        let offset_ray = Ray::from_ref_origin_timed(offset_origin, ray.direction().clone(), ray.time());
-        let mut hit_record = self.object.hit(&offset_ray, ray_t)?;
-        hit_record.p = hit_record.p + &self.offset;
-        Some(hit_record)
-    }
-
-    pub fn bounding_box(&self) -> &AABB {
-        &self.bbox
     }
 }

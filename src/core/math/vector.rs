@@ -3,7 +3,7 @@ use crate::core::math::{Axis, Real};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
-use std::ops::{Add, Div, Index, Mul, Neg, Sub};
+use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
 use crate::impl_from_for_vec_like;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -387,6 +387,16 @@ impl<K> Index<Axis> for VecLike<K> {
 
     fn index(&self, index: Axis) -> &Self::Output {
         &self[&index]
+    }
+}
+
+impl<K> IndexMut<&Axis> for VecLike<K> {
+    fn index_mut(&mut self, index: &Axis) -> &mut Self::Output {
+        match index {
+            Axis::X => &mut self.x,
+            Axis::Y => &mut self.y,
+            Axis::Z => &mut self.z,
+        }
     }
 }
 

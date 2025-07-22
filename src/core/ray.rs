@@ -11,11 +11,11 @@ pub struct Ray<'a> {
 }
 
 impl<'a> Ray<'a> {
-    pub fn new(origin: Cow<'a, Point>, direction: Vec3D) -> Ray<'a> {
-        Self::timed(origin, direction, 0.0)
+    pub fn from_cow_origin(origin: Cow<'a, Point>, direction: Vec3D) -> Ray<'a> {
+        Self::from_cow_origin_timed(origin, direction, 0.0)
     }
 
-    pub fn timed(origin: Cow<'a, Point>, direction: Vec3D, time: Real) -> Ray<'a> {
+    pub fn from_cow_origin_timed(origin: Cow<'a, Point>, direction: Vec3D, time: Real) -> Ray<'a> {
         Self {
             origin,
             direction,
@@ -23,12 +23,12 @@ impl<'a> Ray<'a> {
         }
     }
 
-    pub fn from_ref_origin(origin: &'a Point, direction: Vec3D) -> Ray<'a> {
-        Self::new(Cow::Borrowed(origin), direction)
+    pub fn new(origin: &'a Point, direction: Vec3D) -> Ray<'a> {
+        Self::from_cow_origin(Cow::Borrowed(origin), direction)
     }
 
-    pub fn from_ref_origin_timed(origin: &'a Point, direction: Vec3D, time: Real) -> Ray<'a> {
-        Self::timed(Cow::Borrowed(origin), direction, time)
+    pub fn new_timed(origin: &'a Point, direction: Vec3D, time: Real) -> Ray<'a> {
+        Self::from_cow_origin_timed(Cow::Borrowed(origin), direction, time)
     }
 
     pub fn at(&self, t: Real) -> Point {

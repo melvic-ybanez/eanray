@@ -1,6 +1,6 @@
 pub mod camera;
 pub mod color;
-mod hit;
+pub mod hit;
 pub mod materials;
 pub mod math;
 mod ray;

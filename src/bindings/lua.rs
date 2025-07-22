@@ -2,6 +2,7 @@ use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::core::camera::Background;
 use crate::core::color::ColorKind;
 use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
+use crate::core::math::transforms::{RotateY, Translate};
 use crate::core::math::vector::{PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::planar::{Planar, Quad, Triangle};
@@ -10,6 +11,7 @@ use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
+use std::rc::Rc;
 
 macro_rules! from_user_data {
     ($name: ident, $t: ty) => {
@@ -281,6 +283,36 @@ fn new_shapes_table(lua: &Lua) -> Result<Table> {
     Ok(shapes)
 }
 
+fn new_translate_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(|lua, (_, object, offset): (Table, Value, AnyUserData)| {
+            let object: Hittable = lua.from_value(object)?;
+            let offset = from_user_data!(offset, Vec3D);
+            let translate = Hittable::Translate(Translate::new(Rc::new(object), offset));
+            Ok(lua.to_value(&translate))
+        }),
+    )
+}
+
+fn new_rotate_y_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(|lua, (_, object, angle): (Table, Value, Real)| {
+            let object: Hittable = lua.from_value(object)?;
+            let rotate_y = Hittable::RotateY(RotateY::new(Rc::new(object), angle));
+            Ok(lua.to_value(&rotate_y))
+        }),
+    )
+}
+
+fn new_transforms_table(lua: &Lua) -> Result<Table> {
+    let table = lua.create_table()?;
+    table.set("Translate", new_translate_table(lua)?)?;
+    table.set("RotateY", new_rotate_y_table(lua)?)?;
+    Ok(table)
+}
+
 fn new_camera_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
@@ -371,6 +403,7 @@ pub fn set_engine(lua: &Lua) -> Result<()> {
     engine.set("materials", new_materials_table(lua)?)?;
     engine.set("textures", new_textures_table(lua)?)?;
     engine.set("shapes", new_shapes_table(lua)?)?;
+    engine.set("transforms", new_transforms_table(lua)?)?;
     engine.set("Camera", new_camera_table(lua)?)?;
     engine.set("Background", new_background_table(lua)?)?;
     engine.set("ObjectList", new_object_list_table(lua)?)?;

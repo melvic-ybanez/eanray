@@ -76,7 +76,7 @@ impl Camera {
                         + (viewport.pixel_delta_horizontal() * i as Real)
                         + (viewport.pixel_delta_vertical() * j as Real);
                     let ray_direction = pixel_center - self.center();
-                    let ray = Ray::from_ref_origin(self.center(), ray_direction);
+                    let ray = Ray::new(self.center(), ray_direction);
                     self.ray_color(&ray, self.max_depth, world)
                 };
 
@@ -106,7 +106,7 @@ impl Camera {
         let direction = pixel_sample - origin.as_ref();
         let ray_time = math::random_real();
 
-        Ray::timed(origin, direction, ray_time)
+        Ray::from_cow_origin_timed(origin, direction, ray_time)
     }
 
     fn defocus_disk_sample(&self) -> Point {
@@ -139,7 +139,7 @@ impl Camera {
                 Background::Lerp { start, end } => {
                     let unit_direction = ray.direction().to_unit().0;
                     let a = math::normalize_to_01(unit_direction.y);
-                    start * (1.0 - a) + end * a
+                    math::lerp(start, end, a)
                 }
             }
         }

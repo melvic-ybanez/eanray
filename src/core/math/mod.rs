@@ -1,10 +1,11 @@
-use std::fmt::{Display, Formatter};
 use rand::Rng;
+use std::fmt::Display;
 use std::ops::{Add, Mul};
 
 pub mod interval;
-pub mod vector;
 mod macros;
+pub mod transforms;
+pub mod vector;
 
 pub type Real = f64;
 
@@ -61,4 +62,12 @@ impl Axis {
     pub const fn from_usize_unsafe(i: usize) -> Axis {
         Self::from_usize(i).unwrap()
     }
+}
+
+pub fn lerp<A>(start: A, end: A, a: Real) -> <A::Output as Add<A::Output>>::Output
+where
+    A: Mul<Real>,
+    A::Output: Add<A::Output>,
+{
+    start * (1.0 - a) + end * a
 }

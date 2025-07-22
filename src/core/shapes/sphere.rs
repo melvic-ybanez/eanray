@@ -53,7 +53,7 @@ impl<'a> Sphere<'a> {
         bbox: AABB,
     ) -> Self {
         Self {
-            center: Ray::new(Cow::Owned(center), direction),
+            center: Ray::from_cow_origin(Cow::Owned(center), direction),
             radius: Real::max(0.0, radius),
             mat,
             bbox,

@@ -1,4 +1,5 @@
-use crate::core::bvh::{SharedNode, BVH};
+use crate::core::bvh::BVH;
+use crate::core::hit::ObjectRef;
 use crate::core::Hittable;
 use crate::define_flag;
 use std::fmt::Display;
@@ -28,13 +29,16 @@ impl BVHStats {
         self.inspect_node(bvh.right(), depth + 1);
     }
 
-    fn inspect_node(&mut self, node: SharedNode, depth: u32) {
+    fn inspect_node(&mut self, node: ObjectRef, depth: u32) {
         self.inspect_hittable(&*node, depth);
     }
 
     fn inspect_hittable(&mut self, hittable: &Hittable, depth: u32) {
         match hittable {
-            Hittable::Sphere(_) | Hittable::Planar(_) | Hittable::Translate(_) => {
+            Hittable::Sphere(_)
+            | Hittable::Planar(_)
+            | Hittable::Translate(_)
+            | Hittable::RotateY(_) => {
                 self.leaf_count += 1;
                 if depth > self.max_depth {
                     self.max_depth = depth;

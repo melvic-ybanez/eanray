@@ -135,6 +135,18 @@ impl AABB {
             self.z = self.z.expand(delta);
         }
     }
+
+    pub fn x(&self) -> &Interval {
+        &self.x
+    }
+
+    pub fn y(&self) -> &Interval {
+        &self.y
+    }
+
+    pub fn z(&self) -> &Interval {
+        &self.z
+    }
 }
 
 impl Add<&Vec3D> for &AABB {

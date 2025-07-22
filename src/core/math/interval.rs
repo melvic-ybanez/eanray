@@ -1,7 +1,6 @@
-use std::ops::Add;
-use serde::{Deserialize, Serialize};
 use crate::core::math::{self, Real};
-use crate::settings::Vec3D;
+use serde::{Deserialize, Serialize};
+use std::ops::Add;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Interval {

@@ -55,7 +55,7 @@ impl Lambertian {
         } else {
             scatter_direction
         };
-        let scattered = Ray::from_ref_origin_timed(rec.p(), scatter_direction, ray_in.time());
+        let scattered = Ray::new_timed(rec.p(), scatter_direction, ray_in.time());
         let attenuation = self.texture.value(rec.u(), rec.v(), rec.p());
         Some((scattered, attenuation))
     }
@@ -78,7 +78,7 @@ impl Metal {
     fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         let reflected = ray_in.direction().reflect(&rec.normal());
         let reflected = reflected.to_unit().0 + Vec3D::random_unit().0 * self.fuzz;
-        let scattered = Ray::from_ref_origin_timed(rec.p(), reflected, ray_in.time());
+        let scattered = Ray::new_timed(rec.p(), reflected, ray_in.time());
         let attenuation = self.albedo.clone();
         Some((scattered, attenuation))
     }
@@ -113,7 +113,7 @@ impl Dielectric {
             Vec3D::refract(&unit_direction, rec.normal(), ri)
         };
 
-        let scattered = Ray::from_ref_origin_timed(rec.p(), direction, ray_in.time());
+        let scattered = Ray::new_timed(rec.p(), direction, ray_in.time());
 
         Some((scattered, Color::white()))
     }

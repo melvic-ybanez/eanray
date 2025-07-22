@@ -1,6 +1,8 @@
 local Lambertian = engine.materials.Lambertian
 local Quad = engine.shapes.Quad
 local Box = engine.shapes.Box
+local Translate = engine.transforms.Translate
+local RotateY = engine.transforms.RotateY
 local Point = engine.math.Point
 local Color = engine.Color
 local Vec = engine.math.Vec
@@ -18,12 +20,18 @@ objects:add_all(
     Quad:new(Point:new(343, 554, 332), Vec:new(-130, 0, 0), Vec:new(0, 0, -105), light),
     Quad:new(Point:new(0, 0, 0), Vec:new(555, 0, 0), Vec:new(0, 0, 555), white),
     Quad:new(Point:new(555, 555, 555), Vec:new(-555, 0, 0), Vec:new(0, 0, -555), white),
-    Quad:new(Point:new(0, 0, 555), Vec:new(555, 0, 0), Vec:new(0, 555, 0), white),
-
--- boxes
-    Box:new(Point:new(130, 0, 65), Point:new(295, 165, 230), white),
-    Box:new(Point:new(265, 0, 295), Point:new(430, 330, 460), white)
+    Quad:new(Point:new(0, 0, 555), Vec:new(555, 0, 0), Vec:new(0, 555, 0), white)
 )
+
+local box1 = Box:new(Point:new(0, 0, 0), Point:new(165, 330, 165), white)
+box1 = RotateY:new(box1, 15)
+box1 = Translate:new(box1, Vec:new(265, 0, 295))
+objects:add(box1)
+
+local box2 = Box:new(Point:new(0, 0, 0), Point:new(165, 165, 165), white)
+box2 = RotateY:new(box2, -18)
+box2 = Translate:new(box2, Vec:new(130, 0, 65))
+objects:add(box2)
 
 local cam = engine.Camera:new(600, 1)
 cam.samples_per_pixel = 200

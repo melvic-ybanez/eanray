@@ -42,6 +42,7 @@ pub struct Lambertian {
 }
 
 impl Lambertian {
+    // TODO: Rename this to `from_texture`
     pub fn new(texture: Texture) -> Self {
         Self { texture }
     }

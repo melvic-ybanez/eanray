@@ -124,6 +124,7 @@ fn new_box_table(lua: &Lua) -> Result<Table> {
 }
 
 fn new_lambertian_table(lua: &Lua) -> Result<Table> {
+    // TODO: should be `from_texture` instead of `new`
     let table = new_table(
         lua,
         lua.create_function(|lua, (_, texture): (Table, Value)| {

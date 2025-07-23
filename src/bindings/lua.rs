@@ -1,6 +1,7 @@
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::core::camera::Background;
 use crate::core::color::ColorKind;
+use crate::core::hit::ConstantMedium;
 use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::core::math::transforms::{RotateY, Translate};
 use crate::core::math::vector::{PointKind, VecKind};
@@ -280,6 +281,7 @@ fn new_shapes_table(lua: &Lua) -> Result<Table> {
         new_planar_table(lua, planar::Kind::Triangle(Triangle))?,
     )?;
     shapes.set("Box", new_box_table(lua)?)?;
+    shapes.set("ConstantMedium", new_constant_medium_table(lua)?)?;
     Ok(shapes)
 }
 
@@ -310,6 +312,39 @@ fn new_transforms_table(lua: &Lua) -> Result<Table> {
     let table = lua.create_table()?;
     table.set("Translate", new_translate_table(lua)?)?;
     table.set("RotateY", new_rotate_y_table(lua)?)?;
+    Ok(table)
+}
+
+fn new_constant_medium_table(lua: &Lua) -> Result<Table> {
+    let table = lua.create_table()?;
+
+    table.set(
+        "from_texture",
+        lua.create_function(
+            |lua, (_, hittable, density, texture): (Table, Value, Real, Value)| {
+                let hittable = lua.from_value(hittable)?;
+                let texture = lua.from_value(texture)?;
+                let constant_medium = Hittable::ConstantMedium(ConstantMedium::from_texture(
+                    hittable, density, texture,
+                ));
+                Ok(lua.to_value(&constant_medium))
+            },
+        )?,
+    )?;
+    table.set(
+        "from_albedo",
+        lua.create_function(
+            |lua, (_, hittable, density, albedo): (Table, Value, Real, AnyUserData)| {
+                let hittable = lua.from_value(hittable)?;
+                let albedo = from_user_data!(albedo, Color);
+                let constant_medium = Hittable::ConstantMedium(ConstantMedium::from_albedo(
+                    hittable, density, albedo,
+                ));
+                Ok(lua.to_value(&constant_medium))
+            },
+        )?,
+    )?;
+
     Ok(table)
 }
 

@@ -10,15 +10,17 @@ pub enum Material {
     Metal(Metal),
     Dielectric(Dielectric),
     DiffuseLight(DiffuseLight),
+    Isotropic(Isotropic),
 }
 
 impl Material {
     pub fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
         match self {
-            Self::Lambertian(lambertian) => lambertian.scatter(ray_in, rec),
-            Self::Metal(metal) => metal.scatter(ray_in, rec),
-            Self::Dielectric(dielectric) => dielectric.scatter(ray_in, rec),
-            _ => None,
+            Self::Lambertian(lambertian) => Some(lambertian.scatter(ray_in, rec)),
+            Self::Metal(metal) => Some(metal.scatter(ray_in, rec)),
+            Self::Dielectric(dielectric) => Some(dielectric.scatter(ray_in, rec)),
+            Self::Isotropic(isotropic) => Some(isotropic.scatter(ray_in, rec)),
+            Self::DiffuseLight(_) => None,
         }
     }
 
@@ -48,7 +50,7 @@ impl Lambertian {
         Self::new(Texture::SolidColor(SolidColor::new(albedo)))
     }
 
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
+    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> (Ray<'a>, Color) {
         let scatter_direction = &rec.normal().0 + Vec3D::random_unit().0;
         let scatter_direction = if scatter_direction.near_zero() {
             rec.normal().0.clone()
@@ -57,7 +59,7 @@ impl Lambertian {
         };
         let scattered = Ray::new_timed(rec.p(), scatter_direction, ray_in.time());
         let attenuation = self.texture.value(rec.u(), rec.v(), rec.p());
-        Some((scattered, attenuation))
+        (scattered, attenuation)
     }
 }
 
@@ -75,12 +77,12 @@ impl Metal {
         }
     }
 
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
+    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> (Ray<'a>, Color) {
         let reflected = ray_in.direction().reflect(&rec.normal());
         let reflected = reflected.to_unit().0 + Vec3D::random_unit().0 * self.fuzz;
         let scattered = Ray::new_timed(rec.p(), reflected, ray_in.time());
         let attenuation = self.albedo.clone();
-        Some((scattered, attenuation))
+        (scattered, attenuation)
     }
 }
 
@@ -94,7 +96,7 @@ impl Dielectric {
         Self { refraction_index }
     }
 
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
+    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> (Ray<'a>, Color) {
         let ri = if rec.front_face() {
             1.0 / self.refraction_index
         } else {
@@ -115,7 +117,7 @@ impl Dielectric {
 
         let scattered = Ray::new_timed(rec.p(), direction, ray_in.time());
 
-        Some((scattered, Color::white()))
+        (scattered, Color::white())
     }
 
     /// Computes the reflectance using Schlick's Approximation
@@ -153,4 +155,27 @@ pub mod refractive_index {
     pub const AIR: Real = 1.0003;
     pub const WATER: Real = 1.333;
     pub const DIAMOND: Real = 2.417;
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Isotropic {
+    texture: Texture,
+}
+
+impl Isotropic {
+    pub fn from_albedo(albedo: Color) -> Self {
+        Self::from_texture(Texture::SolidColor(SolidColor::new(albedo)))
+    }
+
+    pub fn from_texture(texture: Texture) -> Self {
+        Self { texture }
+    }
+
+    pub fn scatter<'a>(&self, ray_in: &Ray<'a>, hit_record: &'a HitRecord<'a>) -> (Ray<'a>, Color) {
+        let scattered = Ray::new_timed(hit_record.p(), Vec3D::random_unit().0, ray_in.time());
+        let attenuation = self
+            .texture
+            .value(hit_record.u(), hit_record.v(), hit_record.p());
+        (scattered, attenuation)
+    }
 }

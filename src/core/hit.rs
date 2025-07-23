@@ -1,6 +1,6 @@
 use crate::core::aabb::AABB;
 use crate::core::bvh::BVH;
-use crate::core::materials::Material;
+use crate::core::materials::{Isotropic, Material};
 use crate::core::math::interval::Interval;
 use crate::core::math::transforms::{RotateY, Translate};
 use crate::core::math::vector::{Point, UnitVec3D};
@@ -8,6 +8,8 @@ use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
 use crate::core::shapes::planar::Planar;
 use crate::core::shapes::sphere::Sphere;
+use crate::core::textures::Texture;
+use crate::core::{math, Color};
 use serde::{Deserialize, Serialize};
 use std::rc::Rc;
 
@@ -99,6 +101,7 @@ pub enum Hittable<'a> {
     Planar(Planar),
     Translate(Translate<'a>),
     RotateY(RotateY<'a>),
+    ConstantMedium(ConstantMedium<'a>),
 }
 
 impl<'a> Hittable<'a> {
@@ -110,6 +113,7 @@ impl<'a> Hittable<'a> {
             Hittable::Planar(quad) => quad.hit(ray, ray_t),
             Hittable::Translate(translate) => translate.hit(ray, ray_t),
             Hittable::RotateY(rotate_y) => rotate_y.hit(ray, ray_t),
+            Hittable::ConstantMedium(constant_medium) => constant_medium.hit(ray, ray_t),
         }
     }
 
@@ -121,6 +125,7 @@ impl<'a> Hittable<'a> {
             Hittable::Planar(quad) => quad.bounding_box(),
             Hittable::Translate(translate) => translate.bounding_box(),
             Hittable::RotateY(rotate_y) => rotate_y.bounding_box(),
+            Hittable::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
         }
     }
 }
@@ -227,5 +232,83 @@ impl<'a> HittableList<'a> {
 
     pub fn objects_mut(&mut self) -> &mut Vec<Hittable<'a>> {
         &mut self.objects
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ConstantMedium<'a> {
+    boundary: ObjectRef<'a>,
+    neg_inv_density: Real,
+    phase_function: Material,
+}
+
+impl<'a> ConstantMedium<'a> {
+    pub fn new(boundary: ObjectRef<'a>, density: Real, phase_function: Material) -> Self {
+        Self {
+            boundary,
+            neg_inv_density: -1.0 / density,
+            phase_function,
+        }
+    }
+
+    pub fn from_texture(boundary: ObjectRef<'a>, density: Real, texture: Texture) -> Self {
+        Self::new(
+            boundary,
+            density,
+            Material::Isotropic(Isotropic::from_texture(texture)),
+        )
+    }
+
+    pub fn from_albedo(boundary: ObjectRef<'a>, density: Real, albedo: Color) -> Self {
+        Self::new(
+            boundary,
+            density,
+            Material::Isotropic(Isotropic::from_albedo(albedo)),
+        )
+    }
+
+    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        let mut rec1 = self.boundary.hit(ray, &Interval::universe())?;
+        let mut rec2 = self
+            .boundary
+            .hit(ray, &Interval::new(rec1.t + 0.0001, math::INFINITY))?;
+
+        if rec1.t < ray_t.min {
+            rec1.t = ray_t.min
+        }
+        if rec2.t > ray_t.max {
+            rec2.t = ray_t.max
+        }
+
+        if rec1.t >= rec2.t {
+            None
+        } else {
+            if rec1.t < 0.0 {
+                rec1.t = 0.0
+            }
+
+            let ray_length = ray.direction().length();
+            let distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
+            let hit_distance = self.neg_inv_density * math::random_real().log(std::f64::consts::E);
+
+            if hit_distance > distance_inside_boundary {
+                None
+            } else {
+                let t = rec1.t + hit_distance / ray_length;
+                Some(HitRecord::new(
+                    P(ray.at(t)),
+                    Normal(UnitVec3D(Vec3D::new(1.0, 0.0, 0.0))),
+                    Mat(&self.phase_function),
+                    T(t),
+                    FrontFace(true),
+                    U(0.0),
+                    V(0.0),
+                ))
+            }
+        }
+    }
+
+    pub fn bounding_box(&self) -> &AABB {
+        self.boundary.bounding_box()
     }
 }

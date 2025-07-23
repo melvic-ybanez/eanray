@@ -38,7 +38,8 @@ impl BVHStats {
             Hittable::Sphere(_)
             | Hittable::Planar(_)
             | Hittable::Translate(_)
-            | Hittable::RotateY(_) => {
+            | Hittable::RotateY(_)
+            | Hittable::ConstantMedium(_) => {
                 self.leaf_count += 1;
                 if depth > self.max_depth {
                     self.max_depth = depth;

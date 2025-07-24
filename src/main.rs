@@ -1,7 +1,7 @@
 use crate::bindings::schemas::SceneSchema;
 use crate::diagnostics::metrics;
 use config::{Config, File};
-use mlua::{Error, Lua, LuaSerdeExt};
+use mlua::{Lua, LuaSerdeExt};
 use std::{env, fs};
 
 pub mod bindings;
@@ -16,7 +16,7 @@ fn main() -> mlua::Result<()> {
     if args.len() != 2 {
         let error_message = "Usage: {} <script_name>";
         eprintln!("{} {}", error_message, args[0]);
-        return mlua::Result::Err(mlua::Error::external(error_message));
+        return Err(mlua::Error::external(error_message));
     }
 
     // TODO: This should be a command line arg

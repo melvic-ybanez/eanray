@@ -11,7 +11,7 @@ There is a plan to add more features in the future, but for now, the most releva
 
 * Ray-object intersection
   * Primitives: Spheres, Planar (Triangles, Quadrilaterals, Boxes, Constant Medium)
-* Color Shading
+* Global Illumination
 * Materials (Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic)
 * Antialising
 * Depth of Field (Defocus Blur)
@@ -58,11 +58,10 @@ provided by the user should be written in [Lua](https://www.lua.org/)
 
 [Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
 
-[Here](examples/rt1w/scene23_final_scene.lua) is the Lua script that renders the Final Scene from the first book.
+[Here](examples/rtnw/scene10_final_scene.lua) is the Lua script for Peter Shirley's "Sweet Dreams", the final image of the second book. 
+If you feed that to Eanray, you'll get the image below:
 
-The result should look like the following image, except for the changes in the small spheres' positions and materials caused by randomization:
-
-![rtnw_image_1](https://github.com/user-attachments/assets/95cc6833-c36d-4dd0-a1f9-4410d9eaeda7)
+![sweet_dreams](https://github.com/user-attachments/assets/d34f8454-a3e0-4142-b636-547188c1ad2e)
 
 
 ## Assets

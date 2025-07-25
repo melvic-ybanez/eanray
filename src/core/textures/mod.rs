@@ -1,10 +1,10 @@
+use std::sync::Arc;
 use crate::core::math::interval::Interval;
 use crate::core::math::{Point, Real};
 use perlin::Perlin;
 use crate::core::{math, Color};
 use image::{ImageReader, ImageResult, RgbImage};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
 
 mod perlin;
 
@@ -49,16 +49,16 @@ impl SolidColor {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Checker {
     scale_inverse: Real,
-    even: Rc<Texture>,
-    odd: Rc<Texture>,
+    even: Arc<Texture>,
+    odd: Arc<Texture>,
 }
 
 impl Checker {
     pub fn new(scale: Real, even: Texture, odd: Texture) -> Self {
         Self {
             scale_inverse: 1.0 / scale,
-            even: Rc::new(even),
-            odd: Rc::new(odd),
+            even: Arc::new(even),
+            odd: Arc::new(odd),
         }
     }
 

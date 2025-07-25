@@ -6,7 +6,7 @@ use crate::core::{math, Hittable, HittableList, Ray};
 use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
-use std::rc::Rc;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct BVH<'a> {
@@ -22,7 +22,7 @@ impl<'a> BVH<'a> {
         let mut objects = list
             .objects_mut()
             .iter()
-            .map(|object| Rc::new(object.clone()))
+            .map(|object| Arc::new(object.clone()))
             .collect::<Vec<ObjectRef<'a>>>();
         let objects = &mut objects;
         Self::from_objects(objects, 0, objects.len())
@@ -56,7 +56,7 @@ impl<'a> BVH<'a> {
             let mid = start + object_span / 2;
             let left = BVH::from_objects(objects, start, mid);
             let right = BVH::from_objects(objects, mid, end);
-            (Rc::new(Hittable::BVH(left)), Rc::new(Hittable::BVH(right)))
+            (Arc::new(Hittable::BVH(left)), Arc::new(Hittable::BVH(right)))
         };
 
         Self {

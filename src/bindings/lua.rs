@@ -12,7 +12,7 @@ use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
-use std::rc::Rc;
+use std::sync::Arc;
 
 macro_rules! from_user_data {
     ($name: ident, $t: ty) => {
@@ -292,7 +292,7 @@ fn new_translate_table(lua: &Lua) -> Result<Table> {
         lua.create_function(|lua, (_, object, offset): (Table, Value, AnyUserData)| {
             let object: Hittable = lua.from_value(object)?;
             let offset = from_user_data!(offset, Vec3D);
-            let translate = Hittable::Translate(Translate::new(Rc::new(object), offset));
+            let translate = Hittable::Translate(Translate::new(Arc::new(object), offset));
             Ok(lua.to_value(&translate))
         }),
     )
@@ -303,7 +303,7 @@ fn new_rotate_y_table(lua: &Lua) -> Result<Table> {
         lua,
         lua.create_function(|lua, (_, object, angle): (Table, Value, Real)| {
             let object: Hittable = lua.from_value(object)?;
-            let rotate_y = Hittable::RotateY(RotateY::new(Rc::new(object), angle));
+            let rotate_y = Hittable::RotateY(RotateY::new(Arc::new(object), angle));
             Ok(lua.to_value(&rotate_y))
         }),
     )

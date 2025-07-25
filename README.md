@@ -9,6 +9,7 @@ PPM file representing the rendered image.
 
 There is a plan to add more features in the future, but for now, the most relevant ones are the following:
 
+* Multithreaded Rendering
 * Ray-object intersection
   * Primitives: Spheres, Planar (Triangles, Quadrilaterals, Boxes, Constant Medium)
 * Global Illumination

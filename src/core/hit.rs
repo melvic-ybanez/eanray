@@ -11,9 +11,9 @@ use crate::core::shapes::sphere::Sphere;
 use crate::core::textures::Texture;
 use crate::core::{math, Color};
 use serde::{Deserialize, Serialize};
-use std::rc::Rc;
+use std::sync::Arc;
 
-pub type ObjectRef<'a> = Rc<Hittable<'a>>;
+pub type ObjectRef<'a> = Arc<Hittable<'a>>;
 
 pub struct HitRecord<'a> {
     pub p: Point,

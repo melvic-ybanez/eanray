@@ -31,9 +31,11 @@ fn main() -> mlua::Result<()> {
     let script_name = args[1].clone();
     let script_content = fs::read_to_string(script_name)?;
 
+    log::info!("Evaluating Lua script...");
     let scene_table = lua.load(script_content).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;
 
+    log::info!("Script evaluated. Loading configs...");
     let settings = Config::builder()
         .add_source(File::with_name("config"))
         .build()
@@ -43,6 +45,7 @@ fn main() -> mlua::Result<()> {
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
 
+    log::info!("Configs loaded. Rendering the scene...");
     let result = scene.render(settings).map_err(mlua::Error::external);
 
     metrics::report();

@@ -403,6 +403,7 @@ dependencies = [
  "mlua",
  "paste",
  "rand 0.9.1",
+ "rayon",
  "serde",
 ]
 

@@ -5,14 +5,13 @@ use crate::core::math::vector::{Point, UnitVec3D, Vec3D, VecLike};
 use crate::core::math::{self, Real};
 use crate::core::ray::Ray;
 use crate::diagnostics::stats;
-use crate::settings::Config;
 use crate::generate_optional_setter;
+use crate::settings::Config;
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
-use std::sync::mpsc;
-use std::thread;
 use std::time::Instant;
 
 pub struct Camera {
@@ -61,40 +60,22 @@ impl Camera {
         writeln!(&ppm_file, "{}", ppm_content)?;
 
         let duration = start.elapsed();
-        println!("Done. Rendering time: {:?}", duration);
+        log::info!("Rendering complete. Duration: {:?}", duration);
 
         Ok(())
     }
 
     fn ppm_content(&self, world: &Hittable) -> String {
-        let (tx, rx) = mpsc::channel();
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
-        let pixel_size = self.image.width * self.image.height();
-        let mut pixels = vec![String::new(); pixel_size as usize];
+        let pixels: Vec<String> = (0..self.image.width * self.image.height()).into_par_iter().map(|i| {
+            let x = i % self.image.width;
+            let y = i / self.image.width;
 
-        thread::scope(|scope| {
-            for j in 0..self.image.height() {
-                println!("Scanlines remaining: {}", self.image.height() - j);
-
-                for i in 0..self.image.width() {
-                    let tx = tx.clone();
-                    let viewport = viewport.clone();
-
-                    scope.spawn(move || {
-                        let pixel_color = self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
-                        tx.send((pixel_color, i, j)).unwrap();
-                    });
-                }
-            }
-        });
-
-        drop(tx);
-
-        for (pixel_color, i, j) in rx {
-            pixels[(j * self.image.width + i) as usize] = format!("{}\n", pixel_color.to_bytes_string());
-        }
+            let pixel_color = self.pixel_color(x, y, pixel_sample_scale, &viewport, world);
+            format!("{}\n", pixel_color.to_bytes_string())
+        }).collect::<Vec<_>>();
 
         pixels.join("")
     }

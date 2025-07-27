@@ -84,22 +84,24 @@ impl Planar {
         let alpha = self.w.dot(&planar_hit_point_vector.cross(&self.v));
         let beta = self.w.dot(&self.u.cross(&planar_hit_point_vector));
 
-        self.is_interior(alpha, beta).map(|(u, v)| {
+        if self.is_interior(alpha, beta) {
             let (front_face, face_normal) = HitRecord::face_normal(&ray, self.normal.clone());
 
-            HitRecord::new(
+            Some(HitRecord::new(
                 hit::P(intersection),
                 hit::Normal(face_normal),
                 hit::Mat(&self.mat),
                 hit::T(t),
                 hit::FrontFace(front_face),
-                hit::U(u),
-                hit::V(v),
-            )
-        })
+                hit::U(alpha),
+                hit::V(beta),
+            ))
+        } else {
+            None
+        }
     }
 
-    fn is_interior(&self, a: Real, b: Real) -> Option<(Real, Real)> {
+    fn is_interior(&self, a: Real, b: Real) -> bool {
         match self.kind {
             Kind::Quad(_) => Quad::is_interior(a, b),
             Kind::Triangle(_) => Triangle::is_interior(a, b),
@@ -113,14 +115,10 @@ impl Planar {
 pub struct Quad;
 
 impl Quad {
-    fn is_interior(a: Real, b: Real) -> Option<(Real, Real)> {
+    fn is_interior(a: Real, b: Real) -> bool {
         let unit_interval = Interval::new(0.0, 1.0);
 
-        if !unit_interval.contains(a) || !unit_interval.contains(b) {
-            None
-        } else {
-            Some((a, b))
-        }
+        unit_interval.contains(a) && unit_interval.contains(b)
     }
 }
 
@@ -128,11 +126,7 @@ impl Quad {
 pub struct Triangle;
 
 impl Triangle {
-    fn is_interior(a: Real, b: Real) -> Option<(Real, Real)> {
-        if a > 0.0 && b > 0.0 && a + b < 1.0 {
-            Some((a, b))
-        } else {
-            None
-        }
+    fn is_interior(a: Real, b: Real) -> bool {
+        a > 0.0 && b > 0.0 && a + b < 1.0
     }
 }

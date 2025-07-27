@@ -11,7 +11,7 @@ There is a plan to add more features in the future, but for now, the most releva
 
 * Multithreaded Rendering
 * Ray-object intersection
-  * Primitives: Spheres, Boxes, Planar (Triangles, Quadrilaterals, Constant Medium, Disks)
+  * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks)
 * Global Illumination
 * Materials (Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic)
 * Antialising

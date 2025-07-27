@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
+use std::sync::Arc;
 use std::time::Instant;
 
 pub struct Camera {
@@ -69,24 +70,32 @@ impl Camera {
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
-        let pixels: Vec<String> = (0..self.image.width * self.image.height()).into_par_iter().map(|i| {
-            let x = i % self.image.width;
-            let y = i / self.image.width;
+        let pixels: Vec<String> = (0..self.image.width * self.image.height())
+            .into_par_iter()
+            .map(|i| {
+                let x = i % self.image.width;
+                let y = i / self.image.width;
 
-            let pixel_color = self.pixel_color(x, y, pixel_sample_scale, &viewport, world);
-            format!("{}\n", pixel_color.to_bytes_string())
-        }).collect::<Vec<_>>();
+                let pixel_color = self.pixel_color(x, y, pixel_sample_scale, &viewport, world);
+                format!("{}\n", pixel_color.to_bytes_string())
+            })
+            .collect::<Vec<_>>();
 
         pixels.join("")
     }
 
-    fn pixel_color(&self, i: u32, j: u32, pixel_sample_scale: f64, viewport: &Viewport, world: &Hittable) -> Color {
+    fn pixel_color(
+        &self,
+        i: u32,
+        j: u32,
+        pixel_sample_scale: f64,
+        viewport: &Viewport,
+        world: &Hittable,
+    ) -> Color {
         if self.antialiasing {
             // compute the average color from the sample rays
             (0..self.samples_per_pixel)
-                .map(|_| {
-                    self.ray_color(&self.get_ray(i, j, &viewport), self.max_depth, world)
-                })
+                .map(|_| self.ray_color(&self.get_ray(i, j, &viewport), self.max_depth, world))
                 .fold(Color::black(), |acc, color| acc + color)
                 * pixel_sample_scale
         } else {
@@ -94,7 +103,7 @@ impl Camera {
                 + (viewport.pixel_delta_horizontal() * i as Real)
                 + (viewport.pixel_delta_vertical() * j as Real);
             let ray_direction = pixel_center - self.center();
-            let ray = Ray::new(self.center(), ray_direction);
+            let ray = Ray::new(self.center().clone(), ray_direction);
             self.ray_color(&ray, self.max_depth, world)
         }
     }
@@ -106,14 +115,14 @@ impl Camera {
             + (viewport.pixel_delta_horizontal() * (offset.x + i as Real))
             + (viewport.pixel_delta_vertical() * (offset.y + j as Real));
         let origin = if self.defocus_angle <= 0.0 {
-            Cow::Borrowed(self.center())
+            self.center().clone()
         } else {
-            Cow::Owned(self.defocus_disk_sample())
+            self.defocus_disk_sample()
         };
-        let direction = pixel_sample - origin.as_ref();
+        let direction = pixel_sample - &origin;
         let ray_time = math::random_real();
 
-        Ray::from_cow_origin_timed(origin, direction, ray_time)
+        Ray::new_timed(origin, direction, ray_time)
     }
 
     fn defocus_disk_sample(&self) -> Point {
@@ -127,29 +136,45 @@ impl Camera {
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &Hittable) -> Color {
-        if depth <= 0 {
-            Color::black()
-        } else if let Some(record) = world.hit(ray, &mut Interval::new(0.001, math::INFINITY)) {
-            let color_from_emission = record
-                .material()
-                .emitted(record.u(), record.v(), record.p());
+        let mut depth = depth;
+        let mut ray = ray.clone();
+        let mut acc_attenuation = Color::white();
+        let mut acc_emission = Color::black();
 
-            if let Some((scattered, attenuation)) = record.material().scatter(ray, &record) {
-                let color_from_scatter = self.ray_color(&scattered, depth - 1, world) * attenuation;
-                color_from_emission + color_from_scatter
-            } else {
-                color_from_emission
-            }
-        } else {
-            match &self.background {
-                Background::Color(color) => color.clone(),
-                Background::Lerp { start, end } => {
-                    let unit_direction = ray.direction().to_unit().0;
-                    let a = math::normalize_to_01(unit_direction.y);
-                    math::lerp(start, end, a)
+        let color = loop {
+            if depth <= 0 {
+                break Color::black();
+            } else if let Some(record) = world.hit(&ray, &mut Interval::new(0.001, math::INFINITY))
+            {
+                let color_from_emission =
+                    record
+                        .material()
+                        .emitted(record.u(), record.v(), record.p());
+
+                if let Some((scattered, attenuation)) = record.material().scatter(&ray, &record) {
+                    ray = scattered;
+                    depth -= 1;
+
+                    // note that ray-color = color-from-scatter + emission, where
+                    // color-from-scatter = ray-color (depth-1) * attenuation
+                    acc_attenuation = &acc_attenuation * attenuation;
+                    acc_emission = &acc_attenuation * color_from_emission + acc_emission;
+                } else {
+                    break color_from_emission;
                 }
+            } else {
+                break match &self.background {
+                    Background::Color(color) => color.clone(),
+                    Background::Lerp { start, end } => {
+                        let unit_direction = ray.direction().to_unit().0;
+                        let a = math::normalize_to_01(unit_direction.y);
+                        math::lerp(start, end, a)
+                    }
+                };
             }
-        }
+        };
+
+        color * acc_attenuation + acc_emission
     }
 
     fn viewport(&self) -> Viewport {
@@ -237,28 +262,28 @@ impl CameraBuilder {
         // of two perpendicular unit vectors
         let up = UnitVec3D(out.0.cross(&right.0));
 
-        let mut camera = Camera {
-            image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
-            samples_per_pixel: self
-                .samples_per_pixel
-                .unwrap_or(defaults.samples_per_pixel()),
-            antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
-            max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
-            field_of_view: self.field_of_view.unwrap_or(defaults.field_of_view()),
-            look_from,
-            look_at,
-            vup,
-            out,
-            right,
-            up,
-            defocus_angle: self.defocus_angle.unwrap_or(defaults.defocus_angle()),
-            focus_distance: self.focus_distance.unwrap_or(defaults.focus_distance()),
-            defocus_disk: DefocusDisk::empty(),
-            background: self
-                .background
-                .clone()
-                .unwrap_or(Background::from_color(build_vec_like(defaults.background()))),
-        };
+        let mut camera =
+            Camera {
+                image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
+                samples_per_pixel: self
+                    .samples_per_pixel
+                    .unwrap_or(defaults.samples_per_pixel()),
+                antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
+                max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
+                field_of_view: self.field_of_view.unwrap_or(defaults.field_of_view()),
+                look_from,
+                look_at,
+                vup,
+                out,
+                right,
+                up,
+                defocus_angle: self.defocus_angle.unwrap_or(defaults.defocus_angle()),
+                focus_distance: self.focus_distance.unwrap_or(defaults.focus_distance()),
+                defocus_disk: DefocusDisk::empty(),
+                background: self.background.clone().unwrap_or(Background::from_color(
+                    build_vec_like(defaults.background()),
+                )),
+            };
 
         camera.defocus_disk = DefocusDisk::from_camera(&camera);
         camera

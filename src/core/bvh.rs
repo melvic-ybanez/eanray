@@ -9,26 +9,26 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BVH<'a> {
-    left: ObjectRef<'a>,
-    right: ObjectRef<'a>,
+pub struct BVH {
+    left: ObjectRef,
+    right: ObjectRef,
     bbox: AABB,
 }
 
-impl<'a> BVH<'a> {
+impl BVH {
     pub const PRIMITIVE_COUNT_PER_LEAF: u32 = 1;
 
-    pub fn from_list(mut list: HittableList<'a>) -> Self {
+    pub fn from_list(mut list: HittableList) -> Self {
         let mut objects = list
             .objects_mut()
             .iter()
             .map(|object| Arc::new(object.clone()))
-            .collect::<Vec<ObjectRef<'a>>>();
+            .collect::<Vec<ObjectRef>>();
         let objects = &mut objects;
         Self::from_objects(objects, 0, objects.len())
     }
 
-    pub fn from_objects(objects: &mut Vec<ObjectRef<'a>>, start: usize, end: usize) -> Self {
+    pub fn from_objects(objects: &mut Vec<ObjectRef>, start: usize, end: usize) -> Self {
         metrics::increment_bvh_init_count();
 
         let mut bbox = AABB::empty();
@@ -119,11 +119,11 @@ impl<'a> BVH<'a> {
         }
     }
 
-    pub fn left(&self) -> ObjectRef<'a> {
+    pub fn left(&self) -> ObjectRef {
         self.left.clone()
     }
 
-    pub fn right(&self) -> ObjectRef<'a> {
+    pub fn right(&self) -> ObjectRef {
         self.right.clone()
     }
 }

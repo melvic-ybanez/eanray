@@ -7,20 +7,21 @@ use crate::core::math::{Real, Vec3D, VecLike};
 use crate::core::ray::Ray;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
+use std::sync::Arc;
 use crate::core::math;
 use crate::diagnostics::metrics;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Sphere<'a> {
+pub struct Sphere {
     // we are using a Ray for the center as opposed to a Point to allow for "motion" effects
-    center: Ray<'a>,
+    center: Ray,
 
     radius: Real,
     mat: Material,
     bbox: AABB,
 }
 
-impl<'a> Sphere<'a> {
+impl Sphere {
     pub fn stationary(center: Point, radius: Real, mat: Material) -> Self {
         let r_vec = Vec3D::from_scalar(radius);
         let bbox = AABB::from_points(&center - &r_vec, &center + r_vec);
@@ -53,7 +54,7 @@ impl<'a> Sphere<'a> {
         bbox: AABB,
     ) -> Self {
         Self {
-            center: Ray::from_cow_origin(Cow::Owned(center), direction),
+            center: Ray::new(center, direction),
             radius: Real::max(0.0, radius),
             mat,
             bbox,

@@ -9,13 +9,13 @@ use crate::settings;
 use crate::settings::Config;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SceneSchema<'a> {
+pub struct SceneSchema {
     camera: CameraSchema,
-    objects: Vec<Hittable<'a>>,
+    objects: Vec<Hittable>,
 }
 
-impl<'a> SceneSchema<'a> {
-    pub fn new(camera: CameraSchema, objects: Vec<Hittable<'a>>) -> Self {
+impl SceneSchema {
+    pub fn new(camera: CameraSchema, objects: Vec<Hittable>) -> Self {
         Self { camera, objects }
     }
 

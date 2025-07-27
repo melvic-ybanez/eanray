@@ -13,7 +13,7 @@ use crate::core::{math, Color};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-pub type ObjectRef<'a> = Arc<Hittable<'a>>;
+pub type ObjectRef = Arc<Hittable>;
 
 pub struct HitRecord<'a> {
     pub p: Point,
@@ -94,17 +94,17 @@ pub struct U(pub Real);
 pub struct V(pub Real);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Hittable<'a> {
-    Sphere(Sphere<'a>),
-    List(HittableList<'a>),
-    BVH(BVH<'a>),
+pub enum Hittable {
+    Sphere(Sphere),
+    List(HittableList),
+    BVH(BVH),
     Planar(Planar),
-    Translate(Translate<'a>),
-    RotateY(RotateY<'a>),
-    ConstantMedium(ConstantMedium<'a>),
+    Translate(Translate),
+    RotateY(RotateY),
+    ConstantMedium(ConstantMedium),
 }
 
-impl<'a> Hittable<'a> {
+impl Hittable {
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         match self {
             Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),
@@ -131,13 +131,13 @@ impl<'a> Hittable<'a> {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct HittableList<'a> {
-    objects: Vec<Hittable<'a>>,
+pub struct HittableList {
+    objects: Vec<Hittable>,
     bbox: AABB,
 }
 
-impl<'a> HittableList<'a> {
-    pub fn from_vec(objects: Vec<Hittable<'a>>) -> HittableList<'a> {
+impl HittableList {
+    pub fn from_vec(objects: Vec<Hittable>) -> HittableList {
         let mut this = Self {
             objects: vec![],
             bbox: AABB::empty(),
@@ -150,7 +150,7 @@ impl<'a> HittableList<'a> {
         this
     }
 
-    pub fn add(&mut self, object: Hittable<'a>) {
+    pub fn add(&mut self, object: Hittable) {
         self.bbox = AABB::from_boxes(&self.bbox, object.bounding_box());
         self.objects.push(object);
     }
@@ -226,24 +226,24 @@ impl<'a> HittableList<'a> {
         &self.bbox
     }
 
-    pub fn objects(&self) -> &Vec<Hittable<'a>> {
+    pub fn objects(&self) -> &Vec<Hittable> {
         &self.objects
     }
 
-    pub fn objects_mut(&mut self) -> &mut Vec<Hittable<'a>> {
+    pub fn objects_mut(&mut self) -> &mut Vec<Hittable> {
         &mut self.objects
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ConstantMedium<'a> {
-    boundary: ObjectRef<'a>,
+pub struct ConstantMedium {
+    boundary: ObjectRef,
     neg_inv_density: Real,
     phase_function: Material,
 }
 
-impl<'a> ConstantMedium<'a> {
-    pub fn new(boundary: ObjectRef<'a>, density: Real, phase_function: Material) -> Self {
+impl ConstantMedium {
+    pub fn new(boundary: ObjectRef, density: Real, phase_function: Material) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / density,
@@ -251,7 +251,7 @@ impl<'a> ConstantMedium<'a> {
         }
     }
 
-    pub fn from_texture(boundary: ObjectRef<'a>, density: Real, texture: Texture) -> Self {
+    pub fn from_texture(boundary: ObjectRef, density: Real, texture: Texture) -> Self {
         Self::new(
             boundary,
             density,
@@ -259,7 +259,7 @@ impl<'a> ConstantMedium<'a> {
         )
     }
 
-    pub fn from_albedo(boundary: ObjectRef<'a>, density: Real, albedo: Color) -> Self {
+    pub fn from_albedo(boundary: ObjectRef, density: Real, albedo: Color) -> Self {
         Self::new(
             boundary,
             density,

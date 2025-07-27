@@ -14,7 +14,7 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> Option<(Ray<'a>, Color)> {
+    pub fn scatter<'a, 'b, 'c>(&self, ray_in: &Ray, rec: &'b HitRecord) -> Option<(Ray, Color)> {
         match self {
             Self::Lambertian(lambertian) => Some(lambertian.scatter(ray_in, rec)),
             Self::Metal(metal) => Some(metal.scatter(ray_in, rec)),
@@ -51,14 +51,14 @@ impl Lambertian {
         Self::new(Texture::SolidColor(SolidColor::new(albedo)))
     }
 
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> (Ray<'a>, Color) {
+    fn scatter<'a>(&self, ray_in: &Ray, rec: &'a HitRecord) -> (Ray, Color) {
         let scatter_direction = &rec.normal().0 + Vec3D::random_unit().0;
         let scatter_direction = if scatter_direction.near_zero() {
             rec.normal().0.clone()
         } else {
             scatter_direction
         };
-        let scattered = Ray::new_timed(rec.p(), scatter_direction, ray_in.time());
+        let scattered = Ray::new_timed(rec.p().clone(), scatter_direction, ray_in.time());
         let attenuation = self.texture.value(rec.u(), rec.v(), rec.p());
         (scattered, attenuation)
     }
@@ -78,10 +78,10 @@ impl Metal {
         }
     }
 
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> (Ray<'a>, Color) {
+    fn scatter<'a>(&self, ray_in: &Ray, rec: &'a HitRecord) -> (Ray, Color) {
         let reflected = ray_in.direction().reflect(&rec.normal());
         let reflected = reflected.to_unit().0 + Vec3D::random_unit().0 * self.fuzz;
-        let scattered = Ray::new_timed(rec.p(), reflected, ray_in.time());
+        let scattered = Ray::new_timed(rec.p().clone(), reflected, ray_in.time());
         let attenuation = self.albedo.clone();
         (scattered, attenuation)
     }
@@ -97,7 +97,7 @@ impl Dielectric {
         Self { refraction_index }
     }
 
-    fn scatter<'a>(&self, ray_in: &Ray<'a>, rec: &'a HitRecord) -> (Ray<'a>, Color) {
+    fn scatter<'a>(&self, ray_in: &Ray, rec: &'a HitRecord) -> (Ray, Color) {
         let ri = if rec.front_face() {
             1.0 / self.refraction_index
         } else {
@@ -116,7 +116,7 @@ impl Dielectric {
             Vec3D::refract(&unit_direction, rec.normal(), ri)
         };
 
-        let scattered = Ray::new_timed(rec.p(), direction, ray_in.time());
+        let scattered = Ray::new_timed(rec.p().clone(), direction, ray_in.time());
 
         (scattered, Color::white())
     }
@@ -172,8 +172,8 @@ impl Isotropic {
         Self { texture }
     }
 
-    pub fn scatter<'a>(&self, ray_in: &Ray<'a>, hit_record: &'a HitRecord<'a>) -> (Ray<'a>, Color) {
-        let scattered = Ray::new_timed(hit_record.p(), Vec3D::random_unit().0, ray_in.time());
+    pub fn scatter<'a>(&self, ray_in: &Ray, hit_record: &'a HitRecord) -> (Ray, Color) {
+        let scattered = Ray::new_timed(hit_record.p().clone(), Vec3D::random_unit().0, ray_in.time());
         let attenuation = self
             .texture
             .value(hit_record.u(), hit_record.v(), hit_record.p());

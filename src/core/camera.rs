@@ -136,45 +136,29 @@ impl Camera {
     }
 
     fn ray_color(&self, ray: &Ray, depth: u32, world: &Hittable) -> Color {
-        let mut depth = depth;
-        let mut ray = ray.clone();
-        let mut acc_attenuation = Color::white();
-        let mut acc_emission = Color::black();
+        if depth <= 0 {
+            Color::black()
+        } else if let Some(record) = world.hit(ray, &mut Interval::new(0.001, math::INFINITY)) {
+            let color_from_emission = record
+                .material()
+                .emitted(record.u(), record.v(), record.p());
 
-        let color = loop {
-            if depth <= 0 {
-                break Color::black();
-            } else if let Some(record) = world.hit(&ray, &mut Interval::new(0.001, math::INFINITY))
-            {
-                let color_from_emission =
-                    record
-                        .material()
-                        .emitted(record.u(), record.v(), record.p());
-
-                if let Some((scattered, attenuation)) = record.material().scatter(&ray, &record) {
-                    ray = scattered;
-                    depth -= 1;
-
-                    // note that ray-color = color-from-scatter + emission, where
-                    // color-from-scatter = ray-color (depth-1) * attenuation
-                    acc_attenuation = &acc_attenuation * attenuation;
-                    acc_emission = &acc_attenuation * color_from_emission + acc_emission;
-                } else {
-                    break color_from_emission;
-                }
+            if let Some((scattered, attenuation)) = record.material().scatter(ray, &record) {
+                let color_from_scatter = self.ray_color(&scattered, depth - 1, world) * attenuation;
+                color_from_emission + color_from_scatter
             } else {
-                break match &self.background {
-                    Background::Color(color) => color.clone(),
-                    Background::Lerp { start, end } => {
-                        let unit_direction = ray.direction().to_unit().0;
-                        let a = math::normalize_to_01(unit_direction.y);
-                        math::lerp(start, end, a)
-                    }
-                };
+                color_from_emission
             }
-        };
-
-        color * acc_attenuation + acc_emission
+        } else {
+            match &self.background {
+                Background::Color(color) => color.clone(),
+                Background::Lerp { start, end } => {
+                    let unit_direction = ray.direction().to_unit().0;
+                    let a = math::normalize_to_01(unit_direction.y);
+                    math::lerp(start, end, a)
+                }
+            }
+        }
     }
 
     fn viewport(&self) -> Viewport {

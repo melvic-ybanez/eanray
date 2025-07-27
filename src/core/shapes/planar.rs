@@ -10,6 +10,7 @@ use serde::{Deserialize, Serialize};
 pub enum Kind {
     Quad(Quad),
     Triangle(Triangle),
+    Disk(Disk),
 }
 
 /// Represents any 2D planar primitive. I'm under the impression that `q`, `u`, and `v` are standard
@@ -34,6 +35,10 @@ impl Planar {
 
     pub fn triangle(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
         Self::new(q, u, v, mat, Kind::Triangle(Triangle))
+    }
+
+    pub fn disk(q: Point, u: Vec3D, v: Vec3D, radius: Real, mat: Material) -> Self {
+        Self::new(q, u, v, mat, Kind::Disk(Disk { radius }))
     }
 
     pub fn new(q: Point, u: Vec3D, v: Vec3D, mat: Material, kind: Kind) -> Self {
@@ -102,9 +107,10 @@ impl Planar {
     }
 
     fn is_interior(&self, a: Real, b: Real) -> bool {
-        match self.kind {
+        match &self.kind {
             Kind::Quad(_) => Quad::is_interior(a, b),
             Kind::Triangle(_) => Triangle::is_interior(a, b),
+            Kind::Disk(disk) => disk.is_interior(a, b),
         }
     }
 }
@@ -128,5 +134,16 @@ pub struct Triangle;
 impl Triangle {
     fn is_interior(a: Real, b: Real) -> bool {
         a > 0.0 && b > 0.0 && a + b < 1.0
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Disk {
+    radius: Real
+}
+
+impl Disk {
+    fn is_interior(&self, a: Real, b: Real) -> bool {
+        (a * a + b * b).sqrt() < self.radius
     }
 }

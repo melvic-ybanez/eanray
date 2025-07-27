@@ -108,6 +108,30 @@ fn new_planar_table(lua: &Lua, kind: planar::Kind) -> Result<Table> {
     )
 }
 
+fn new_disk_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(
+            move |lua,
+                  (_, q, u, v, radius, mat): (
+                Table,
+                AnyUserData,
+                AnyUserData,
+                AnyUserData,
+                Real,
+                Value,
+            )| {
+                let q = from_user_data!(q, Point);
+                let u = from_user_data!(u, Vec3D);
+                let v = from_user_data!(v, Vec3D);
+                let mat: Material = lua.from_value(mat)?;
+                let quad = Hittable::Planar(Planar::disk(q, u, v, radius, mat));
+                Ok(lua.to_value(&quad))
+            },
+        ),
+    )
+}
+
 fn new_box_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
@@ -281,6 +305,7 @@ fn new_shapes_table(lua: &Lua) -> Result<Table> {
         "Triangle",
         new_planar_table(lua, planar::Kind::Triangle(Triangle))?,
     )?;
+    shapes.set("Disk", new_disk_table(lua)?)?;
     shapes.set("Box", new_box_table(lua)?)?;
     shapes.set("ConstantMedium", new_constant_medium_table(lua)?)?;
     Ok(shapes)

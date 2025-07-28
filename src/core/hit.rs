@@ -2,13 +2,13 @@ use crate::core::aabb::AABB;
 use crate::core::bvh::BVH;
 use crate::core::materials::{Isotropic, Material};
 use crate::core::math::interval::Interval;
-use crate::core::transforms::{RotateY, Translate};
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
 use crate::core::shapes::planar::Planar;
 use crate::core::shapes::sphere::Sphere;
 use crate::core::textures::Texture;
+use crate::core::transforms::{Rotate, Translate};
 use crate::core::{math, Color};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -100,7 +100,7 @@ pub enum Hittable {
     BVH(BVH),
     Planar(Planar),
     Translate(Translate),
-    RotateY(RotateY),
+    Rotate(Rotate),
     ConstantMedium(ConstantMedium),
 }
 
@@ -112,7 +112,7 @@ impl Hittable {
             Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
             Hittable::Planar(quad) => quad.hit(ray, ray_t),
             Hittable::Translate(translate) => translate.hit(ray, ray_t),
-            Hittable::RotateY(rotate_y) => rotate_y.hit(ray, ray_t),
+            Hittable::Rotate(rotate_y) => rotate_y.hit(ray, ray_t),
             Hittable::ConstantMedium(constant_medium) => constant_medium.hit(ray, ray_t),
         }
     }
@@ -124,7 +124,7 @@ impl Hittable {
             Hittable::BVH(bvh) => bvh.bounding_box(),
             Hittable::Planar(quad) => quad.bounding_box(),
             Hittable::Translate(translate) => translate.bounding_box(),
-            Hittable::RotateY(rotate_y) => rotate_y.bounding_box(),
+            Hittable::Rotate(rotate_y) => rotate_y.bounding_box(),
             Hittable::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
         }
     }

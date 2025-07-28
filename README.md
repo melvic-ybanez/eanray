@@ -22,7 +22,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Bounding Volume Hierarchy
 * Texture Mapping (Checkers, Perlin Noise, Images)
 * Light Sources
-* Transformations (Translation, Rotation-Y)
+* Transformations (Translation, Rotation-X, Rotation-Y)
 * Diagnostics (Metrics, Statistics)
 
 ## How To Run

@@ -4,7 +4,6 @@ use std::ops::{Add, Mul};
 
 pub mod interval;
 mod macros;
-pub mod transforms;
 pub mod vector;
 
 pub type Real = f64;

@@ -2,7 +2,7 @@ use crate::core::aabb::AABB;
 use crate::core::bvh::BVH;
 use crate::core::materials::{Isotropic, Material};
 use crate::core::math::interval::Interval;
-use crate::core::math::transforms::{RotateY, Translate};
+use crate::core::transforms::{RotateY, Translate};
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;

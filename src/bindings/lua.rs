@@ -3,7 +3,7 @@ use crate::core::camera::Background;
 use crate::core::color::ColorKind;
 use crate::core::hit::ConstantMedium;
 use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
-use crate::core::math::transforms::{RotateY, Translate};
+use crate::core::transforms::{RotateY, Translate};
 use crate::core::math::vector::{PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::planar::{Planar, Quad, Triangle};

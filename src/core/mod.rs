@@ -8,6 +8,7 @@ pub mod shapes;
 mod aabb;
 pub mod bvh;
 pub mod textures;
+pub mod transforms;
 
 pub use camera::Camera;
 pub use color::Color;

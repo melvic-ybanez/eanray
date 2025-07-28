@@ -169,7 +169,7 @@ impl Rotate {
     ///     2. `z' = -sin(theta) * x + cos(theta) * z`
     fn rotate_y<K>(sin_theta: Real, cos_theta: Real, x: Real, y: Real, z: Real) -> VecLike<K> {
         let new_x = cos_theta * x + sin_theta * z;
-        let new_z = -sin_theta * new_x + cos_theta * z;
+        let new_z = -sin_theta * x + cos_theta * z;
         VecLike::new(new_x, y, new_z)
     }
 

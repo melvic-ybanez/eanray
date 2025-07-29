@@ -6,7 +6,7 @@ APP_NAME="eanray"
 VERSION="v0.1.0"
 TARGET_DIR="target/release"
 RELEASE_DIR="$APP_NAME-$VERSION"
-DIST_DIR="$RELEASE_DIR/dist"
+DIST_DIR="$RELEASE_DIR/dist/"
 EXAMPLES_DIR="examples"
 
 # Build the binary
@@ -15,6 +15,7 @@ cargo build --release
 # Setup for the release folder
 rm -rf "$RELEASE_DIR"
 mkdir "$RELEASE_DIR"
+mkdir "$DIST_DIR"
 
 cp "$TARGET_DIR/$APP_NAME" "$DIST_DIR"
 cp config.toml "$DIST_DIR"

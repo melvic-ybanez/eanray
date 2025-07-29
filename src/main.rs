@@ -19,8 +19,16 @@ fn main() -> mlua::Result<()> {
         return Err(mlua::Error::external(error_message));
     }
 
-    // TODO: This should be a command line arg
-    diagnostics::enable_all(false);
+    log::info!("Loading configs...");
+    let settings = Config::builder()
+        .add_source(File::with_name("config"))
+        .build()
+        .map_err(mlua::Error::external)?
+        .try_deserialize::<settings::Config>()
+        .map_err(mlua::Error::external)?;
+    log::info!("Configs loaded.");
+
+    diagnostics::setup(settings.app().diagnostics());
 
     env_logger::init();
     let lua = Lua::new();
@@ -34,18 +42,11 @@ fn main() -> mlua::Result<()> {
     log::info!("Evaluating Lua script...");
     let scene_table = lua.load(script_content).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;
-
-    log::info!("Script evaluated. Loading configs...");
-    let settings = Config::builder()
-        .add_source(File::with_name("config"))
-        .build()
-        .map_err(mlua::Error::external)?
-        .try_deserialize::<settings::Config>()
-        .map_err(mlua::Error::external)?;
+    log::info!("Script evaluated.");
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
 
-    log::info!("Configs loaded. Rendering the scene...");
+    log::info!("Rendering the scene...");
     let result = scene.render(settings).map_err(mlua::Error::external);
 
     metrics::report();

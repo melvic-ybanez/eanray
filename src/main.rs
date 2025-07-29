@@ -19,6 +19,8 @@ fn main() -> mlua::Result<()> {
         return Err(mlua::Error::external(error_message));
     }
 
+    env_logger::init();
+
     log::info!("Loading configs...");
     let settings = Config::builder()
         .add_source(File::with_name("config"))
@@ -30,7 +32,6 @@ fn main() -> mlua::Result<()> {
 
     diagnostics::setup(settings.app().diagnostics());
 
-    env_logger::init();
     let lua = Lua::new();
 
     path_setup(&lua)?;

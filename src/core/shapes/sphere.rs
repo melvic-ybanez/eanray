@@ -22,6 +22,13 @@ pub struct Sphere {
 }
 
 impl Sphere {
+    /// Alias for [[Self::stationary]]. This makes the API more consistent with the rest of the shapes.
+    /// Also, stationary is probably used a lot more than [[Self::moving]] so making it the sensible
+    /// default might improve ergonomics.
+    pub fn new(center: Point, radius: Real, mat: Material) -> Self {
+        Self::stationary(center, radius, mat)
+    }
+
     pub fn stationary(center: Point, radius: Real, mat: Material) -> Self {
         let r_vec = Vec3D::from_scalar(radius);
         let bbox = AABB::from_points(&center - &r_vec, &center + r_vec);

@@ -58,18 +58,16 @@ where
 }
 
 fn new_sphere_table(lua: &Lua) -> Result<Table> {
-    let table = lua.create_table()?;
-    table.set(
-        "stationary",
-        lua.create_function(
-            |lua, (_, center, radius, material): (Table, AnyUserData, Real, Value)| {
-                let center = from_user_data!(center, Point);
-                let material: Material = lua.from_value(material)?;
-                let sphere = Hittable::Sphere(Sphere::stationary(center, radius, material));
-                Ok(lua.to_value(&sphere))
-            },
-        )?,
-    )?;
+    let new_function = lua.create_function(
+        |lua, (_, center, radius, material): (Table, AnyUserData, Real, Value)| {
+            let center = from_user_data!(center, Point);
+            let material: Material = lua.from_value(material)?;
+            let sphere = Hittable::Sphere(Sphere::stationary(center, radius, material));
+            Ok(lua.to_value(&sphere))
+        },
+    );
+    let table = new_table(lua, new_function.clone())?;
+    table.set("stationary", new_function?)?;
     table.set(
         "moving",
         lua.create_function(

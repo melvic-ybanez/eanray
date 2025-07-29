@@ -8,3 +8,6 @@ profile.json.gz
 examples/scratch.lua
 
 .DS_Store
+
+eanray-v*/
+eanray-v*.zip

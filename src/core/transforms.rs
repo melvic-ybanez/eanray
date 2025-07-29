@@ -157,29 +157,48 @@ impl Rotate {
         y: Real,
         z: Real,
     ) -> VecLike<K> {
-        match kind {
-            RotateKind::X => Self::rotate_x(sin_theta, cos_theta, x, y, z),
-            RotateKind::Y => Self::rotate_y(sin_theta, cos_theta, x, y, z),
-            _ => VecLike::zero(),
-        }
+        let (new_x, new_y, new_z) = match kind {
+            RotateKind::X => {
+                let (new_y, new_z) = Self::rotate_x(sin_theta, cos_theta, y, z);
+                (x, new_y, new_z)
+            },
+            RotateKind::Y => {
+                let (new_x, new_z) = Self::rotate_y(sin_theta, cos_theta, x, z);
+                (new_x, y, new_z)
+            },
+            RotateKind::Z => {
+                let (new_x, new_y) = Self::rotate_z(sin_theta, cos_theta, x, y);
+                (new_x, new_y, z)
+            }
+        };
+        VecLike::new(new_x, new_y, new_z)
     }
 
-    /// Rotation around y requires the following formulas:
-    ///     1. `x' = cos(theta) * x + sin(theta) * z`
-    ///     2. `z' = -sin(theta) * x + cos(theta) * z`
-    fn rotate_y<K>(sin_theta: Real, cos_theta: Real, x: Real, y: Real, z: Real) -> VecLike<K> {
+    /// Rotation around y is defined by the following formulas:
+    ///     1. `x = cos(theta) * x + sin(theta) * z`
+    ///     2. `z = -sin(theta) * x + cos(theta) * z`
+    fn rotate_y(sin_theta: Real, cos_theta: Real, x: Real, z: Real) -> (Real, Real) {
         let new_x = cos_theta * x + sin_theta * z;
         let new_z = -sin_theta * x + cos_theta * z;
-        VecLike::new(new_x, y, new_z)
+        (new_x, new_z)
     }
 
-    /// Rotation around x requires the following formulas:
+    /// Rotation around x is defined by the following formulas:
     ///     1. `y = cos(theta) * y - sin(theta) * z`
     ///     2. `z = sin(theta) * y + cos(theta) * z`
-    fn rotate_x<K>(sin_theta: Real, cos_theta: Real, x: Real, y: Real, z: Real) -> VecLike<K> {
+    fn rotate_x(sin_theta: Real, cos_theta: Real, y: Real, z: Real) -> (Real, Real) {
         let new_y = cos_theta * y - sin_theta * z;
         let new_z = sin_theta * y + cos_theta * z;
-        VecLike::new(x, new_y, new_z)
+        (new_y, new_z)
+    }
+
+    /// Rotation around z is defined by the following formulas:
+    ///     1. `x = cos(theta) * x - sin(theta) * y`
+    ///     2. `y = sin(theta) * x + cos(theta) * y`
+    fn rotate_z(sin_theta: Real, cos_theta: Real, x: Real, y: Real) -> (Real, Real) {
+        let new_x = cos_theta * x - sin_theta * y;
+        let new_y = sin_theta * x + cos_theta * y;
+        (new_x, new_y)
     }
 
     pub fn bounding_box(&self) -> &AABB {

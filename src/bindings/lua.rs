@@ -339,6 +339,7 @@ fn new_transforms_table(lua: &Lua) -> Result<Table> {
     table.set("Translate", new_translate_table(lua)?)?;
     table.set("RotateX", new_rotate_table(lua, RotateKind::X)?)?;
     table.set("RotateY", new_rotate_table(lua, RotateKind::Y)?)?;
+    table.set("RotateZ", new_rotate_table(lua, RotateKind::Z)?)?;
     Ok(table)
 }
 

@@ -394,7 +394,7 @@ dependencies = [
 
 [[package]]
 name = "eanray"
-version = "0.1.0"
+version = "2025.9.0-SNAPSHOT"
 dependencies = [
  "config",
  "env_logger",

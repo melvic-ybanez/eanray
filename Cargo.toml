@@ -1,6 +1,6 @@
 [package]
 name = "eanray"
-version = "0.1.0"
+version = "2025.09.0-SNAPSHOT"
 edition = "2024"
 
 [dependencies]

@@ -1,4 +1,4 @@
-<img width="1200" height="675" alt="palnets_on_ground10" src="https://github.com/user-attachments/assets/ab464ff3-e0b6-479d-8496-8048ebd433bb" />
+![Planets on the ground](https://github.com/user-attachments/assets/ab464ff3-e0b6-479d-8496-8048ebd433bb)
 
 # Eanray
 

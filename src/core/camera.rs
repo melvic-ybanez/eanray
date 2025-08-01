@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
+use std::slice::Chunks;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -70,18 +71,43 @@ impl Camera {
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
-        let pixels: Vec<String> = (0..self.image.width * self.image.height())
-            .into_par_iter()
-            .map(|i| {
-                let x = i % self.image.width;
-                let y = i / self.image.width;
+        let core_count = 8;
+        let tile_count = core_count * 4;
+        let area_per_title = (self.image.width * self.image.height) / tile_count;
+        let tile_size = (area_per_title as f64).sqrt() as u32;
+        let tile_size = (tile_size / 8).max(1) * 8; // for better memory alignment
 
-                let pixel_color = self.pixel_color(x, y, pixel_sample_scale, &viewport, world);
-                format!("{}\n", pixel_color.to_bytes_string())
+        let tile_height = tile_size;
+        let tile_width = tile_size;
+
+        let tiles: Vec<(u32, u32)> = (0..self.image.height)
+            .step_by(tile_height as usize)
+            .flat_map(|y| {
+                (0..self.image.width)
+                    .step_by(tile_width as usize)
+                    .map(move |x| (x, y))
             })
-            .collect::<Vec<_>>();
+            .collect();
 
-        pixels.join("")
+        let pixel_tiles = tiles.into_par_iter().map(|(x, y)| {
+            let mut tile: Vec<(u32, u32, Color)> = vec![];
+
+            for j in y..(y + tile_height).min(self.image.height) {
+                for i in x..(x + tile_width).min(self.image.width) {
+                    let pixel_color = self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
+                    tile.push((i, j, pixel_color));
+                }
+            }
+            tile
+        }).collect::<Vec<_>>();
+
+        let mut pixels: Vec<Vec<String>> = vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
+        for tile in pixel_tiles {
+            for (x, y, color) in tile {
+                pixels[y as usize][x as usize] = format!("{} ", color.to_bytes_string());
+            }
+        }
+        pixels.iter().map(|row| row.join("")).collect::<Vec<_>>().join("")
     }
 
     fn pixel_color(

@@ -41,6 +41,10 @@ pub struct Camera {
 }
 
 impl Camera {
+    // TODO: Make these tile values configurable
+    const TILE_WIDTH: u32 = 16;
+    const TILE_HEIGHT: u32 = 16;
+
     pub fn builder(config: &'static Config) -> CameraBuilder {
         CameraBuilder::new(config)
     }
@@ -72,46 +76,49 @@ impl Camera {
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
-        let core_count = 8;
-        let tile_count = core_count * 4;
-        let area_per_title = (self.image.width * self.image.height) / tile_count;
-        let tile_size = (area_per_title as f64).sqrt() as u32;
-        let tile_size = (tile_size / 8).max(1) * 8; // for better memory alignment
-
-        let tile_height = tile_size;
-        let tile_width = tile_size;
+        log::info!("Tile size: {} {}", Self::TILE_WIDTH, Self::TILE_HEIGHT);
 
         log::info!("Splitting the screen into multiple tiles...");
         let tiles: Vec<(u32, u32)> = (0..self.image.height)
-            .step_by(tile_height as usize)
+            .step_by(Self::TILE_HEIGHT as usize)
             .flat_map(|y| {
                 (0..self.image.width)
-                    .step_by(tile_width as usize)
+                    .step_by(Self::TILE_WIDTH as usize)
                     .map(move |x| (x, y))
             })
             .collect();
 
-        log::info!("Rendering each tile...");
-        let pixel_tiles = tiles.into_par_iter().map(|(x, y)| {
-            let mut tile: Vec<(u32, u32, Color)> = vec![];
+        log::info!("Rendering {} tiles...", tiles.len());
+        let pixel_tiles = tiles
+            .into_par_iter()
+            .map(|(x, y)| {
+                let mut tile: Vec<(u32, u32, Color)> = vec![];
 
-            for j in y..(y + tile_height).min(self.image.height) {
-                for i in x..(x + tile_width).min(self.image.width) {
-                    let pixel_color = self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
-                    tile.push((i, j, pixel_color));
+                for j in y..(y + Self::TILE_HEIGHT).min(self.image.height) {
+                    for i in x..(x + Self::TILE_WIDTH).min(self.image.width) {
+                        let pixel_color =
+                            self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
+                        tile.push((i, j, pixel_color));
+                    }
                 }
-            }
-            tile
-        }).collect::<Vec<_>>();
+                log::info!("Tile {x}, {y} rendering complete.");
+                tile
+            })
+            .collect::<Vec<_>>();
 
         log::info!("Merging tiles into one buffer...");
-        let mut pixels: Vec<Vec<String>> = vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
+        let mut pixels: Vec<Vec<String>> =
+            vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
         for tile in pixel_tiles {
             for (x, y, color) in tile {
                 pixels[y as usize][x as usize] = format!("{} ", color.to_bytes_string());
             }
         }
-        pixels.iter().map(|row| row.join("")).collect::<Vec<_>>().join("")
+        pixels
+            .iter()
+            .map(|row| row.join(""))
+            .collect::<Vec<_>>()
+            .join("")
     }
 
     fn pixel_color(

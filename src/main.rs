@@ -43,11 +43,9 @@ fn main() -> mlua::Result<()> {
     log::info!("Evaluating Lua script...");
     let scene_table = lua.load(script_content).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;
-    log::info!("Script evaluated.");
+    log::info!("Script evaluated. Rendering the scene...");
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));
-
-    log::info!("Rendering the scene...");
     let result = scene.render(settings).map_err(mlua::Error::external);
 
     metrics::report();

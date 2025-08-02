@@ -8,6 +8,7 @@ use crate::diagnostics::stats;
 use crate::generate_optional_setter;
 use crate::settings::Config;
 use rayon::prelude::*;
+use rayon::{ThreadBuilder, ThreadPoolBuilder};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fs::File;
@@ -80,6 +81,7 @@ impl Camera {
         let tile_height = tile_size;
         let tile_width = tile_size;
 
+        log::info!("Splitting the screen into multiple tiles...");
         let tiles: Vec<(u32, u32)> = (0..self.image.height)
             .step_by(tile_height as usize)
             .flat_map(|y| {
@@ -89,6 +91,7 @@ impl Camera {
             })
             .collect();
 
+        log::info!("Rendering each tile...");
         let pixel_tiles = tiles.into_par_iter().map(|(x, y)| {
             let mut tile: Vec<(u32, u32, Color)> = vec![];
 
@@ -101,6 +104,7 @@ impl Camera {
             tile
         }).collect::<Vec<_>>();
 
+        log::info!("Merging tiles into one buffer...");
         let mut pixels: Vec<Vec<String>> = vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
         for tile in pixel_tiles {
             for (x, y, color) in tile {

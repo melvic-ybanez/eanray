@@ -1,8 +1,15 @@
 #[macro_export]
 macro_rules! generate_optional_setter {
-    ($name: ident, $typ: ty) => {
-        pub fn $name(&mut self, $name: $typ) -> &mut Self {
-            self.$name = Some($name);
+    ($obj: ident, $field: ident, $typ: ty) => {
+        pub fn $field(&mut self, $field: $typ) -> &mut Self {
+            self.$obj.$field = Some($field);
+            self
+        }
+    };
+
+    ($field: ident, $typ: ty) => {
+        pub fn $field(&mut self, $field: $typ) -> &mut Self {
+            self.$field = Some($field);
             self
         }
     };

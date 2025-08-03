@@ -210,6 +210,99 @@ impl Camera {
 }
 
 pub struct CameraBuilder {
+    optionals: OptionalFields,
+    config: &'static Config,
+}
+
+impl CameraBuilder {
+    fn new(config: &'static Config) -> CameraBuilder {
+        CameraBuilder {
+            optionals: Default::default(),
+            config,
+        }
+    }
+
+    pub fn optionals(&self) -> &OptionalFields {
+        &self.optionals
+    }
+
+    pub fn build(&self) -> Camera {
+        fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
+            VecLike::new(p[0], p[1], p[2])
+        }
+
+        let optionals = self.optionals();
+
+        let defaults = self.config.app().scene().camera().defaults();
+        let look_from = optionals
+            .look_from
+            .clone()
+            .unwrap_or(build_vec_like(defaults.look_from()));
+        let look_at = optionals
+            .look_at
+            .clone()
+            .unwrap_or(build_vec_like(defaults.look_at()));
+        let looks_delta = &look_from - &look_at;
+        let vup = optionals
+            .vup
+            .clone()
+            .unwrap_or(build_vec_like(defaults.vup()));
+
+        let out = looks_delta.to_unit();
+        let right = vup.cross(&out.0).to_unit();
+
+        // technically, there's no need to normalize because it's a cross-product
+        // of two perpendicular unit vectors
+        let up = UnitVec3D(out.0.cross(&right.0));
+
+        let mut camera = Camera {
+            image: optionals.image.clone().unwrap_or(Image::new(100, 1.0)),
+            samples_per_pixel: optionals
+                .samples_per_pixel
+                .unwrap_or(defaults.samples_per_pixel()),
+            antialiasing: optionals.antialiasing.unwrap_or(defaults.antialiasing()),
+            max_depth: optionals.max_depth.unwrap_or(defaults.max_depth()),
+            field_of_view: optionals.field_of_view.unwrap_or(defaults.field_of_view()),
+            look_from,
+            look_at,
+            vup,
+            out,
+            right,
+            up,
+            defocus_angle: optionals.defocus_angle.unwrap_or(defaults.defocus_angle()),
+            focus_distance: optionals
+                .focus_distance
+                .unwrap_or(defaults.focus_distance()),
+            defocus_disk: DefocusDisk::empty(),
+            background: optionals
+                .background
+                .clone()
+                .unwrap_or(Background::from_color(build_vec_like(
+                    defaults.background(),
+                ))),
+            tile_width: optionals.tile_width.unwrap_or(defaults.tile_width()),
+            tile_height: optionals.tile_height.unwrap_or(defaults.tile_height()),
+        };
+
+        camera.defocus_disk = DefocusDisk::from_camera(&camera);
+        camera
+    }
+
+    generate_optional_setter!(optionals, image, Image);
+    generate_optional_setter!(optionals, samples_per_pixel, u32);
+    generate_optional_setter!(optionals, antialiasing, bool);
+    generate_optional_setter!(optionals, max_depth, u32);
+    generate_optional_setter!(optionals, field_of_view, Real);
+    generate_optional_setter!(optionals, look_from, Point);
+    generate_optional_setter!(optionals, look_at, Point);
+    generate_optional_setter!(optionals, vup, Vec3D);
+    generate_optional_setter!(optionals, defocus_angle, Real);
+    generate_optional_setter!(optionals, focus_distance, Real);
+    generate_optional_setter!(optionals, background, Background);
+}
+
+#[derive(Default)]
+pub struct OptionalFields {
     image: Option<Image>,
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
@@ -223,93 +316,6 @@ pub struct CameraBuilder {
     background: Option<Background>,
     tile_width: Option<u32>,
     tile_height: Option<u32>,
-    config: &'static Config,
-}
-
-impl CameraBuilder {
-    fn new(config: &'static Config) -> CameraBuilder {
-        CameraBuilder {
-            image: None,
-            samples_per_pixel: None,
-            antialiasing: None,
-            max_depth: None,
-            field_of_view: None,
-            look_from: None,
-            look_at: None,
-            vup: None,
-            defocus_angle: None,
-            focus_distance: None,
-            background: None,
-            tile_width: None,
-            tile_height: None,
-            config,
-        }
-    }
-
-    generate_optional_setter!(image, Image);
-    generate_optional_setter!(samples_per_pixel, u32);
-    generate_optional_setter!(antialiasing, bool);
-    generate_optional_setter!(max_depth, u32);
-    generate_optional_setter!(field_of_view, Real);
-    generate_optional_setter!(look_from, Point);
-    generate_optional_setter!(look_at, Point);
-    generate_optional_setter!(vup, Vec3D);
-    generate_optional_setter!(defocus_angle, Real);
-    generate_optional_setter!(focus_distance, Real);
-    generate_optional_setter!(background, Background);
-
-    pub fn build(&self) -> Camera {
-        fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
-            VecLike::new(p[0], p[1], p[2])
-        }
-
-        let defaults = self.config.app().scene().camera().defaults();
-        let look_from = self
-            .look_from
-            .clone()
-            .unwrap_or(build_vec_like(defaults.look_from()));
-        let look_at = self
-            .look_at
-            .clone()
-            .unwrap_or(build_vec_like(defaults.look_at()));
-        let looks_delta = &look_from - &look_at;
-        let vup = self.vup.clone().unwrap_or(build_vec_like(defaults.vup()));
-
-        let out = looks_delta.to_unit();
-        let right = vup.cross(&out.0).to_unit();
-
-        // technically, there's no need to normalize because it's a cross-product
-        // of two perpendicular unit vectors
-        let up = UnitVec3D(out.0.cross(&right.0));
-
-        let mut camera =
-            Camera {
-                image: self.image.clone().unwrap_or(Image::new(100, 1.0)),
-                samples_per_pixel: self
-                    .samples_per_pixel
-                    .unwrap_or(defaults.samples_per_pixel()),
-                antialiasing: self.antialiasing.unwrap_or(defaults.antialiasing()),
-                max_depth: self.max_depth.unwrap_or(defaults.max_depth()),
-                field_of_view: self.field_of_view.unwrap_or(defaults.field_of_view()),
-                look_from,
-                look_at,
-                vup,
-                out,
-                right,
-                up,
-                defocus_angle: self.defocus_angle.unwrap_or(defaults.defocus_angle()),
-                focus_distance: self.focus_distance.unwrap_or(defaults.focus_distance()),
-                defocus_disk: DefocusDisk::empty(),
-                background: self.background.clone().unwrap_or(Background::from_color(
-                    build_vec_like(defaults.background()),
-                )),
-                tile_width: self.tile_width.unwrap_or(defaults.tile_width()),
-                tile_height: self.tile_height.unwrap_or(defaults.tile_height()),
-            };
-
-        camera.defocus_disk = DefocusDisk::from_camera(&camera);
-        camera
-    }
 }
 
 #[derive(Clone)]

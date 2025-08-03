@@ -2,28 +2,29 @@
 
 # Eanray
 
-Eanray is a simple Ray Tracer, currently being written in Rust, that converts a Lua script describing the scene into a 
+Eanray is a simple Ray Tracer, currently being written in Rust, that converts a Lua script describing a 3D scene into a 
 PPM file representing the rendered image.
 
 ## Features
 
 There is a plan to add more features in the future, but for now, the most relevant ones are the following:
 
-* Multithreaded Rendering
+* Optimizations:
+  * Bounding Volume Hierarchy
+  * Multithreaded Rendering (Tile-based)
 * Ray-object intersection
   * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks)
 * Global Illumination
-* Materials (Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic)
+* Materials: Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic
 * Antialising
 * Depth of Field (Defocus Blur)
 * Configurable Camera System
 * Lua scripting for the Scene Descriptions
 * Motion Blur (currently supported only for Spheres)
-* Bounding Volume Hierarchy
-* Texture Mapping (Checkers, Perlin Noise, Images)
+* Texture Mappings: Checkers, Perlin Noise, Images
 * Light Sources
-* Transformations (Translation, Rotations)
-* Diagnostics (Metrics, Statistics)
+* Transformations: Translation, Rotations
+* Diagnostics: Metrics, Statistics
 
 ## How To Run
 

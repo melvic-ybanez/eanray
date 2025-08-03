@@ -86,28 +86,34 @@ impl Camera {
         log::info!("Rendering {} tiles...", tiles.len());
         let pixel_tiles = tiles
             .into_par_iter()
-            .map(|(x, y)| {
-                let mut tile: Vec<(u32, u32, Color)> = vec![];
-
-                for j in y..(y + self.tile_height).min(self.image.height) {
-                    for i in x..(x + self.tile_width).min(self.image.width) {
-                        let pixel_color =
-                            self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
-                        tile.push((i, j, pixel_color));
+            .fold(
+                || Vec::new(),
+                |mut local_buffer, (x, y)| {
+                    for j in y..(y + self.tile_height).min(self.image.height) {
+                        for i in x..(x + self.tile_width).min(self.image.width) {
+                            let pixel_color =
+                                self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
+                            local_buffer.push((i, j, pixel_color));
+                        }
                     }
-                }
-                log::info!("Tile {x}, {y} rendering complete.");
-                tile
-            })
-            .collect::<Vec<_>>();
+                    log::info!("Tile {x}, {y} rendering complete.");
+                    local_buffer
+                },
+            )
+            .reduce(
+                || Vec::new(),
+                |mut acc, buffer| {
+                    acc.extend(buffer);
+                    acc
+                },
+            );
 
         log::info!("Merging tiles into one buffer...");
         let mut pixels: Vec<Vec<String>> =
             vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
-        for tile in pixel_tiles {
-            for (x, y, color) in tile {
-                pixels[y as usize][x as usize] = format!("{} ", color.to_bytes_string());
-            }
+        
+        for (x, y, color) in pixel_tiles {
+            pixels[y as usize][x as usize] = format!("{} ", color.to_bytes_string());
         }
         pixels
             .iter()

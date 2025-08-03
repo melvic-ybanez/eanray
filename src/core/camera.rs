@@ -8,13 +8,9 @@ use crate::diagnostics::stats;
 use crate::generate_optional_setter;
 use crate::settings::Config;
 use rayon::prelude::*;
-use rayon::{ThreadBuilder, ThreadPoolBuilder};
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
-use std::slice::Chunks;
-use std::sync::Arc;
 use std::time::Instant;
 
 pub struct Camera {
@@ -44,9 +40,6 @@ pub struct Camera {
 }
 
 impl Camera {
-    const TILE_WIDTH: u32 = 16;
-    const TILE_HEIGHT: u32 = 16;
-
     pub fn builder(config: &'static Config) -> CameraBuilder {
         CameraBuilder::new(config)
     }
@@ -78,14 +71,14 @@ impl Camera {
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
-        log::info!("Tile size: {} {}", Self::TILE_WIDTH, Self::TILE_HEIGHT);
+        log::info!("Tile size: {} x {}", self.tile_width, self.tile_height);
 
         log::info!("Splitting the screen into multiple tiles...");
         let tiles: Vec<(u32, u32)> = (0..self.image.height)
-            .step_by(Self::TILE_HEIGHT as usize)
+            .step_by(self.tile_height as usize)
             .flat_map(|y| {
                 (0..self.image.width)
-                    .step_by(Self::TILE_WIDTH as usize)
+                    .step_by(self.tile_width as usize)
                     .map(move |x| (x, y))
             })
             .collect();
@@ -96,8 +89,8 @@ impl Camera {
             .map(|(x, y)| {
                 let mut tile: Vec<(u32, u32, Color)> = vec![];
 
-                for j in y..(y + Self::TILE_HEIGHT).min(self.image.height) {
-                    for i in x..(x + Self::TILE_WIDTH).min(self.image.width) {
+                for j in y..(y + self.tile_height).min(self.image.height) {
+                    for i in x..(x + self.tile_width).min(self.image.width) {
                         let pixel_color =
                             self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
                         tile.push((i, j, pixel_color));

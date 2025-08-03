@@ -1,9 +1,9 @@
+use crate::core::math;
+use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{CanAdd, PointKind, Vec3D, VecKind, VecLike};
-use crate::core::math::Real;
-use serde::{Deserialize, Serialize};
-use crate::core::math;
 use crate::impl_from_for_vec_like;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ColorKind;

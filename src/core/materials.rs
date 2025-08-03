@@ -1,7 +1,7 @@
 use crate::core::hit::HitRecord;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::textures::{SolidColor, Texture};
-use crate::core::{math, Color, Ray};
+use crate::core::{Color, Ray, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -173,7 +173,11 @@ impl Isotropic {
     }
 
     pub fn scatter<'a>(&self, ray_in: &Ray, hit_record: &'a HitRecord) -> (Ray, Color) {
-        let scattered = Ray::new_timed(hit_record.p().clone(), Vec3D::random_unit().0, ray_in.time());
+        let scattered = Ray::new_timed(
+            hit_record.p().clone(),
+            Vec3D::random_unit().0,
+            ray_in.time(),
+        );
         let attenuation = self
             .texture
             .value(hit_record.u(), hit_record.v(), hit_record.p());

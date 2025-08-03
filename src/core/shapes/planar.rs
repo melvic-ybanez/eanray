@@ -3,7 +3,7 @@ use crate::core::hit::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{hit, Material, Ray};
+use crate::core::{Material, Ray, hit};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -139,7 +139,7 @@ impl Triangle {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Disk {
-    radius: Real
+    radius: Real,
 }
 
 impl Disk {

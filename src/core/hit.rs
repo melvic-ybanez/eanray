@@ -9,7 +9,7 @@ use crate::core::shapes::planar::Planar;
 use crate::core::shapes::sphere::Sphere;
 use crate::core::textures::Texture;
 use crate::core::transforms::{Rotate, Translate};
-use crate::core::{math, Color};
+use crate::core::{Color, math};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 

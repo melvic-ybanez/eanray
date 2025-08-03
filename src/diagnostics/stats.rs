@@ -1,6 +1,6 @@
+use crate::core::Hittable;
 use crate::core::bvh::BVH;
 use crate::core::hit::ObjectRef;
-use crate::core::Hittable;
 use crate::define_flag;
 use std::fmt::Display;
 

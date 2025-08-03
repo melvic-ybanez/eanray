@@ -1,10 +1,10 @@
-use std::sync::Arc;
 use crate::core::math::interval::Interval;
 use crate::core::math::{Point, Real};
-use perlin::Perlin;
-use crate::core::{math, Color};
+use crate::core::{Color, math};
 use image::{ImageReader, ImageResult, RgbImage};
+use perlin::Perlin;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 mod perlin;
 
@@ -194,7 +194,7 @@ impl NoiseTexture {
         Self {
             noise: Perlin::new(),
             scale,
-            base_color
+            base_color,
         }
     }
 

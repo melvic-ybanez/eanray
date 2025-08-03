@@ -111,7 +111,7 @@ impl Camera {
         log::info!("Merging tiles into one buffer...");
         let mut pixels: Vec<Vec<String>> =
             vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
-        
+
         for (x, y, color) in pixel_tiles {
             pixels[y as usize][x as usize] = format!("{} ", color.to_bytes_string());
         }

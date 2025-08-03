@@ -1,12 +1,12 @@
-use std::io;
-use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataMethods, Value};
-use serde::{Deserialize, Serialize};
-use crate::core::{Camera, Color, Hittable, HittableList};
 use crate::core::camera::{Background, Image};
-use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::math::vector::CanAdd;
+use crate::core::math::{Point, Real, Vec3D, VecLike};
+use crate::core::{Camera, Color, Hittable, HittableList};
 use crate::settings;
 use crate::settings::Config;
+use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataMethods, Value};
+use serde::{Deserialize, Serialize};
+use std::io;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct SceneSchema {
@@ -90,7 +90,11 @@ impl CameraSchema {
             .vup(build_vec_like(&self.vup, defaults.vup()))
             .background({
                 let default = defaults.background();
-                self.background.clone().unwrap_or(Background::from_color(Color::new(default[0], default[1], default[2])))
+                self.background
+                    .clone()
+                    .unwrap_or(Background::from_color(Color::new(
+                        default[0], default[1], default[2],
+                    )))
             })
             .build()
     }

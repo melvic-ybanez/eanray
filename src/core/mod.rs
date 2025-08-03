@@ -1,3 +1,5 @@
+mod aabb;
+pub mod bvh;
 pub mod camera;
 pub mod color;
 pub mod hit;
@@ -5,8 +7,6 @@ pub mod materials;
 pub mod math;
 mod ray;
 pub mod shapes;
-mod aabb;
-pub mod bvh;
 pub mod textures;
 pub mod transforms;
 

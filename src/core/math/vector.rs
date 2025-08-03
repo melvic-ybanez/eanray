@@ -1,10 +1,10 @@
 use crate::core::math;
 use crate::core::math::{Axis, Real};
+use crate::impl_from_for_vec_like;
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
-use crate::impl_from_for_vec_like;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VecKind;

@@ -1,16 +1,16 @@
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
+use crate::core::Hittable::BVH;
 use crate::core::camera::Background;
 use crate::core::color::ColorKind;
 use crate::core::hit::ConstantMedium;
-use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
+use crate::core::materials::{Dielectric, DiffuseLight, Lambertian, Metal, refractive_index};
 use crate::core::math::vector::{PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::planar::{Planar, Quad, Triangle};
-use crate::core::shapes::{planar, Sphere};
+use crate::core::shapes::{Sphere, planar};
 use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::transforms::{Rotate, RotateKind, Translate};
-use crate::core::Hittable::BVH;
-use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
+use crate::core::{Color, Hittable, HittableList, Material, bvh, math};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 use std::sync::Arc;
 

@@ -12,5 +12,5 @@ macro_rules! impl_from_for_vec_like {
                 (&value).into()
             }
         }
-    }
+    };
 }

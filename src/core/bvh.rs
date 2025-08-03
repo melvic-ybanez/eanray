@@ -1,8 +1,8 @@
 use crate::core::aabb::AABB;
 use crate::core::hit::{HitRecord, ObjectRef};
-use crate::core::math::interval::Interval;
 use crate::core::math::Axis;
-use crate::core::{math, Hittable, HittableList, Ray};
+use crate::core::math::interval::Interval;
+use crate::core::{Hittable, HittableList, Ray, math};
 use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
@@ -56,7 +56,10 @@ impl BVH {
             let mid = start + object_span / 2;
             let left = BVH::from_objects(objects, start, mid);
             let right = BVH::from_objects(objects, mid, end);
-            (Arc::new(Hittable::BVH(left)), Arc::new(Hittable::BVH(right)))
+            (
+                Arc::new(Hittable::BVH(left)),
+                Arc::new(Hittable::BVH(right)),
+            )
         };
 
         Self {

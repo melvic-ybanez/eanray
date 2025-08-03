@@ -7,7 +7,7 @@ pub type Color = Vec3D;
 
 #[derive(Deserialize, Clone)]
 pub struct Config {
-    app: AppConfig
+    app: AppConfig,
 }
 
 impl Config {
@@ -20,7 +20,7 @@ impl Config {
 pub struct AppConfig {
     name: String,
     scene: SceneConfig,
-    diagnostics: DiagnosticsConfig
+    diagnostics: DiagnosticsConfig,
 }
 
 impl AppConfig {
@@ -133,7 +133,7 @@ impl CameraDefaults {
 #[derive(Deserialize, Clone)]
 pub struct DiagnosticsConfig {
     enable_metrics: bool,
-    enable_stats: bool
+    enable_stats: bool,
 }
 
 impl DiagnosticsConfig {

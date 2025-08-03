@@ -3,7 +3,7 @@ use crate::core::hit::{HitRecord, ObjectRef};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{UnitVec3D, VecKind};
 use crate::core::math::{Axis, Point, Real, Vec3D, VecLike};
-use crate::core::{math, Ray};
+use crate::core::{Ray, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -161,11 +161,11 @@ impl Rotate {
             RotateKind::X => {
                 let (new_y, new_z) = Self::rotate_x(sin_theta, cos_theta, y, z);
                 (x, new_y, new_z)
-            },
+            }
             RotateKind::Y => {
                 let (new_x, new_z) = Self::rotate_y(sin_theta, cos_theta, x, z);
                 (new_x, y, new_z)
-            },
+            }
             RotateKind::Z => {
                 let (new_x, new_y) = Self::rotate_z(sin_theta, cos_theta, x, y);
                 (new_x, new_y, z)

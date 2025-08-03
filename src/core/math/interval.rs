@@ -20,7 +20,7 @@ impl Interval {
     pub fn universe() -> Self {
         Self::new(-math::INFINITY, math::INFINITY)
     }
-    
+
     pub fn from_intervals(a: &Interval, b: &Interval) -> Self {
         Self::new(a.min.min(b.min), a.max.max(b.max))
     }

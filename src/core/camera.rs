@@ -8,10 +8,12 @@ use crate::diagnostics::stats;
 use crate::generate_optional_setter;
 use crate::settings::Config;
 use rayon::prelude::*;
+use rayon::{ThreadBuilder, ThreadPoolBuilder};
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fs::File;
 use std::io::{self, Write};
+use std::slice::Chunks;
 use std::sync::Arc;
 use std::time::Instant;
 
@@ -36,9 +38,15 @@ pub struct Camera {
     defocus_disk: DefocusDisk,
 
     background: Background,
+
+    tile_width: u32,
+    tile_height: u32,
 }
 
 impl Camera {
+    const TILE_WIDTH: u32 = 16;
+    const TILE_HEIGHT: u32 = 16;
+
     pub fn builder(config: &'static Config) -> CameraBuilder {
         CameraBuilder::new(config)
     }
@@ -70,18 +78,49 @@ impl Camera {
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
-        let pixels: Vec<String> = (0..self.image.width * self.image.height())
-            .into_par_iter()
-            .map(|i| {
-                let x = i % self.image.width;
-                let y = i / self.image.width;
+        log::info!("Tile size: {} {}", Self::TILE_WIDTH, Self::TILE_HEIGHT);
 
-                let pixel_color = self.pixel_color(x, y, pixel_sample_scale, &viewport, world);
-                format!("{}\n", pixel_color.to_bytes_string())
+        log::info!("Splitting the screen into multiple tiles...");
+        let tiles: Vec<(u32, u32)> = (0..self.image.height)
+            .step_by(Self::TILE_HEIGHT as usize)
+            .flat_map(|y| {
+                (0..self.image.width)
+                    .step_by(Self::TILE_WIDTH as usize)
+                    .map(move |x| (x, y))
+            })
+            .collect();
+
+        log::info!("Rendering {} tiles...", tiles.len());
+        let pixel_tiles = tiles
+            .into_par_iter()
+            .map(|(x, y)| {
+                let mut tile: Vec<(u32, u32, Color)> = vec![];
+
+                for j in y..(y + Self::TILE_HEIGHT).min(self.image.height) {
+                    for i in x..(x + Self::TILE_WIDTH).min(self.image.width) {
+                        let pixel_color =
+                            self.pixel_color(i, j, pixel_sample_scale, &viewport, world);
+                        tile.push((i, j, pixel_color));
+                    }
+                }
+                log::info!("Tile {x}, {y} rendering complete.");
+                tile
             })
             .collect::<Vec<_>>();
 
-        pixels.join("")
+        log::info!("Merging tiles into one buffer...");
+        let mut pixels: Vec<Vec<String>> =
+            vec![vec![String::new(); self.image.width as usize]; self.image.height as usize];
+        for tile in pixel_tiles {
+            for (x, y, color) in tile {
+                pixels[y as usize][x as usize] = format!("{} ", color.to_bytes_string());
+            }
+        }
+        pixels
+            .iter()
+            .map(|row| row.join(""))
+            .collect::<Vec<_>>()
+            .join("")
     }
 
     fn pixel_color(
@@ -189,6 +228,8 @@ pub struct CameraBuilder {
     defocus_angle: Option<Real>,
     focus_distance: Option<Real>,
     background: Option<Background>,
+    tile_width: Option<u32>,
+    tile_height: Option<u32>,
     config: &'static Config,
 }
 
@@ -206,6 +247,8 @@ impl CameraBuilder {
             defocus_angle: None,
             focus_distance: None,
             background: None,
+            tile_width: None,
+            tile_height: None,
             config,
         }
     }
@@ -267,6 +310,8 @@ impl CameraBuilder {
                 background: self.background.clone().unwrap_or(Background::from_color(
                     build_vec_like(defaults.background()),
                 )),
+                tile_width: self.tile_width.unwrap_or(defaults.tile_width()),
+                tile_height: self.tile_height.unwrap_or(defaults.tile_height()),
             };
 
         camera.defocus_disk = DefocusDisk::from_camera(&camera);

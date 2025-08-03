@@ -38,10 +38,12 @@ pub struct Camera {
     defocus_disk: DefocusDisk,
 
     background: Background,
+
+    tile_width: u32,
+    tile_height: u32,
 }
 
 impl Camera {
-    // TODO: Make these tile values configurable
     const TILE_WIDTH: u32 = 16;
     const TILE_HEIGHT: u32 = 16;
 
@@ -226,6 +228,8 @@ pub struct CameraBuilder {
     defocus_angle: Option<Real>,
     focus_distance: Option<Real>,
     background: Option<Background>,
+    tile_width: Option<u32>,
+    tile_height: Option<u32>,
     config: &'static Config,
 }
 
@@ -243,6 +247,8 @@ impl CameraBuilder {
             defocus_angle: None,
             focus_distance: None,
             background: None,
+            tile_width: None,
+            tile_height: None,
             config,
         }
     }
@@ -304,6 +310,8 @@ impl CameraBuilder {
                 background: self.background.clone().unwrap_or(Background::from_color(
                     build_vec_like(defaults.background()),
                 )),
+                tile_width: self.tile_width.unwrap_or(defaults.tile_width()),
+                tile_height: self.tile_height.unwrap_or(defaults.tile_height()),
             };
 
         camera.defocus_disk = DefocusDisk::from_camera(&camera);

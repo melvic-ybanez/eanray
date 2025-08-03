@@ -76,6 +76,8 @@ pub struct CameraDefaults {
     defocus_angle: Real,
     focus_distance: Real,
     background: Color,
+    tile_width: u32,
+    tile_height: u32,
 }
 
 impl CameraDefaults {
@@ -117,6 +119,14 @@ impl CameraDefaults {
 
     pub fn background(&self) -> Color {
         self.background
+    }
+
+    pub fn tile_width(&self) -> u32 {
+        self.tile_width
+    }
+
+    pub fn tile_height(&self) -> u32 {
+        self.tile_height
     }
 }
 

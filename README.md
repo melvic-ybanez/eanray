@@ -14,7 +14,6 @@ There is a plan to add more features in the future, but for now, the most releva
   * Multithreaded Rendering (Tile-based)
 * Ray-object intersection
   * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks)
-* Global Illumination
 * Materials: Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic
 * Antialising
 * Depth of Field (Defocus Blur)
@@ -48,7 +47,7 @@ Here's the Lua script that describes the scene you probably already saw above in
 document: [cover.lua](examples/v0_1/cover.lua)
 
 More examples can be found [here](examples), including some [scenes](examples/rt1w) from
-[Ray Tracing in One Weekend](https://raytracing.github.io/books/RayTracingInOneWeekend.html).
+[Ray Tracing in One Weekend](https://raytracing.github.io) series.
 
 
 ## Technologies
@@ -60,7 +59,7 @@ provided by the user should be written in [Lua](https://www.lua.org/)
 
 [Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
 
-[Here](examples/rtnw/scene10_final_scene.lua) is the Lua script for Peter Shirley's "Sweet Dreams", the final image of the second book. 
+[Here](examples/rtnw/scene10_final_scene.lua) is the Lua script for Peter Shirley's ["Sweet Dreams"](https://raytracing.github.io/books/RayTracingTheNextWeek.html#ascenetestingallnewfeatures), the final image of the [second book](https://raytracing.github.io/books/RayTracingTheNextWeek.html). 
 If you feed that to Eanray, you'll get the image below:
 
 ![sweet_dreams](https://github.com/user-attachments/assets/d34f8454-a3e0-4142-b636-547188c1ad2e)

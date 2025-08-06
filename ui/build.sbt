@@ -4,5 +4,6 @@ ThisBuild / scalaVersion := "3.3.6"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "ui"
+    name := "ui",
+    libraryDependencies ++= Dependencies.ui,
   )

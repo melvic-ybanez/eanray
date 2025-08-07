@@ -20,12 +20,12 @@ class MainScene extends Scene:
         new SplitPane:
           orientation = Orientation.Horizontal
           Platform.runLater {
-            dividerPositions = 0.2
+            dividerPositions = 0.25
           }
 
           val leftSplitPane: SplitPane = new SplitPane:
             orientation = Orientation.Vertical
-            items ++= Seq(new FitScrollPane(new CameraPane), new ObjectListPane)
+            items ++= Seq(new FitScrollPane(new CameraPane), new AvailableObjectsPane)
 
           val centerPane: StackPane = new StackPane {
             self =>
@@ -35,7 +35,7 @@ class MainScene extends Scene:
           items ++= Seq(leftSplitPane, centerPane)
         ,
         new TitledPane:
-          text = "logs"
+          text = "Logs"
           content = TextArea()
           prefHeight = -1
           maxHeight = Double.MaxValue

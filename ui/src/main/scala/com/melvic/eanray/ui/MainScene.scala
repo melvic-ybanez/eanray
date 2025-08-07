@@ -20,7 +20,7 @@ class MainScene extends Scene:
         new SplitPane:
           orientation = Orientation.Horizontal
           Platform.runLater {
-            dividerPositions = 0.25
+            dividerPositions = 0.23
           }
 
           val leftSplitPane: SplitPane = new SplitPane:

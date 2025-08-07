@@ -1,21 +1,20 @@
 package com.melvic.eanray.ui
 
-import com.melvic.eanray.ui.ObjectListPane.{makeCubeTile, makeSphereTile}
+import com.melvic.eanray.ui.ObjectListPane.{makeCubeTile, makeSphereTile, makeTriangleTile}
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
-import scalafx.scene.control.{Label, Labeled}
-import scalafx.scene.effect.DropShadow
-import scalafx.scene.layout.{BorderPane, StackPane, TilePane, VBox}
+import scalafx.scene.control.Label
+import scalafx.scene.layout.{TilePane, VBox}
 import scalafx.scene.paint.Color
 
 class ObjectListPane extends TilePane:
-  hgap = 20
-  vgap = 20
+  hgap = 25
+  vgap = 25
   prefColumns = 3
   tileAlignment = Pos.Center
-  padding = Insets(10)
+  padding = Insets(25)
 
-  children ++= Seq(makeCubeTile, makeSphereTile)
+  children ++= Seq(makeCubeTile, makeSphereTile, makeTriangleTile)
 
 object ObjectListPane:
   private val HighIntensity: Int = (0.7 * 255).toInt
@@ -71,3 +70,10 @@ object ObjectListPane:
     val size = 60
     gc.fill = Color.rgb(HighIntensity, LowIntensity, LowIntensity)
     gc.fillOval(x, y, size, size)
+
+  def makeTriangleTile: VBox = makeShapeTile("Triangle"): gc =>
+    val x = 8
+    val y = 2
+    val size = 60
+    gc.fill = Color.rgb(LowIntensity, HighIntensity, LowIntensity)
+    gc.fillPolygon(Array(x + size / 2, x + size, x), Array(y, y + size, y + size), 3)

@@ -1,6 +1,6 @@
 package com.melvic.eanray.ui
 
-import com.melvic.eanray.ui.ObjectListPane.{makeCubeTile, makeSphereTile, makeTriangleTile}
+import com.melvic.eanray.ui.ObjectListPane.{makeCubeTile, makeDiskTile, makeSphereTile, makeTriangleTile}
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.Label
@@ -14,7 +14,7 @@ class ObjectListPane extends TilePane:
   tileAlignment = Pos.Center
   padding = Insets(25)
 
-  children ++= Seq(makeCubeTile, makeSphereTile, makeTriangleTile)
+  children ++= Seq(makeCubeTile, makeSphereTile, makeTriangleTile, makeDiskTile)
 
 object ObjectListPane:
   private val HighIntensity: Int = (0.7 * 255).toInt
@@ -65,11 +65,9 @@ object ObjectListPane:
     )
 
   def makeSphereTile: VBox = makeShapeTile("Sphere"): gc =>
-    val x = 8
-    val y = 2
     val size = 60
     gc.fill = Color.rgb(HighIntensity, LowIntensity, LowIntensity)
-    gc.fillOval(x, y, size, size)
+    gc.fillOval(8, 2, size, size)
 
   def makeTriangleTile: VBox = makeShapeTile("Triangle"): gc =>
     val x = 8
@@ -77,3 +75,7 @@ object ObjectListPane:
     val size = 60
     gc.fill = Color.rgb(LowIntensity, HighIntensity, LowIntensity)
     gc.fillPolygon(Array(x + size / 2, x + size, x), Array(y, y + size, y + size), 3)
+
+  def makeDiskTile: VBox = makeShapeTile("Disk"): gc =>
+    gc.fill = Color.rgb(LowIntensity, LowIntensity, HighIntensity)
+    gc.fillOval(15, 2, 40, 60)

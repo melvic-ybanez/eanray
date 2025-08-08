@@ -31,8 +31,8 @@ class ObjectListPane extends TilePane:
   )
 
 object ObjectListPane:
-  private val HighIntensity: Int = (0.7 * 255).toInt
-  private val LowIntensity: Int = (0.3 * 255).toInt
+  private val HighIntensity: Double = 0.8
+  private val LowIntensity: Double = 0.2
 
   def makeShapeTile(name: String)(drawIcon: GraphicsContext => Unit): VBox =
     val canvas = Canvas(70, 70)
@@ -55,7 +55,7 @@ object ObjectListPane:
     val dy = Math.sin(angle) * size // soh
 
     // reddish front
-    gc.fill = Color.rgb(HighIntensity, LowIntensity, LowIntensity)
+    gc.fill = Color.color(HighIntensity, LowIntensity, LowIntensity)
     gc.fillPolygon(
       Array(x, x + size, x + size, x),
       Array(y, y, y + size, y + size),
@@ -63,7 +63,7 @@ object ObjectListPane:
     )
 
     // green-ish right
-    gc.fill = Color.rgb(LowIntensity, HighIntensity, LowIntensity)
+    gc.fill = Color.color(LowIntensity, HighIntensity, LowIntensity)
     gc.fillPolygon(
       Array(x + size, x + size + dx, x + size + dx, x + size),
       Array(y, y - dy, y + size - dy, y + size),
@@ -71,7 +71,7 @@ object ObjectListPane:
     )
 
     // blue-ish top
-    gc.fill = Color.rgb(LowIntensity, LowIntensity, HighIntensity)
+    gc.fill = Color.color(LowIntensity, LowIntensity, HighIntensity)
     gc.fillPolygon(
       Array(x, x + dx, x + size + dx, x + size),
       Array(y, y - dy, y - dy, y),
@@ -80,18 +80,18 @@ object ObjectListPane:
 
   def makeSphereTile: VBox = makeShapeTile("Sphere"): gc =>
     val size = 60
-    gc.fill = Color.rgb(HighIntensity, LowIntensity, LowIntensity)
+    gc.fill = Color.color(HighIntensity, LowIntensity, LowIntensity)
     gc.fillOval(8, 2, size, size)
 
   def makeTriangleTile: VBox = makeShapeTile("Triangle"): gc =>
     val x = 8
     val y = 2
     val size = 60
-    gc.fill = Color.rgb(LowIntensity, HighIntensity, LowIntensity)
+    gc.fill = Color.color(LowIntensity, HighIntensity, LowIntensity)
     gc.fillPolygon(Array(x + size / 2, x + size, x), Array(y, y + size, y + size), 3)
 
   def makeDiskTile: VBox = makeShapeTile("Disk"): gc =>
-    gc.fill = Color.rgb(LowIntensity, LowIntensity, HighIntensity)
+    gc.fill = Color.color(LowIntensity, LowIntensity, HighIntensity)
     gc.fillOval(15, 2, 40, 60)
 
   def makeParallelogramTitle: VBox = makeShapeTile("Parallelogram"): gc =>
@@ -101,7 +101,7 @@ object ObjectListPane:
     val vSide = 47
     val offset = 7
 
-    gc.fill = Color.rgb(HighIntensity, HighIntensity, LowIntensity)
+    gc.fill = Color.color(HighIntensity, HighIntensity, LowIntensity)
     gc.fillPolygon(
       Array(x + offset, x + hSide + offset, x + hSide, x),
       Array(y, y, y + vSide, y + vSide),
@@ -110,8 +110,8 @@ object ObjectListPane:
 
   def makeVolumeTile: VBox = makeShapeTile("Volume"): gc =>
     val size = 12
-    val highIntensity = (HighIntensity * 0.8).toInt
-    gc.fill = Color.rgb(highIntensity, LowIntensity, highIntensity)
+    val highIntensity = HighIntensity * 0.8
+    gc.fill = Color.color(highIntensity, LowIntensity, highIntensity)
 
     gc.fillOval(8, 10, size, size)
     gc.fillOval(25, 5, size, size)

@@ -5,7 +5,8 @@ import com.melvic.eanray.ui.ObjectListPane.{
   makeDiskTile,
   makeParallelogramTitle,
   makeSphereTile,
-  makeTriangleTile
+  makeTriangleTile,
+  makeVolumeTile
 }
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
@@ -25,7 +26,8 @@ class ObjectListPane extends TilePane:
     makeSphereTile,
     makeTriangleTile,
     makeDiskTile,
-    makeParallelogramTitle
+    makeParallelogramTitle,
+    makeVolumeTile
   )
 
 object ObjectListPane:
@@ -105,3 +107,17 @@ object ObjectListPane:
       Array(y, y, y + vSide, y + vSide),
       4
     )
+
+  def makeVolumeTile: VBox = makeShapeTile("Volume"): gc =>
+    val size = 12
+    val highIntensity = (HighIntensity * 0.8).toInt
+    gc.fill = Color.rgb(highIntensity, LowIntensity, highIntensity)
+
+    gc.fillOval(8, 10, size, size)
+    gc.fillOval(25, 5, size, size)
+    gc.fillOval(42, 16, size, size)
+    gc.fillOval(27, 25, size, size)
+    gc.fillOval(10, 30, size, size)
+    gc.fillOval(45, 35, size, size)
+    gc.fillOval(50, 8, size, size)
+    gc.fillOval(33, 45, size, size)

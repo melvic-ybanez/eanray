@@ -53,7 +53,9 @@ class MainScene extends Scene:
 
           val centerPane: StackPane = new StackPane {
             self =>
-            content = new Viewport(self, 200, 100)
+            children ++= Seq(new Viewport(self, 200, 100), new Label("Drag an object here to start") {
+              style = "-fx-font-size: 50; -fx-text-fill: gray"
+            })
           }
 
           items ++= Seq(leftSplitPane, centerPane)

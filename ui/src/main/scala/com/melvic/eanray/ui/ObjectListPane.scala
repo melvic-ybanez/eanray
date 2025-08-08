@@ -1,6 +1,12 @@
 package com.melvic.eanray.ui
 
-import com.melvic.eanray.ui.ObjectListPane.{makeCubeTile, makeDiskTile, makeSphereTile, makeTriangleTile}
+import com.melvic.eanray.ui.ObjectListPane.{
+  makeCubeTile,
+  makeDiskTile,
+  makeParallelogramTitle,
+  makeSphereTile,
+  makeTriangleTile
+}
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.canvas.{Canvas, GraphicsContext}
 import scalafx.scene.control.Label
@@ -14,7 +20,13 @@ class ObjectListPane extends TilePane:
   tileAlignment = Pos.Center
   padding = Insets(25)
 
-  children ++= Seq(makeCubeTile, makeSphereTile, makeTriangleTile, makeDiskTile)
+  children ++= Seq(
+    makeCubeTile,
+    makeSphereTile,
+    makeTriangleTile,
+    makeDiskTile,
+    makeParallelogramTitle
+  )
 
 object ObjectListPane:
   private val HighIntensity: Int = (0.7 * 255).toInt
@@ -37,8 +49,8 @@ object ObjectListPane:
     val y = 20
     val size = 40
     val angle = Math.toRadians(45)
-    val dx = Math.cos(angle) * size   // cah
-    val dy = Math.sin(angle) * size   // soh
+    val dx = Math.cos(angle) * size // cah
+    val dy = Math.sin(angle) * size // soh
 
     // reddish front
     gc.fill = Color.rgb(HighIntensity, LowIntensity, LowIntensity)
@@ -79,3 +91,17 @@ object ObjectListPane:
   def makeDiskTile: VBox = makeShapeTile("Disk"): gc =>
     gc.fill = Color.rgb(LowIntensity, LowIntensity, HighIntensity)
     gc.fillOval(15, 2, 40, 60)
+
+  def makeParallelogramTitle: VBox = makeShapeTile("Parallelogram"): gc =>
+    val x = 8
+    val y = 9
+    val hSide = 55
+    val vSide = 47
+    val offset = 7
+
+    gc.fill = Color.rgb(HighIntensity, HighIntensity, LowIntensity)
+    gc.fillPolygon(
+      Array(x + offset, x + hSide + offset, x + hSide, x),
+      Array(y, y, y + vSide, y + vSide),
+      4
+    )

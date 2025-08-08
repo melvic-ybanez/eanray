@@ -48,7 +48,7 @@ class MainScene extends Scene:
                 timeline.play()
             }
 
-            items ++= Seq(cameraPane, new AvailableObjectsPane).map(new FitScrollPane(_))
+            items ++= Seq(cameraPane, new ObjectPalette).map(new FitScrollPane(_))
           }
 
           val centerPane: StackPane = new StackPane {

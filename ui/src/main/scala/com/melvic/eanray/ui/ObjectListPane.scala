@@ -31,8 +31,8 @@ class ObjectListPane extends TilePane:
   )
 
 object ObjectListPane:
-  private val HighIntensity: Double = 0.8
-  private val LowIntensity: Double = 0.2
+  private val HighIntensity: Double = 0.7
+  private val LowIntensity: Double = 0.3
 
   def makeShapeTile(name: String)(drawIcon: GraphicsContext => Unit): VBox =
     val canvas = Canvas(70, 70)

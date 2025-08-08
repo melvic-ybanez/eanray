@@ -1,6 +1,5 @@
 package com.melvic.eanray.ui
 
-import com.melvic.eanray.ui.CameraPane.buildTextField
 import scalafx.geometry.Insets
 import scalafx.scene.control.{Label, TextField, TitledPane}
 import scalafx.scene.layout.GridPane
@@ -15,15 +14,16 @@ class CameraPane extends TitledPane:
     hgap = 10
     vgap = 10
 
-    def dimField: TextField =
-      val field = buildTextField
-      field.prefColumnCount = 4
-      field
+    def widthField: SmallInputField = new SmallInputField:
+      promptText = "Width"
 
-    addRow(0, Label("Dimensions"), dimField, dimField)
+    def heightField: SmallInputField = new SmallInputField:
+      promptText = "Height"
+
+    addRow(0, Label("Dimensions:"), widthField, Label("\u00D7"), heightField)
+    addRow(1, Label("Aspect Ratio:"), widthField, Label(":"), heightField)
 
     val labels: Seq[String] = List(
-      "Aspect Ratio",
       "Samples per pixel",
       "Max depth",
       "Field of view",
@@ -34,15 +34,16 @@ class CameraPane extends TitledPane:
 
     labels.zipWithIndex.foreach: (label, i) =>
       addColumn(0, Label(s"$label:"))
-      add(buildTextField, 1, i + 1, 2, 1)
+      add(new InputField, 1, i + 2, 3, 1)
 
-object CameraPane:
-  def buildTextField: TextField =
-    new TextField:
-      prefColumnCount = 8
+class InputField extends TextField:
+  prefColumnCount = 8
 
-      style = """
-          |-fx-background-color: #1e1e1e;
-          |-fx-text-fill: white;
-          |-fx-border-color: #3a3a3a;
-      """.stripMargin
+  style = """
+      |-fx-background-color: #1e1e1e;
+      |-fx-text-fill: white;
+      |-fx-border-color: #3a3a3a;
+        """.stripMargin
+
+class SmallInputField extends InputField:
+  prefColumnCount = 4

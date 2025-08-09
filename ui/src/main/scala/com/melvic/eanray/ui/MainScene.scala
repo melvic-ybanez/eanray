@@ -51,12 +51,15 @@ class MainScene extends Scene:
             items ++= Seq(cameraPane, new ObjectPalette).map(new FitScrollPane(_))
           }
 
-          val centerPane: StackPane = new StackPane {
+          val centerPane: FitScrollPane = new FitScrollPane(new StackPane {
             self =>
-            children ++= Seq(new Viewport(self, 200, 100), new Label("Drag an object here to start") {
-              style = "-fx-font-size: 50; -fx-text-fill: gray"
-            })
-          }
+            children ++= Seq(
+              new Viewport(self, 200, 100),
+              new Label("Drag an object here to start") {
+                style = "-fx-font-size: 50; -fx-text-fill: gray"
+              }
+            )
+          })
 
           items ++= Seq(leftSplitPane, centerPane)
         ,

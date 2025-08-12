@@ -13,7 +13,7 @@ There is a plan to add more features in the future, but for now, the most releva
   * Bounding Volume Hierarchy
   * Multithreaded Rendering (Tile-based)
 * Ray-object intersection
-  * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks)
+  * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks), Planes
 * Materials: Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic
 * Antialising
 * Depth of Field (Defocus Blur)

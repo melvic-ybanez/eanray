@@ -12,6 +12,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Optimizations:
   * Bounding Volume Hierarchy
   * Multithreaded Rendering (Tile-based)
+* Naive Monte Carlo Global Illumination
 * Ray-object intersection
   * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks), Planes
 * Materials: Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic

@@ -1,5 +1,4 @@
 use crate::core::camera::{Background, Image};
-use crate::core::hittables::World;
 use crate::core::math::vector::CanAdd;
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::{Camera, Color, Hittable, HittableList};
@@ -23,7 +22,7 @@ impl SceneSchema {
     pub fn render(&self, config: &'static Config) -> io::Result<()> {
         let camera = self.camera.build(config);
         camera.render(
-            &World::from_hittable_list(HittableList::from_vec(self.objects.clone())),
+            &Hittable::List(HittableList::from_vec(self.objects.clone())),
             config,
         )
     }

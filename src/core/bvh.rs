@@ -18,20 +18,7 @@ pub struct BVH {
 impl BVH {
     pub const PRIMITIVE_COUNT_PER_LEAF: u32 = 1;
 
-    /// Unevaluated BVH. The hittable is stored in one of the children.
-    /// The bounding box is empty.
-    /// Maybe we could have improved this by defining an actual type for Lazy BVHs?
-    pub fn lazy(hittable: Hittable) -> Self {
-        let mut this = Self {
-            left: Arc::new(Hittable::List(HittableList::empty())),
-            right: Arc::new(Hittable::List(HittableList::empty())),
-            bbox: AABB::empty(),
-        };
-        this.store_hittable(hittable);
-        this
-    }
-
-    pub(super) fn from_list(mut list: HittableList) -> Self {
+    pub fn from_list(mut list: HittableList) -> Self {
         let mut objects = list
             .objects_mut()
             .iter()
@@ -47,7 +34,7 @@ impl BVH {
         Self::from_objects(objects, 0, objects.len())
     }
 
-    pub(super) fn from_objects(objects: &mut Vec<ObjectRef>, start: usize, end: usize) -> Self {
+    fn from_objects(objects: &mut Vec<ObjectRef>, start: usize, end: usize) -> Self {
         metrics::increment_bvh_init_count();
 
         let mut bbox = AABB::empty();
@@ -147,13 +134,5 @@ impl BVH {
 
     pub fn right(&self) -> ObjectRef {
         self.right.clone()
-    }
-
-    fn store_hittable(&mut self, hittable: Hittable) {
-        self.left = Arc::new(hittable);
-    }
-
-    pub(super) fn as_hittable(&self) -> &Hittable {
-        &self.left
     }
 }

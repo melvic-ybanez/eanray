@@ -438,7 +438,7 @@ fn new_bvh_table(lua: &Lua) -> Result<Table> {
         lua,
         lua.create_function(|lua, (_, h_list): (Table, Value)| {
             let hittable_list: HittableList = HittableList::from_vec(lua.from_value(h_list)?);
-            let bvh = bvh::BVH::lazy(Hittable::List(hittable_list));
+            let bvh = bvh::BVH::from_list(hittable_list);
             Ok(lua.to_value(&BVH(bvh)))
         }),
     )

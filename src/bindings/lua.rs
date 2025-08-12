@@ -13,6 +13,7 @@ use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 use std::sync::Arc;
+use crate::core::shapes::plane::Plane;
 
 macro_rules! from_user_data {
     ($name: ident, $t: ty) => {
@@ -140,6 +141,21 @@ fn new_box_table(lua: &Lua) -> Result<Table> {
                 let mat = lua.from_value(mat)?;
                 let hl_box = Hittable::List(HittableList::make_box(a, b, mat));
                 Ok(lua.to_value(&hl_box))
+            },
+        ),
+    )
+}
+
+fn new_plane_table(lua: &Lua) -> Result<Table> {
+    new_table(
+        lua,
+        lua.create_function(
+            move |lua, (_, p0, n, mat): (Table, AnyUserData, AnyUserData, Value)| {
+                let p0 = from_user_data!(p0, Point);
+                let n = from_user_data!(n, Vec3D);
+                let mat: Material = lua.from_value(mat)?;
+                let plane = Hittable::Plane(Plane::new(p0, n.to_unit(), mat));
+                Ok(lua.to_value(&plane))
             },
         ),
     )
@@ -306,6 +322,7 @@ fn new_shapes_table(lua: &Lua) -> Result<Table> {
     shapes.set("Disk", new_disk_table(lua)?)?;
     shapes.set("Box", new_box_table(lua)?)?;
     shapes.set("ConstantMedium", new_constant_medium_table(lua)?)?;
+    shapes.set("Plane", new_plane_table(lua)?)?;
     Ok(shapes)
 }
 

@@ -1,6 +1,6 @@
-use crate::core::Hittable;
 use crate::core::bvh::BVH;
-use crate::core::hit::ObjectRef;
+use crate::core::hittables::ObjectRef;
+use crate::core::Hittable;
 use crate::define_flag;
 use std::fmt::Display;
 
@@ -54,6 +54,7 @@ impl BVHStats {
             Hittable::BVH(bvh) => {
                 self.inspect_bvh(bvh, depth);
             }
+            Hittable::Plane(_) => ()
         }
     }
 
@@ -128,13 +129,19 @@ impl BVHStats {
     }
 }
 
+pub fn report_bvh(bvh: &BVH) {
+    if is_enabled() {
+        BVHStats::from_bvh(bvh).report()
+    }
+}
+
 pub fn report(hittable: &Hittable) {
     if !is_enabled() {
         return;
     }
 
     match hittable {
-        Hittable::BVH(bvh) => BVHStats::from_bvh(bvh).report(),
+        Hittable::BVH(bvh) => report_bvh(bvh),
         Hittable::List(agg) => agg.objects().iter().for_each(report),
         _ => (),
     }

@@ -300,6 +300,14 @@ impl Sub<&Vec3D> for &Point {
     }
 }
 
+impl Sub<&Vec3D> for Point {
+    type Output = Point;
+
+    fn sub(self, rhs: &Vec3D) -> Self::Output {
+        &self - rhs
+    }
+}
+
 impl Sub<Vec3D> for Point {
     type Output = Point;
 

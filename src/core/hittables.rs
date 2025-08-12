@@ -1,15 +1,16 @@
 use crate::core::aabb::AABB;
 use crate::core::bvh::BVH;
-use crate::core::materials::{Isotropic, Material};
+use crate::core::materials::Material;
+use crate::core::math;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
 use crate::core::shapes::planar::Planar;
+use crate::core::shapes::plane::Plane;
 use crate::core::shapes::sphere::Sphere;
-use crate::core::textures::Texture;
+use crate::core::shapes::volume::ConstantMedium;
 use crate::core::transforms::{Rotate, Translate};
-use crate::core::{Color, math};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -19,7 +20,7 @@ pub struct HitRecord<'a> {
     pub p: Point,
     pub normal: UnitVec3D,
     mat: &'a Material,
-    t: Real,
+    pub t: Real,
     front_face: bool,
     u: Real,
     v: Real,
@@ -93,6 +94,81 @@ pub struct FrontFace(pub bool);
 pub struct U(pub Real);
 pub struct V(pub Real);
 
+pub struct World {
+    bvh: Option<BVH>,
+    raws: Hittable,
+}
+
+impl World {
+    pub fn from_hittable_list(list: HittableList) -> Self {
+        // if there are no BVHs, put everything into the `raws` list
+        if !list.objects.iter().any(|hittable| {
+            match hittable {
+                Hittable::BVH(_) => true,
+                _ => false
+            }
+        }) {
+            return Self {
+                raws: Hittable::List(list),
+                bvh: None,
+            }
+        }
+
+        let mut raws: Vec<Hittable> = vec![];
+        let mut bvh_objects: Vec<Hittable> = vec![];
+
+        for hittable in list.objects().into_iter() {
+            let hittable = match hittable {
+                // for now, we don't allow BVH for specific areas only,
+                // so we mix all of them into one by pushing their hittable
+                // contents into a single list
+                Hittable::BVH(bvh) => bvh.as_hittable(),
+
+                _ => hittable
+            };
+
+            if hittable.is_finite() {
+                bvh_objects.push(hittable.clone());
+            } else {
+                raws.push(hittable.clone());
+            }
+        }
+        let bvh = BVH::from_list(HittableList::from_vec(bvh_objects));
+
+        Self {
+            raws: Hittable::List(HittableList::from_vec(raws)),
+            bvh: Some(bvh),
+        }
+    }
+
+    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        let hit_raws = |t_max| {
+            self.raws
+                .hit(ray, &Interval::new(ray_t.min, t_max))
+                .and_then(|hit| Some(hit))
+        };
+
+        match &self.bvh {
+            Some(bvh) => {
+                if let Some(bvh_rec) = bvh.hit(ray, ray_t) {
+                    hit_raws(bvh_rec.t()).or(Some(bvh_rec))
+                } else {
+                    hit_raws(ray_t.max)
+                }
+            }
+            None => hit_raws(ray_t.max),
+        }
+    }
+
+    pub fn bvh(&self) -> Option<&BVH> {
+        self.bvh.as_ref()
+    }
+
+    pub fn raws(&self) -> &Hittable {
+        &self.raws
+    }
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Hittable {
     Sphere(Sphere),
@@ -102,6 +178,7 @@ pub enum Hittable {
     Translate(Translate),
     Rotate(Rotate),
     ConstantMedium(ConstantMedium),
+    Plane(Plane),
 }
 
 impl Hittable {
@@ -114,6 +191,7 @@ impl Hittable {
             Hittable::Translate(translate) => translate.hit(ray, ray_t),
             Hittable::Rotate(rotate_y) => rotate_y.hit(ray, ray_t),
             Hittable::ConstantMedium(constant_medium) => constant_medium.hit(ray, ray_t),
+            Hittable::Plane(plane) => plane.hit(ray, ray_t),
         }
     }
 
@@ -126,7 +204,18 @@ impl Hittable {
             Hittable::Translate(translate) => translate.bounding_box(),
             Hittable::Rotate(rotate_y) => rotate_y.bounding_box(),
             Hittable::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
+            Hittable::Plane(plane) => plane.bounding_box(),
         }
+    }
+
+    pub fn is_finite(&self) -> bool {
+        let bbox = self.bounding_box();
+        bbox.x().min < math::INFINITY
+            && bbox.x().max < math::INFINITY
+            && bbox.y().min < math::INFINITY
+            && bbox.y().max < math::INFINITY
+            && bbox.z().min < math::INFINITY
+            && bbox.z().max < math::INFINITY
     }
 }
 
@@ -137,6 +226,10 @@ pub struct HittableList {
 }
 
 impl HittableList {
+    pub fn empty() -> Self {
+        Self::from_vec(vec![])
+    }
+
     pub fn from_vec(objects: Vec<Hittable>) -> HittableList {
         let mut this = Self {
             objects: vec![],
@@ -226,89 +319,11 @@ impl HittableList {
         &self.bbox
     }
 
-    pub fn objects(&self) -> &Vec<Hittable> {
+    pub fn objects(&self) -> &[Hittable] {
         &self.objects
     }
 
     pub fn objects_mut(&mut self) -> &mut Vec<Hittable> {
         &mut self.objects
-    }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ConstantMedium {
-    boundary: ObjectRef,
-    neg_inv_density: Real,
-    phase_function: Material,
-}
-
-impl ConstantMedium {
-    pub fn new(boundary: ObjectRef, density: Real, phase_function: Material) -> Self {
-        Self {
-            boundary,
-            neg_inv_density: -1.0 / density,
-            phase_function,
-        }
-    }
-
-    pub fn from_texture(boundary: ObjectRef, density: Real, texture: Texture) -> Self {
-        Self::new(
-            boundary,
-            density,
-            Material::Isotropic(Isotropic::from_texture(texture)),
-        )
-    }
-
-    pub fn from_albedo(boundary: ObjectRef, density: Real, albedo: Color) -> Self {
-        Self::new(
-            boundary,
-            density,
-            Material::Isotropic(Isotropic::from_albedo(albedo)),
-        )
-    }
-
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let mut rec1 = self.boundary.hit(ray, &Interval::universe())?;
-        let mut rec2 = self
-            .boundary
-            .hit(ray, &Interval::new(rec1.t + 0.0001, math::INFINITY))?;
-
-        if rec1.t < ray_t.min {
-            rec1.t = ray_t.min
-        }
-        if rec2.t > ray_t.max {
-            rec2.t = ray_t.max
-        }
-
-        if rec1.t >= rec2.t {
-            None
-        } else {
-            if rec1.t < 0.0 {
-                rec1.t = 0.0
-            }
-
-            let ray_length = ray.direction().length();
-            let distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
-            let hit_distance = self.neg_inv_density * math::random_real().log(std::f64::consts::E);
-
-            if hit_distance > distance_inside_boundary {
-                None
-            } else {
-                let t = rec1.t + hit_distance / ray_length;
-                Some(HitRecord::new(
-                    P(ray.at(t)),
-                    Normal(UnitVec3D(Vec3D::new(1.0, 0.0, 0.0))),
-                    Mat(&self.phase_function),
-                    T(t),
-                    FrontFace(true),
-                    U(0.0),
-                    V(0.0),
-                ))
-            }
-        }
-    }
-
-    pub fn bounding_box(&self) -> &AABB {
-        self.boundary.bounding_box()
     }
 }

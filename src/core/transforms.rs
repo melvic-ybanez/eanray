@@ -1,5 +1,5 @@
 use crate::core::aabb::AABB;
-use crate::core::hit::{HitRecord, ObjectRef};
+use crate::core::hittables::{HitRecord, ObjectRef};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{UnitVec3D, VecKind};
 use crate::core::math::{Axis, Point, Real, Vec3D, VecLike};

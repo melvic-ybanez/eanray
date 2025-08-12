@@ -1,8 +1,9 @@
-use crate::core::Ray;
 use crate::core::math::interval::Interval;
 use crate::core::math::{Axis, Point, Vec3D};
+use crate::core::Ray;
 use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
+use std::cmp::PartialEq;
 use std::ops::Add;
 
 /// Axis-aligned Bounding Box

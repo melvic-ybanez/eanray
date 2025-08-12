@@ -1,4 +1,4 @@
-use crate::core::hit::HitRecord;
+use crate::core::hittables::HitRecord;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::textures::{SolidColor, Texture};
 use crate::core::{Color, Ray, math};

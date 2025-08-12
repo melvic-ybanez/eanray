@@ -1,9 +1,9 @@
 use crate::core::aabb::AABB;
-use crate::core::hit::HitRecord;
+use crate::core::hittables::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{Material, Ray, hit};
+use crate::core::{Material, Ray, hittables};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -93,13 +93,13 @@ impl Planar {
             let (front_face, face_normal) = HitRecord::face_normal(&ray, self.normal.clone());
 
             Some(HitRecord::new(
-                hit::P(intersection),
-                hit::Normal(face_normal),
-                hit::Mat(&self.mat),
-                hit::T(t),
-                hit::FrontFace(front_face),
-                hit::U(alpha),
-                hit::V(beta),
+                hittables::P(intersection),
+                hittables::Normal(face_normal),
+                hittables::Mat(&self.mat),
+                hittables::T(t),
+                hittables::FrontFace(front_face),
+                hittables::U(alpha),
+                hittables::V(beta),
             ))
         } else {
             None

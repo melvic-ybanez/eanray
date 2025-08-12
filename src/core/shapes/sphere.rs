@@ -1,5 +1,5 @@
 use crate::core::aabb::AABB;
-use crate::core::hit::{self, HitRecord};
+use crate::core::hittables::{self, HitRecord};
 use crate::core::materials::Material;
 use crate::core::math;
 use crate::core::math::interval::Interval;
@@ -100,13 +100,13 @@ impl Sphere {
                 let (front_face, face_normal) = HitRecord::face_normal(&ray, outward_normal);
 
                 HitRecord::new(
-                    hit::P(p),
-                    hit::Normal(face_normal),
-                    hit::Mat(&self.mat),
-                    hit::T(root),
-                    hit::FrontFace(front_face),
-                    hit::U(u),
-                    hit::V(v),
+                    hittables::P(p),
+                    hittables::Normal(face_normal),
+                    hittables::Mat(&self.mat),
+                    hittables::T(root),
+                    hittables::FrontFace(front_face),
+                    hittables::U(u),
+                    hittables::V(v),
                 )
             })
         }

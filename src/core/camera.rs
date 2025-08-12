@@ -1,5 +1,5 @@
 use crate::core::color::Color;
-use crate::core::hit::Hittable;
+use crate::core::hittables::{Hittable, World};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D, Vec3D, VecLike};
 use crate::core::math::{self, Real};
@@ -44,11 +44,12 @@ impl Camera {
         CameraBuilder::new(config)
     }
 
-    pub fn render(&self, world: &Hittable, config: &Config) -> io::Result<()> {
+    pub fn render(&self, world: &World, config: &Config) -> io::Result<()> {
         let start = Instant::now();
         let ppm_file = File::create(config.app().scene().output_file())?;
 
-        stats::report(world);
+        world.bvh().into_iter().for_each(stats::report_bvh);
+        stats::report(world.raws());
 
         // output the PPM contents
         writeln!(
@@ -67,7 +68,7 @@ impl Camera {
         Ok(())
     }
 
-    fn ppm_content(&self, world: &Hittable) -> String {
+    fn ppm_content(&self, world: &World) -> String {
         let viewport = self.viewport();
         let pixel_sample_scale = self.pixel_sample_scale();
 
@@ -128,7 +129,7 @@ impl Camera {
         j: u32,
         pixel_sample_scale: f64,
         viewport: &Viewport,
-        world: &Hittable,
+        world: &World,
     ) -> Color {
         if self.antialiasing {
             // compute the average color from the sample rays
@@ -173,7 +174,7 @@ impl Camera {
         Vec3D::new(math::random_real() - 0.5, math::random_real() - 0.5, 0.0)
     }
 
-    fn ray_color(&self, ray: &Ray, depth: u32, world: &Hittable) -> Color {
+    fn ray_color(&self, ray: &Ray, depth: u32, world: &World) -> Color {
         if depth <= 0 {
             Color::black()
         } else if let Some(record) = world.hit(ray, &mut Interval::new(0.001, math::INFINITY)) {

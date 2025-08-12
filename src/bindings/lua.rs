@@ -1,16 +1,16 @@
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
-use crate::core::Hittable::BVH;
 use crate::core::camera::Background;
 use crate::core::color::ColorKind;
-use crate::core::hit::ConstantMedium;
-use crate::core::materials::{Dielectric, DiffuseLight, Lambertian, Metal, refractive_index};
+use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::core::math::vector::{PointKind, VecKind};
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::shapes::planar::{Planar, Quad, Triangle};
-use crate::core::shapes::{Sphere, planar};
+use crate::core::shapes::volume::ConstantMedium;
+use crate::core::shapes::{planar, Sphere};
 use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use crate::core::transforms::{Rotate, RotateKind, Translate};
-use crate::core::{Color, Hittable, HittableList, Material, bvh, math};
+use crate::core::Hittable::BVH;
+use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 use std::sync::Arc;
 
@@ -73,12 +73,12 @@ fn new_sphere_table(lua: &Lua) -> Result<Table> {
         lua.create_function(
             |lua,
              (_, center1, center2, radius, material): (
-                Table,
-                AnyUserData,
-                AnyUserData,
-                Real,
-                Value,
-            )| {
+                 Table,
+                 AnyUserData,
+                 AnyUserData,
+                 Real,
+                 Value,
+             )| {
                 let center1 = from_user_data!(center1, Point);
                 let center2 = from_user_data!(center2, Point);
                 let material: Material = lua.from_value(material)?;
@@ -112,13 +112,13 @@ fn new_disk_table(lua: &Lua) -> Result<Table> {
         lua.create_function(
             move |lua,
                   (_, q, u, v, radius, mat): (
-                Table,
-                AnyUserData,
-                AnyUserData,
-                AnyUserData,
-                Real,
-                Value,
-            )| {
+                      Table,
+                      AnyUserData,
+                      AnyUserData,
+                      AnyUserData,
+                      Real,
+                      Value,
+                  )| {
                 let q = from_user_data!(q, Point);
                 let u = from_user_data!(u, Vec3D);
                 let v = from_user_data!(v, Vec3D);
@@ -438,7 +438,7 @@ fn new_bvh_table(lua: &Lua) -> Result<Table> {
         lua,
         lua.create_function(|lua, (_, h_list): (Table, Value)| {
             let hittable_list: HittableList = HittableList::from_vec(lua.from_value(h_list)?);
-            let bvh = bvh::BVH::from_list(hittable_list);
+            let bvh = bvh::BVH::lazy(Hittable::List(hittable_list));
             Ok(lua.to_value(&BVH(bvh)))
         }),
     )

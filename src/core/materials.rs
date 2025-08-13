@@ -111,7 +111,7 @@ impl Dielectric {
         let cannot_refract = ri * sin_theta > 1.0;
         let direction = if cannot_refract || Self::reflectance(cos_theta, ri) > math::random_real()
         {
-            unit_direction.0.reflect(rec.normal())
+            unit_direction.reflect(rec.normal())
         } else {
             Vec3D::refract(&unit_direction, rec.normal(), ri)
         };

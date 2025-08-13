@@ -24,11 +24,11 @@ impl Plane {
     /// Given the formula above and the definition for ray (`P(t) = O + t * D`), if we solve for `t`, we'll get
     /// `t = dot(n, p0 - O) / dot(n, D)`.
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
-        let denom = self.n.0.dot(ray.direction());
+        let denom = self.n.dot(ray.direction());
 
         // if the ray is not parallel to the plane
         if denom.abs() > 1e-6 {
-            let t = self.n.0.dot(&(&self.p0 - ray.origin())) / denom;
+            let t = self.n.dot(&(&self.p0 - ray.origin())) / denom;
             if ray_t.surrounds(t) {
                 let hit_point = ray.at(t);
                 let (front_face, face_normal) = HitRecord::face_normal(ray, self.n.clone());
@@ -55,13 +55,13 @@ impl Plane {
 
     fn compute_uv(&self) -> (Vec3D, Vec3D) {
         // If `n` is almost aligned with x, choose y. Otherwise, choose x.
-        let temp = if self.n.0.x.abs() > 0.9 {
+        let temp = if self.n.x.abs() > 0.9 {
             Vec3D::new(0.0, 1.0, 0.0)
         } else {
             Vec3D::new(1.0, 0.0, 0.0)
         };
-        let u = self.n.0.cross(&temp).to_unit();
-        let v = self.n.0.cross(&u.0).to_unit();
+        let u = self.n.cross(&temp).to_unit();
+        let v = self.n.cross(&u).to_unit();
         (u.0, v.0)
     }
 

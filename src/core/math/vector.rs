@@ -1,10 +1,10 @@
 use crate::core::math;
 use crate::core::math::{Axis, Real};
-use crate::impl_from_for_vec_like;
+use crate::{impl_deref, impl_from_for_vec_like};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
-use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
+use std::ops::{Add, Deref, DerefMut, Div, Index, IndexMut, Mul, Neg, Sub};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct VecKind;
@@ -88,7 +88,7 @@ impl Vec3D {
 
     pub fn random_on_hemisphere(normal: &UnitVec3D) -> UnitVec3D {
         let on_unit_sphere = Self::random_unit();
-        if on_unit_sphere.0.dot(&normal.0) > 0.0 {
+        if on_unit_sphere.dot(&normal.0) > 0.0 {
             on_unit_sphere
         } else {
             UnitVec3D(-on_unit_sphere.0)
@@ -96,11 +96,11 @@ impl Vec3D {
     }
 
     pub fn reflect(&self, normal: &UnitVec3D) -> Vec3D {
-        self - &normal.0 * 2.0 * self.dot(&normal.0)
+        self - &normal.0 * 2.0 * self.dot(&normal)
     }
 
     pub fn refract(unit_vec3d: &UnitVec3D, normal: &UnitVec3D, etai_over_etat: Real) -> Vec3D {
-        let cos_theta = -unit_vec3d.0.dot(&normal.0).min(1.0);
+        let cos_theta = -unit_vec3d.dot(&normal.0).min(1.0);
         let refracted_perpendicular = (&unit_vec3d.0 + &normal.0 * cos_theta) * etai_over_etat;
         let refracted_parallel =
             -(1.0 - refracted_perpendicular.length_squared()).sqrt() * &normal.0;
@@ -410,3 +410,5 @@ impl<K> IndexMut<&Axis> for VecLike<K> {
 
 impl_from_for_vec_like!(PointKind, VecKind);
 impl_from_for_vec_like!(VecKind, PointKind);
+
+impl_deref!(UnitVec3D, Vec3D);

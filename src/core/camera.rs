@@ -191,7 +191,7 @@ impl Camera {
             match &self.background {
                 Background::Color(color) => color.clone(),
                 Background::Lerp { start, end } => {
-                    let unit_direction = ray.direction().to_unit().0;
+                    let unit_direction = ray.direction().to_unit();
                     let a = math::normalize_to_01(unit_direction.y);
                     math::lerp(start, end, a)
                 }
@@ -255,11 +255,11 @@ impl CameraBuilder {
             .unwrap_or(build_vec_like(defaults.vup()));
 
         let out = looks_delta.to_unit();
-        let right = vup.cross(&out.0).to_unit();
+        let right = vup.cross(&out).to_unit();
 
         // technically, there's no need to normalize because it's a cross-product
         // of two perpendicular unit vectors
-        let up = UnitVec3D(out.0.cross(&right.0));
+        let up = UnitVec3D(out.cross(&right));
 
         let mut camera = Camera {
             image: optionals.image.clone().unwrap_or(Image::new(100, 1.0)),

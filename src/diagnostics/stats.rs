@@ -1,8 +1,8 @@
 use crate::core::bvh::BVH;
 use crate::core::hittables::ObjectRef;
 use crate::core::Hittable;
-use crate::define_flag;
 use std::fmt::Display;
+use crate::diagnostics::macros::define_flag;
 
 define_flag!(STATS_ENABLED);
 

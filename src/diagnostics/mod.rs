@@ -1,4 +1,4 @@
-use crate::define_flag;
+use crate::diagnostics::macros::define_flag;
 use crate::settings::DiagnosticsConfig;
 
 pub mod metrics;

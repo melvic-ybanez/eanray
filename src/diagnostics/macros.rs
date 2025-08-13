@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! define_flag {
     ($name: ident) => {
         pub static $name: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
@@ -13,7 +12,6 @@ macro_rules! define_flag {
     };
 }
 
-#[macro_export]
 macro_rules! define_metric {
     ($name: ident) => {
         thread_local! {
@@ -48,3 +46,6 @@ macro_rules! define_metric {
         }
     };
 }
+
+pub(crate) use define_flag;
+pub(crate) use define_metric;

@@ -13,13 +13,8 @@ use crate::core::Hittable::BVH;
 use crate::core::{bvh, math, Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, UserData, Value};
 use std::sync::Arc;
+use crate::bindings::from_user_data;
 use crate::core::shapes::plane::Plane;
-
-macro_rules! from_user_data {
-    ($name: ident, $t: ty) => {
-        $name.borrow::<$t>()?.clone()
-    };
-}
 
 fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;

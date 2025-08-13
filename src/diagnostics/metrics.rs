@@ -1,4 +1,4 @@
-use crate::{define_flag, define_metric};
+use crate::diagnostics::macros::{define_flag, define_metric};
 
 define_flag!(METRICS_ENABLED);
 

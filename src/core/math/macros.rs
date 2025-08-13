@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! impl_from_for_vec_like {
     ($from: ty, $to: ty) => {
         impl From<&$crate::core::math::VecLike<$from>> for $crate::core::math::VecLike<$to> {
@@ -14,3 +13,5 @@ macro_rules! impl_from_for_vec_like {
         }
     };
 }
+
+pub(crate) use impl_from_for_vec_like;

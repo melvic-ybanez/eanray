@@ -1,6 +1,5 @@
 use std::ops::{Deref, DerefMut};
 
-#[macro_export]
 macro_rules! generate_optional_setter {
     ($obj: ident, $field: ident, $typ: ty) => {
         pub fn $field(&mut self, $field: $typ) -> &mut Self {
@@ -17,10 +16,9 @@ macro_rules! generate_optional_setter {
     };
 }
 
-#[macro_export]
 macro_rules! impl_deref {
     ($deref_for: ty, $target: ty) => {
-        impl Deref for $deref_for {
+        impl std::ops::Deref for $deref_for {
             type Target = $target;
 
             fn deref(&self) -> &Self::Target {
@@ -28,10 +26,13 @@ macro_rules! impl_deref {
             }
         }
 
-        impl DerefMut for $deref_for {
+        impl std::ops::DerefMut for $deref_for {
             fn deref_mut(&mut self) -> &mut Self::Target {
                 &mut self.0
             }
         }
     };
 }
+
+pub(crate) use generate_optional_setter;
+pub(crate) use impl_deref;

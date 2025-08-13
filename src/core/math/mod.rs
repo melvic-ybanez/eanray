@@ -3,7 +3,7 @@ use std::fmt::Display;
 use std::ops::{Add, Mul};
 
 pub mod interval;
-mod macros;
+pub mod macros;
 pub mod vector;
 
 pub type Real = f64;

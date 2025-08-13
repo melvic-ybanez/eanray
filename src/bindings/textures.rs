@@ -1,0 +1,52 @@
+use crate::bindings::lua::from_user_data;
+use crate::core::math::Real;
+use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
+use crate::core::Color;
+use mlua::{AnyUserData, Lua, LuaSerdeExt, Table};
+use crate::bindings::lua;
+
+pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
+    let textures = lua.create_table()?;
+    textures.set("Checker", new_checker_table(lua)?)?;
+    textures.set("Image", new_image_texture_table(lua)?)?;
+    textures.set("Noise", new_noise_texture_table(lua)?)?;
+    Ok(textures)
+}
+
+fn new_checker_table(lua: &Lua) -> mlua::Result<Table> {
+    let table = lua.create_table()?;
+    table.set(
+        "from_colors",
+        lua.create_function(
+            |lua, (_, scale, c1, c2): (Table, Real, AnyUserData, AnyUserData)| {
+                let c1 = from_user_data!(c1, Color);
+                let c2 = from_user_data!(c2, Color);
+                let checker = Texture::Checker(Checker::from_colors(scale, c1, c2));
+                Ok(lua.to_value(&checker))
+            },
+        )?,
+    )?;
+
+    Ok(table)
+}
+
+fn new_image_texture_table(lua: &Lua) -> mlua::Result<Table> {
+    lua::new_table(
+        lua,
+        lua.create_function(|lua, (_, filepath): (Table, String)| {
+            let image_texture = Texture::Image(ImageTexture::from_path_unsafe(filepath.as_str()));
+            Ok(lua.to_value(&image_texture))
+        }),
+    )
+}
+
+fn new_noise_texture_table(lua: &Lua) -> mlua::Result<Table> {
+    lua::new_table(
+        lua,
+        lua.create_function(|lua, (_, scale, base_color): (Table, f64, AnyUserData)| {
+            let base_color: Color = from_user_data!(base_color, Color);
+            let noise_texture = Texture::Noise(NoiseTexture::new(scale, base_color));
+            Ok(lua.to_value(&noise_texture))
+        }),
+    )
+}

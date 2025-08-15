@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use crate::core::aabb::AABB;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Plane {
+pub(crate) struct Plane {
     p0: Point,    // a point on the plane
     n: UnitVec3D, // plane normal
     mat: Material,
@@ -15,7 +15,7 @@ pub struct Plane {
 }
 
 impl Plane {
-    pub fn new(p0: Point, n: UnitVec3D, mat: Material) -> Self {
+    pub(crate) fn new(p0: Point, n: UnitVec3D, mat: Material) -> Self {
         Self { p0, n, mat, bbox: AABB::universe() }
     }
 
@@ -23,7 +23,7 @@ impl Plane {
     /// In other words, the plane's normal is perpendicular to all the vectors that lie on the plane.
     /// Given the formula above and the definition for ray (`P(t) = O + t * D`), if we solve for `t`, we'll get
     /// `t = dot(n, p0 - O) / dot(n, D)`.
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let denom = self.n.dot(ray.direction());
 
         // if the ray is not parallel to the plane
@@ -65,7 +65,7 @@ impl Plane {
         (u.0, v.0)
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
 }

@@ -6,9 +6,9 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
-use crate::core::shapes::planar::Planar;
+use crate::core::shapes::planars::Planar;
 use crate::core::shapes::plane::Plane;
-use crate::core::shapes::sphere::Sphere;
+use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
 use crate::core::transforms::{Rotate, Translate};
 use serde::{Deserialize, Serialize};
@@ -96,7 +96,7 @@ pub struct V(pub Real);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum Hittable {
-    Sphere(Sphere),
+    Quadric(Quadric),
     List(HittableList),
     BVH(BVH),
     Planar(Planar),
@@ -109,7 +109,7 @@ pub enum Hittable {
 impl Hittable {
     pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         match self {
-            Hittable::Sphere(sphere) => sphere.hit(ray, ray_t),
+            Hittable::Quadric(quadric) => quadric.hit(ray, ray_t),
             Hittable::List(list) => list.hit(ray, ray_t),
             Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
             Hittable::Planar(quad) => quad.hit(ray, ray_t),
@@ -122,7 +122,7 @@ impl Hittable {
 
     pub fn bounding_box(&self) -> &AABB {
         match self {
-            Hittable::Sphere(sphere) => sphere.bounding_box(),
+            Hittable::Quadric(quadric) => quadric.bounding_box(),
             Hittable::List(list) => list.bounding_box(),
             Hittable::BVH(bvh) => bvh.bounding_box(),
             Hittable::Planar(quad) => quad.bounding_box(),

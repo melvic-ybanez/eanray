@@ -35,7 +35,7 @@ impl BVHStats {
 
     fn inspect_hittable(&mut self, hittable: &Hittable, depth: u32) {
         match hittable {
-            Hittable::Sphere(_)
+            Hittable::Quadric(_)
             | Hittable::Planar(_)
             | Hittable::Translate(_)
             | Hittable::Rotate(_)

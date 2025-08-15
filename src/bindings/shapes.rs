@@ -1,25 +1,28 @@
 use crate::bindings::lua;
 use crate::bindings::lua::from_user_data;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::shapes::planar::{Planar, Quad, Triangle};
+use crate::core::shapes::planars::{Planar, Quad, Triangle};
 use crate::core::shapes::plane::Plane;
+use crate::core::shapes::quadrics::cylinder::Cylinder;
+use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
-use crate::core::shapes::{planar, Sphere};
+use crate::core::shapes::{planars, Sphere};
 use crate::core::{Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
 
 pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     let shapes = lua.create_table()?;
     shapes.set("Sphere", new_sphere_table(lua)?)?;
-    shapes.set("Quad", new_planar_table(lua, planar::Kind::Quad(Quad))?)?;
+    shapes.set("Quad", new_planar_table(lua, planars::Kind::Quad(Quad))?)?;
     shapes.set(
         "Triangle",
-        new_planar_table(lua, planar::Kind::Triangle(Triangle))?,
+        new_planar_table(lua, planars::Kind::Triangle(Triangle))?,
     )?;
     shapes.set("Disk", new_disk_table(lua)?)?;
     shapes.set("Box", new_box_table(lua)?)?;
     shapes.set("ConstantMedium", new_constant_medium_table(lua)?)?;
     shapes.set("Plane", new_plane_table(lua)?)?;
+    shapes.set("Cylinder", new_cylinder_table(lua)?)?;
     Ok(shapes)
 }
 
@@ -28,7 +31,9 @@ fn new_sphere_table(lua: &Lua) -> mlua::Result<Table> {
         |lua, (_, center, radius, material): (Table, AnyUserData, Real, Value)| {
             let center = from_user_data!(center, Point);
             let material: Material = lua.from_value(material)?;
-            let sphere = Hittable::Sphere(Sphere::stationary(center, radius, material));
+            let sphere = Hittable::Quadric(Quadric::Sphere(Sphere::stationary(
+                center, radius, material,
+            )));
             Ok(lua.to_value(&sphere))
         },
     );
@@ -48,7 +53,9 @@ fn new_sphere_table(lua: &Lua) -> mlua::Result<Table> {
                 let center1 = from_user_data!(center1, Point);
                 let center2 = from_user_data!(center2, Point);
                 let material: Material = lua.from_value(material)?;
-                let sphere = Hittable::Sphere(Sphere::moving(center1, center2, radius, material));
+                let sphere = Hittable::Quadric(Quadric::Sphere(Sphere::moving(
+                    center1, center2, radius, material,
+                )));
                 Ok(lua.to_value(&sphere))
             },
         )?,
@@ -56,7 +63,7 @@ fn new_sphere_table(lua: &Lua) -> mlua::Result<Table> {
     Ok(table)
 }
 
-fn new_planar_table(lua: &Lua, kind: planar::Kind) -> mlua::Result<Table> {
+fn new_planar_table(lua: &Lua, kind: planars::Kind) -> mlua::Result<Table> {
     lua::new_table(
         lua,
         lua.create_function(
@@ -152,6 +159,33 @@ fn new_constant_medium_table(lua: &Lua) -> mlua::Result<Table> {
                     hittable, density, albedo,
                 ));
                 Ok(lua.to_value(&constant_medium))
+            },
+        )?,
+    )?;
+
+    Ok(table)
+}
+
+fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
+    let table = lua.create_table()?;
+
+    table.set(
+        "infinite",
+        lua.create_function(|lua, (_, radius, material): (Table, Real, Value)| {
+            let mat = lua.from_value(material)?;
+            let cylinder = Hittable::Quadric(Quadric::Cylinder(Cylinder::infinite(radius, mat)));
+            Ok(lua.to_value(&cylinder))
+        })?,
+    )?;
+
+    table.set(
+        "finite",
+        lua.create_function(
+            |lua, (_, radius, height, material): (Table, Real, Real, Value)| {
+                let mat = lua.from_value(material)?;
+                let cylinder =
+                    Hittable::Quadric(Quadric::Cylinder(Cylinder::finite(radius, height, mat)));
+                Ok(lua.to_value(&cylinder))
             },
         )?,
     )?;

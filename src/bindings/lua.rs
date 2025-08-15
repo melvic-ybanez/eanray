@@ -1,11 +1,12 @@
+use crate::bindings;
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
+use crate::bindings::{materials, shapes, textures, transforms};
 use crate::core::camera::Background;
 use crate::core::color::ColorKind;
 use crate::core::math::Real;
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, Color, Hittable, HittableList};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, Value};
-
 
 macro_rules! from_user_data {
     ($name: ident, $t: ty) => {
@@ -14,8 +15,6 @@ macro_rules! from_user_data {
 }
 
 pub(in crate::bindings) use from_user_data;
-use crate::bindings;
-use crate::bindings::{materials, shapes, textures, transforms};
 
 pub(crate) fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;
@@ -109,7 +108,10 @@ pub fn set_engine(lua: &Lua) -> Result<()> {
     let engine = lua.create_table()?;
 
     engine.set("math", bindings::math::new_table(lua)?)?;
-    engine.set("Color", bindings::math::new_vec_like_table::<ColorKind>(lua)?)?;
+    engine.set(
+        "Color",
+        bindings::math::new_vec_like_table::<ColorKind>(lua)?,
+    )?;
     engine.set("materials", materials::new_table(lua)?)?;
     engine.set("textures", textures::new_table(lua)?)?;
     engine.set("shapes", shapes::new_table(lua)?)?;

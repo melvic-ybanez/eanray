@@ -1,26 +1,25 @@
 use rand::Rng;
-use std::fmt::Display;
 use std::ops::{Add, Mul};
 
-pub mod interval;
-pub mod macros;
-pub mod vector;
+pub(crate) mod interval;
+pub(crate) mod macros;
+pub(crate) mod vector;
 
-pub type Real = f64;
+pub(crate) type Real = f64;
 
-pub use vector::Point;
-pub use vector::Vec3D;
-pub use vector::VecLike;
+pub(crate) use vector::Point;
+pub(crate) use vector::Vec3D;
+pub(crate) use vector::VecLike;
 
-pub const INFINITY: Real = Real::INFINITY;
-pub const PI: Real = std::f64::consts::PI;
-pub const GAMMA: f32 = 2.2;
+pub(crate) const INFINITY: Real = Real::INFINITY;
+pub(crate) const PI: Real = std::f64::consts::PI;
+pub(crate) const GAMMA: f32 = 2.2;
 
-pub fn degrees_to_radians(degrees: Real) -> Real {
+pub(crate) fn degrees_to_radians(degrees: Real) -> Real {
     degrees * PI / 180.0
 }
 
-pub fn normalize_to_01<A>(value: A) -> <A::Output as Mul<Real>>::Output
+pub(crate) fn normalize_to_01<A>(value: A) -> <A::Output as Mul<Real>>::Output
 where
     A: Add<Real>,
     A::Output: Mul<Real>,
@@ -28,28 +27,28 @@ where
     (value + 1.0) * 0.5
 }
 
-pub fn random_range(min: Real, max: Real) -> Real {
+pub(crate) fn random_range(min: Real, max: Real) -> Real {
     let mut rng = rand::rng();
     rng.random_range(min..max)
 }
 
-pub fn random_real() -> Real {
+pub(crate) fn random_real() -> Real {
     random_range(0.0, 1.0)
 }
 
-pub fn random_int(min: i32, max: i32) -> i32 {
+pub(crate) fn random_int(min: i32, max: i32) -> i32 {
     random_range(min as Real, (max + 1) as Real) as i32
 }
 
 #[derive(PartialEq, Debug)]
-pub enum Axis {
+pub(crate) enum Axis {
     X,
     Y,
     Z,
 }
 
 impl Axis {
-    pub const fn from_usize(i: usize) -> Option<Axis> {
+    pub(crate) const fn from_usize(i: usize) -> Option<Axis> {
         match i {
             0 => Some(Axis::X),
             1 => Some(Axis::Y),
@@ -58,12 +57,12 @@ impl Axis {
         }
     }
 
-    pub const fn from_usize_unsafe(i: usize) -> Axis {
+    pub(crate) const fn from_usize_unsafe(i: usize) -> Axis {
         Self::from_usize(i).unwrap()
     }
 }
 
-pub fn lerp<A>(start: A, end: A, a: Real) -> <A::Output as Add<A::Output>>::Output
+pub(crate) fn lerp<A>(start: A, end: A, a: Real) -> <A::Output as Add<A::Output>>::Output
 where
     A: Mul<Real>,
     A::Output: Add<A::Output>,

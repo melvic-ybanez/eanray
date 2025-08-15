@@ -8,20 +8,20 @@ use std::ops::Add;
 
 /// Axis-aligned Bounding Box
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AABB {
+pub(crate) struct AABB {
     x: Interval,
     y: Interval,
     z: Interval,
 }
 
 impl AABB {
-    pub fn empty() -> Self {
+    pub(crate) fn empty() -> Self {
         let mut this = Self::new(Interval::empty(), Interval::empty(), Interval::empty());
         this.pad_to_minimus();
         this
     }
 
-    pub fn universe() -> Self {
+    pub(crate) fn universe() -> Self {
         Self::new(
             Interval::universe(),
             Interval::universe(),
@@ -29,11 +29,11 @@ impl AABB {
         )
     }
 
-    pub fn new(x: Interval, y: Interval, z: Interval) -> Self {
+    pub(crate) fn new(x: Interval, y: Interval, z: Interval) -> Self {
         Self { x, y, z }
     }
 
-    pub fn from_points(a: Point, b: Point) -> Self {
+    pub(crate) fn from_points(a: Point, b: Point) -> Self {
         Self::new(
             if a.x <= b.x {
                 Interval::new(a.x, b.x)
@@ -53,7 +53,7 @@ impl AABB {
         )
     }
 
-    pub fn from_boxes(box0: &AABB, box1: &AABB) -> Self {
+    pub(crate) fn from_boxes(box0: &AABB, box1: &AABB) -> Self {
         Self::new(
             Interval::from_intervals(&box0.x, &box1.x),
             Interval::from_intervals(&box0.y, &box1.y),
@@ -61,7 +61,7 @@ impl AABB {
         )
     }
 
-    pub fn axis_interval(&self, axis: &Axis) -> &Interval {
+    pub(crate) fn axis_interval(&self, axis: &Axis) -> &Interval {
         match axis {
             Axis::Y => &self.y,
             Axis::X => &self.x,
@@ -69,7 +69,7 @@ impl AABB {
         }
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> bool {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> bool {
         metrics::increment_aabb_hit_attempt_count();
 
         let ray_orig = ray.origin();
@@ -110,7 +110,7 @@ impl AABB {
         true
     }
 
-    pub fn longest_axis(&self) -> Axis {
+    pub(crate) fn longest_axis(&self) -> Axis {
         if self.x.size() > self.y.size() {
             if self.x.size() > self.z.size() {
                 Axis::X
@@ -137,15 +137,15 @@ impl AABB {
         }
     }
 
-    pub fn x(&self) -> &Interval {
+    pub(crate) fn x(&self) -> &Interval {
         &self.x
     }
 
-    pub fn y(&self) -> &Interval {
+    pub(crate) fn y(&self) -> &Interval {
         &self.y
     }
 
-    pub fn z(&self) -> &Interval {
+    pub(crate) fn z(&self) -> &Interval {
         &self.z
     }
 }

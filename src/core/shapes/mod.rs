@@ -1,6 +1,6 @@
-pub mod planar;
-pub mod sphere;
-pub mod plane;
-pub mod volume;
+pub(crate) mod planars;
+pub(crate) mod plane;
+pub(crate) mod volume;
+pub(crate) mod quadrics;
 
-pub use sphere::Sphere;
+pub(crate) use quadrics::sphere::Sphere;

@@ -14,7 +14,7 @@ There is a plan to add more features in the future, but for now, the most releva
   * Multithreaded Rendering (Tile-based)
 * Naive Monte Carlo Global Illumination
 * Ray-object intersection
-  * Primitives: Spheres, Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks), Planes
+  * Primitives: Quadrics (Spheres, Cylinders), Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks), Planes
 * Materials: Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic
 * Antialising
 * Depth of Field (Defocus Blur)
@@ -45,7 +45,7 @@ Note: Instructions on running executables will be provided after the first relea
 ### Examples
 
 Here's the Lua script that describes the scene you probably already saw above in this
-document: [cover.lua](examples/v0_1/cover.lua)
+document: [cover.lua](examples/v2025_09/cover.lua)
 
 More examples can be found [here](examples), including some [scenes](examples/rt1w) from
 [Ray Tracing in One Weekend](https://raytracing.github.io) series.

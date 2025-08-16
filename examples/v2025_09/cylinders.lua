@@ -2,6 +2,7 @@ local Color = engine.Color
 local Point = engine.math.Point
 local Vec = engine.math.Vec
 local Lambertian = engine.materials.Lambertian
+local Dielectric = engine.materials.Dielectric
 local Sphere = engine.shapes.Sphere
 local ObjectList = engine.ObjectList
 local DiffuseLight = engine.materials.DiffuseLight
@@ -29,6 +30,10 @@ end
 local outer_light_radius = 7
 local outer_light = DiffuseLight:from_emission(Color:new(1, 1, 1))
 objects:add(Sphere:stationary(Point:new(4, outer_light_radius + 3, 2.3), outer_light_radius, outer_light))
+
+local mat = engine.textures.Image:new("examples/images/moon.jpg")
+local glass_sphere = Sphere:stationary(Point:new(-1000, 30, 2.5), 40, DiffuseLight:from_texture(mat))
+objects:add(glass_sphere)
 
 local camera = engine.Camera:new(1200, 16 / 9)
 camera.samples_per_pixel = 500

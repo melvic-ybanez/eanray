@@ -1,22 +1,27 @@
+use crate::core::aabb::AABB;
 use crate::core::hittables::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{hittables, Material, Ray};
+use crate::core::{Material, Ray, hittables};
 use serde::{Deserialize, Serialize};
-use crate::core::aabb::AABB;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Plane {
     p0: Point,    // a point on the plane
     n: UnitVec3D, // plane normal
     mat: Material,
-    bbox: AABB
+    bbox: AABB,
 }
 
 impl Plane {
     pub(crate) fn new(p0: Point, n: UnitVec3D, mat: Material) -> Self {
-        Self { p0, n, mat, bbox: AABB::universe() }
+        Self {
+            p0,
+            n,
+            mat,
+            bbox: AABB::universe(),
+        }
     }
 
     /// A plane is defined as the set of all points `P` such that `dot(n, P - p0) = 0`.

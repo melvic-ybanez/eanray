@@ -3,10 +3,10 @@ use crate::bindings::lua::from_user_data;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::planars::{Planar, Quad, Triangle};
 use crate::core::shapes::plane::Plane;
-use crate::core::shapes::quadrics::cylinder::Cylinder;
 use crate::core::shapes::quadrics::Quadric;
+use crate::core::shapes::quadrics::cylinder::Cylinder;
 use crate::core::shapes::volume::ConstantMedium;
-use crate::core::shapes::{planars, Sphere};
+use crate::core::shapes::{Sphere, planars};
 use crate::core::{Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
 

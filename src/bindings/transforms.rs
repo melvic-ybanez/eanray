@@ -1,8 +1,8 @@
 use crate::bindings::lua;
 use crate::bindings::lua::from_user_data;
+use crate::core::Hittable;
 use crate::core::math::{Real, Vec3D};
 use crate::core::transforms::{Rotate, RotateKind, Translate};
-use crate::core::Hittable;
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
 use std::sync::Arc;
 

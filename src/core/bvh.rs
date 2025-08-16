@@ -1,7 +1,7 @@
 use crate::core::aabb::AABB;
 use crate::core::hittables::{HitRecord, ObjectRef};
-use crate::core::math::interval::Interval;
 use crate::core::math::Axis;
+use crate::core::math::interval::Interval;
 use crate::core::{Hittable, HittableList, Ray};
 use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};

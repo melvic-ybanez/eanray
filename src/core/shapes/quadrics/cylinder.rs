@@ -1,7 +1,7 @@
 use crate::core::aabb::AABB;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{math, Material, Ray};
+use crate::core::{Material, Ray, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -4,7 +4,7 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::Sphere;
-use crate::core::{hittables, Material, Ray};
+use crate::core::{Material, Ray, hittables};
 use crate::diagnostics::metrics;
 use cylinder::Cylinder;
 use serde::{Deserialize, Serialize};

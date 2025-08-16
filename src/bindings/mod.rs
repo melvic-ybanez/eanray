@@ -1,7 +1,7 @@
 pub mod lua;
-pub mod schemas;
-mod math;
 mod materials;
-mod textures;
+mod math;
+pub mod schemas;
 mod shapes;
+mod textures;
 mod transforms;

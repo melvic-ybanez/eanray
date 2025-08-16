@@ -1,12 +1,12 @@
-use serde::{Deserialize, Serialize};
-use crate::core::hittables::{FrontFace, HitRecord, Mat, Normal, ObjectRef, P, T, U, V};
-use crate::core::{math, Color, Material, Ray};
 use crate::core::aabb::AABB;
+use crate::core::hittables::{FrontFace, HitRecord, Mat, Normal, ObjectRef, P, T, U, V};
 use crate::core::materials::Isotropic;
 use crate::core::math::interval::Interval;
-use crate::core::math::{Real, Vec3D};
 use crate::core::math::vector::UnitVec3D;
+use crate::core::math::{Real, Vec3D};
 use crate::core::textures::Texture;
+use crate::core::{Color, Material, Ray, math};
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct ConstantMedium {

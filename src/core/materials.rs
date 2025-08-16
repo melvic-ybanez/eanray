@@ -14,7 +14,11 @@ pub(crate) enum Material {
 }
 
 impl Material {
-    pub(crate) fn scatter<'a, 'b, 'c>(&self, ray_in: &Ray, rec: &'b HitRecord) -> Option<(Ray, Color)> {
+    pub(crate) fn scatter<'a, 'b, 'c>(
+        &self,
+        ray_in: &Ray,
+        rec: &'b HitRecord,
+    ) -> Option<(Ray, Color)> {
         match self {
             Self::Lambertian(lambertian) => Some(lambertian.scatter(ray_in, rec)),
             Self::Metal(metal) => Some(metal.scatter(ray_in, rec)),

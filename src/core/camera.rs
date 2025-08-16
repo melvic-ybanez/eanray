@@ -1,3 +1,4 @@
+use crate::common::macros::generate_optional_setter;
 use crate::core::color::Color;
 use crate::core::hittables::Hittable;
 use crate::core::math::interval::Interval;
@@ -11,7 +12,6 @@ use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
-use crate::common::macros::generate_optional_setter;
 
 pub struct Camera {
     image: Image,

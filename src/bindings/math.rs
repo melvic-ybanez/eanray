@@ -1,8 +1,8 @@
-use mlua::{Lua, LuaSerdeExt, Table, UserData};
 use crate::bindings::lua;
 use crate::core::math;
-use crate::core::math::{Real, VecLike};
 use crate::core::math::vector::{PointKind, VecKind};
+use crate::core::math::{Real, VecLike};
+use mlua::{Lua, LuaSerdeExt, Table, UserData};
 
 pub(crate) fn new_vec_like_table<K: 'static>(lua: &Lua) -> mlua::Result<Table>
 where

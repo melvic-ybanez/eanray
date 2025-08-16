@@ -1,10 +1,10 @@
+use crate::bindings::lua;
 use crate::bindings::lua::from_user_data;
-use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
+use crate::core::materials::{Dielectric, DiffuseLight, Lambertian, Metal, refractive_index};
 use crate::core::math::Real;
 use crate::core::textures::Texture;
 use crate::core::{Color, Material};
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
-use crate::bindings::lua;
 
 pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     let materials = lua.create_table()?;

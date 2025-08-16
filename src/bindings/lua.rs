@@ -1,11 +1,11 @@
 use crate::bindings;
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::bindings::{materials, shapes, textures, transforms};
+use crate::core::Hittable::BVH;
 use crate::core::camera::Background;
 use crate::core::color::ColorKind;
 use crate::core::math::Real;
-use crate::core::Hittable::BVH;
-use crate::core::{bvh, Color, Hittable, HittableList};
+use crate::core::{Color, Hittable, HittableList, bvh};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, Value};
 
 macro_rules! from_user_data {

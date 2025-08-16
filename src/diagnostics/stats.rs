@@ -1,8 +1,8 @@
+use crate::core::Hittable;
 use crate::core::bvh::BVH;
 use crate::core::hittables::ObjectRef;
-use crate::core::Hittable;
-use std::fmt::Display;
 use crate::diagnostics::macros::define_flag;
+use std::fmt::Display;
 
 define_flag!(STATS_ENABLED);
 
@@ -54,7 +54,7 @@ impl BVHStats {
             Hittable::BVH(bvh) => {
                 self.inspect_bvh(bvh, depth);
             }
-            Hittable::Plane(_) => ()
+            Hittable::Plane(_) => (),
         }
     }
 

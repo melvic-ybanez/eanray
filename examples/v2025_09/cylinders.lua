@@ -2,7 +2,6 @@ local Color = engine.Color
 local Point = engine.math.Point
 local Vec = engine.math.Vec
 local Lambertian = engine.materials.Lambertian
-local Dielectric = engine.materials.Dielectric
 local Sphere = engine.shapes.Sphere
 local ObjectList = engine.ObjectList
 local DiffuseLight = engine.materials.DiffuseLight

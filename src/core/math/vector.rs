@@ -25,7 +25,7 @@ pub(crate) struct VecLike<Kind> {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct UnitVec3D(pub Vec3D);
+pub(crate) struct UnitVec3D(pub(crate) Vec3D);
 
 impl<K> VecLike<K> {
     pub(crate) fn new(x: Real, y: Real, z: Real) -> Self {

@@ -104,7 +104,7 @@ fn new_scene_table(lua: &Lua) -> Result<Table> {
     )
 }
 
-pub fn set_engine(lua: &Lua) -> Result<()> {
+pub(crate) fn set_engine(lua: &Lua) -> Result<()> {
     let engine = lua.create_table()?;
 
     engine.set("math", bindings::math::new_table(lua)?)?;

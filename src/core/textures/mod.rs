@@ -9,7 +9,7 @@ use std::sync::Arc;
 mod perlin;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Texture {
+pub(crate) enum Texture {
     SolidColor(SolidColor),
     Checker(Checker),
     Image(ImageTexture),
@@ -17,7 +17,7 @@ pub enum Texture {
 }
 
 impl Texture {
-    pub fn value(&self, u: Real, v: Real, p: &Point) -> Color {
+    pub(crate) fn value(&self, u: Real, v: Real, p: &Point) -> Color {
         match self {
             Texture::SolidColor(solid) => solid.value().clone(),
             Texture::Checker(checker) => checker.value(u, v, p),
@@ -28,33 +28,33 @@ impl Texture {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SolidColor {
+pub(crate) struct SolidColor {
     albedo: Color,
 }
 
 impl SolidColor {
-    pub fn new(albedo: Color) -> Self {
+    pub(crate) fn new(albedo: Color) -> Self {
         Self { albedo }
     }
 
-    pub fn from_rgb(red: f64, green: f64, blue: f64) -> Self {
+    pub(crate) fn from_rgb(red: f64, green: f64, blue: f64) -> Self {
         Self::new(Color::new(red, green, blue))
     }
 
-    pub fn value(&self) -> &Color {
+    pub(crate) fn value(&self) -> &Color {
         &self.albedo
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Checker {
+pub(crate) struct Checker {
     scale_inverse: Real,
     even: Arc<Texture>,
     odd: Arc<Texture>,
 }
 
 impl Checker {
-    pub fn new(scale: Real, even: Texture, odd: Texture) -> Self {
+    pub(crate) fn new(scale: Real, even: Texture, odd: Texture) -> Self {
         Self {
             scale_inverse: 1.0 / scale,
             even: Arc::new(even),
@@ -62,7 +62,7 @@ impl Checker {
         }
     }
 
-    pub fn from_colors(scale: Real, c1: Color, c2: Color) -> Self {
+    pub(crate) fn from_colors(scale: Real, c1: Color, c2: Color) -> Self {
         Self::new(
             scale,
             Texture::SolidColor(SolidColor::new(c1)),
@@ -70,7 +70,7 @@ impl Checker {
         )
     }
 
-    pub fn value(&self, u: Real, v: Real, p: &Point) -> Color {
+    pub(crate) fn value(&self, u: Real, v: Real, p: &Point) -> Color {
         let x = (self.scale_inverse * p.x).floor() as i32;
         let y = (self.scale_inverse * p.y).floor() as i32;
         let z = (self.scale_inverse * p.z).floor() as i32;
@@ -86,25 +86,25 @@ impl Checker {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ImageTexture {
+pub(crate) struct ImageTexture {
     image: SerializeableImage,
 }
 
 impl ImageTexture {
-    pub fn from_path(filepath: &str) -> ImageResult<Self> {
+    pub(crate) fn from_path(filepath: &str) -> ImageResult<Self> {
         let _image = ImageReader::open(filepath)?;
         Ok(Self {
             image: _image.decode()?.to_rgb8().into(),
         })
     }
 
-    pub fn from_path_unsafe(filepath: &str) -> Self {
+    pub(crate) fn from_path_unsafe(filepath: &str) -> Self {
         Self::from_path(filepath)
             .map_err(|err| log::error!("Error loading image: {:?}", err))
             .unwrap()
     }
 
-    pub fn value(&self, u: Real, v: Real, p: &Point) -> Color {
+    pub(crate) fn value(&self, u: Real, v: Real, p: &Point) -> Color {
         if self.image.height <= 0 {
             Color::cyan()
         } else {
@@ -132,7 +132,7 @@ impl ImageTexture {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SerializeableImage {
+pub(crate) struct SerializeableImage {
     width: u32,
     height: u32,
     data: Vec<u8>,
@@ -183,14 +183,14 @@ impl From<SerializeableImage> for RgbImage {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct NoiseTexture {
+pub(crate) struct NoiseTexture {
     noise: Perlin,
     scale: f64,
     base_color: Color,
 }
 
 impl NoiseTexture {
-    pub fn new(scale: f64, base_color: Color) -> Self {
+    pub(crate) fn new(scale: f64, base_color: Color) -> Self {
         Self {
             noise: Perlin::new(),
             scale,

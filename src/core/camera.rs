@@ -13,7 +13,7 @@ use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
 
-pub struct Camera {
+pub(crate) struct Camera {
     image: Image,
     samples_per_pixel: u32,
     antialiasing: bool,
@@ -40,11 +40,11 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn builder(config: &'static Config) -> CameraBuilder {
+    pub(crate) fn builder(config: &'static Config) -> CameraBuilder {
         CameraBuilder::new(config)
     }
 
-    pub fn render(&self, world: &Hittable, config: &Config) -> io::Result<()> {
+    pub(crate) fn render(&self, world: &Hittable, config: &Config) -> io::Result<()> {
         let start = Instant::now();
         let ppm_file = File::create(config.app().scene().output_file())?;
 
@@ -206,7 +206,7 @@ impl Camera {
         Viewport::new(height, &self, &self.image)
     }
 
-    pub fn pixel_sample_scale(&self) -> Real {
+    pub(crate) fn pixel_sample_scale(&self) -> Real {
         1.0 / self.samples_per_pixel as Real
     }
 
@@ -215,7 +215,7 @@ impl Camera {
     }
 }
 
-pub struct CameraBuilder {
+pub(crate) struct CameraBuilder {
     optionals: OptionalFields,
     config: &'static Config,
 }
@@ -228,11 +228,11 @@ impl CameraBuilder {
         }
     }
 
-    pub fn optionals(&self) -> &OptionalFields {
+    pub(crate) fn optionals(&self) -> &OptionalFields {
         &self.optionals
     }
 
-    pub fn build(&self) -> Camera {
+    pub(crate) fn build(&self) -> Camera {
         fn build_vec_like<K>(p: [Real; 3]) -> VecLike<K> {
             VecLike::new(p[0], p[1], p[2])
         }
@@ -308,7 +308,7 @@ impl CameraBuilder {
 }
 
 #[derive(Default)]
-pub struct OptionalFields {
+pub(crate) struct OptionalFields {
     image: Option<Image>,
     samples_per_pixel: Option<u32>,
     antialiasing: Option<bool>,
@@ -325,7 +325,7 @@ pub struct OptionalFields {
 }
 
 #[derive(Clone)]
-pub struct Image {
+pub(crate) struct Image {
     width: u32,
     height: u32,
 
@@ -335,7 +335,7 @@ pub struct Image {
 }
 
 impl Image {
-    pub fn new(width: u32, aspect_ratio: f64) -> Image {
+    pub(crate) fn new(width: u32, aspect_ratio: f64) -> Image {
         let height = (width as f64 / aspect_ratio) as u32;
         let height = if height < 1 { 1 } else { height };
 
@@ -347,22 +347,22 @@ impl Image {
         }
     }
 
-    pub fn width(&self) -> u32 {
+    pub(crate) fn width(&self) -> u32 {
         self.width
     }
 
-    pub fn ideal_aspect_ratio(&self) -> f64 {
+    pub(crate) fn ideal_aspect_ratio(&self) -> f64 {
         self.aspect_ratio
     }
 
     /// The actual aspect ratio can be bigger than [`self.aspect_ratio`]
     /// because [`self.height`] truncates decimal points. [`self.height`] also
     /// isn't allowed to have a value of less than 1.
-    pub fn actual_aspect_ratio(&self) -> f64 {
+    pub(crate) fn actual_aspect_ratio(&self) -> f64 {
         self.actual_aspect_ratio
     }
 
-    pub fn height(&self) -> u32 {
+    pub(crate) fn height(&self) -> u32 {
         self.height
     }
 }
@@ -380,7 +380,7 @@ struct Viewport {
 }
 
 impl Viewport {
-    pub fn new(height: f64, camera: &Camera, image: &Image) -> Viewport {
+    pub(crate) fn new(height: f64, camera: &Camera, image: &Image) -> Viewport {
         let width = height * image.actual_aspect_ratio();
         let left_to_right = width * &camera.right.0;
         let top_to_bottom = height * &(-&camera.up.0);
@@ -404,35 +404,35 @@ impl Viewport {
         }
     }
 
-    pub fn height(&self) -> f64 {
+    pub(crate) fn height(&self) -> f64 {
         self.height
     }
 
-    pub fn width(&self) -> f64 {
+    pub(crate) fn width(&self) -> f64 {
         self.width
     }
 
-    pub fn left_to_right(&self) -> &Vec3D {
+    pub(crate) fn left_to_right(&self) -> &Vec3D {
         &self.left_to_right
     }
 
-    pub fn top_to_bottom(&self) -> &Vec3D {
+    pub(crate) fn top_to_bottom(&self) -> &Vec3D {
         &self.top_to_bottom
     }
 
-    pub fn pixel_delta_horizontal(&self) -> &Vec3D {
+    pub(crate) fn pixel_delta_horizontal(&self) -> &Vec3D {
         &self.pixel_delta_horizontal
     }
 
-    pub fn pixel_delta_vertical(&self) -> &Vec3D {
+    pub(crate) fn pixel_delta_vertical(&self) -> &Vec3D {
         &self.pixel_delta_vertical
     }
 
-    pub fn upper_left(&self) -> &Point {
+    pub(crate) fn upper_left(&self) -> &Point {
         &self.upper_left
     }
 
-    pub fn pixel_00_loc(&self) -> &Point {
+    pub(crate) fn pixel_00_loc(&self) -> &Point {
         &self.pixel_00_loc
     }
 }
@@ -462,17 +462,17 @@ impl DefocusDisk {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Background {
+pub(crate) enum Background {
     Color(Color),
     Lerp { start: Color, end: Color },
 }
 
 impl Background {
-    pub fn from_color(color: Color) -> Self {
+    pub(crate) fn from_color(color: Color) -> Self {
         Self::Color(color)
     }
 
-    pub fn from_lerp(start: Color, end: Color) -> Self {
+    pub(crate) fn from_lerp(start: Color, end: Color) -> Self {
         Self::Lerp { start, end }
     }
 }

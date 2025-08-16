@@ -14,20 +14,20 @@ use crate::core::transforms::{Rotate, Translate};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
-pub type ObjectRef = Arc<Hittable>;
+pub(crate) type ObjectRef = Arc<Hittable>;
 
-pub struct HitRecord<'a> {
-    pub p: Point,
-    pub normal: UnitVec3D,
+pub(crate) struct HitRecord<'a> {
+    pub(crate) p: Point,
+    pub(crate) normal: UnitVec3D,
     mat: &'a Material,
-    pub t: Real,
+    pub(crate) t: Real,
     front_face: bool,
     u: Real,
     v: Real,
 }
 
 impl<'a> HitRecord<'a> {
-    pub fn new(
+    pub(crate) fn new(
         p: P,
         normal: Normal,
         mat: Mat<'a>,
@@ -57,45 +57,45 @@ impl<'a> HitRecord<'a> {
         (front_face, face_normal)
     }
 
-    pub fn p(&self) -> &Point {
+    pub(crate) fn p(&self) -> &Point {
         &self.p
     }
 
-    pub fn normal(&self) -> &UnitVec3D {
+    pub(crate) fn normal(&self) -> &UnitVec3D {
         &self.normal
     }
 
-    pub fn material(&self) -> &Material {
+    pub(crate) fn material(&self) -> &Material {
         &self.mat
     }
 
-    pub fn front_face(&self) -> bool {
+    pub(crate) fn front_face(&self) -> bool {
         self.front_face
     }
 
-    pub fn t(&self) -> Real {
+    pub(crate) fn t(&self) -> Real {
         self.t
     }
 
-    pub fn u(&self) -> Real {
+    pub(crate) fn u(&self) -> Real {
         self.u
     }
 
-    pub fn v(&self) -> Real {
+    pub(crate) fn v(&self) -> Real {
         self.v
     }
 }
 
-pub struct P(pub Point);
-pub struct Normal(pub UnitVec3D);
-pub struct Mat<'a>(pub &'a Material);
-pub struct T(pub Real);
-pub struct FrontFace(pub bool);
-pub struct U(pub Real);
-pub struct V(pub Real);
+pub(crate) struct P(pub(crate) Point);
+pub(crate) struct Normal(pub(crate) UnitVec3D);
+pub(crate) struct Mat<'a>(pub(crate) &'a Material);
+pub(crate) struct T(pub(crate) Real);
+pub(crate) struct FrontFace(pub(crate) bool);
+pub(crate) struct U(pub(crate) Real);
+pub(crate) struct V(pub(crate) Real);
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Hittable {
+pub(crate) enum Hittable {
     Quadric(Quadric),
     List(HittableList),
     BVH(BVH),
@@ -107,7 +107,7 @@ pub enum Hittable {
 }
 
 impl Hittable {
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         match self {
             Hittable::Quadric(quadric) => quadric.hit(ray, ray_t),
             Hittable::List(list) => list.hit(ray, ray_t),
@@ -120,7 +120,7 @@ impl Hittable {
         }
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         match self {
             Hittable::Quadric(quadric) => quadric.bounding_box(),
             Hittable::List(list) => list.bounding_box(),
@@ -133,7 +133,7 @@ impl Hittable {
         }
     }
 
-    pub fn is_finite(&self) -> bool {
+    pub(crate) fn is_finite(&self) -> bool {
         let bbox = self.bounding_box();
         bbox.x().min < math::INFINITY
             && bbox.x().max < math::INFINITY
@@ -145,17 +145,17 @@ impl Hittable {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct HittableList {
+pub(crate) struct HittableList {
     objects: Vec<Hittable>,
     bbox: AABB,
 }
 
 impl HittableList {
-    pub fn empty() -> Self {
+    pub(crate) fn empty() -> Self {
         Self::from_vec(vec![])
     }
 
-    pub fn from_vec(objects: Vec<Hittable>) -> HittableList {
+    pub(crate) fn from_vec(objects: Vec<Hittable>) -> HittableList {
         let mut this = Self {
             objects: vec![],
             bbox: AABB::empty(),
@@ -168,12 +168,12 @@ impl HittableList {
         this
     }
 
-    pub fn add(&mut self, object: Hittable) {
+    pub(crate) fn add(&mut self, object: Hittable) {
         self.bbox = AABB::from_boxes(&self.bbox, object.bounding_box());
         self.objects.push(object);
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         self.objects.iter().fold(None, |maybe_prev_record, object| {
             if let Some(prev_record) = maybe_prev_record {
                 object
@@ -185,7 +185,7 @@ impl HittableList {
         })
     }
 
-    pub fn make_box(a: Point, b: Point, mat: Material) -> Self {
+    pub(crate) fn make_box(a: Point, b: Point, mat: Material) -> Self {
         let min = Point::new(a.x.min(b.x), a.y.min(b.y), a.z.min(b.z));
         let max = Point::new(a.x.max(b.x), a.y.max(b.y), a.z.max(b.z));
 
@@ -240,15 +240,15 @@ impl HittableList {
         )
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
 
-    pub fn objects(&self) -> &[Hittable] {
+    pub(crate) fn objects(&self) -> &[Hittable] {
         &self.objects
     }
 
-    pub fn objects_mut(&mut self) -> &mut Vec<Hittable> {
+    pub(crate) fn objects_mut(&mut self) -> &mut Vec<Hittable> {
         &mut self.objects
     }
 }

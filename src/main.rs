@@ -4,7 +4,7 @@ use config::{Config, File};
 use mlua::{Lua, LuaSerdeExt};
 use std::{env, fs};
 
-pub mod bindings;
+pub(crate) mod bindings;
 mod common;
 mod core;
 mod diagnostics;

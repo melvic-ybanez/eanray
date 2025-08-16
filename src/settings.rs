@@ -1,71 +1,71 @@
 use crate::core::math::Real;
 use serde::Deserialize;
 
-pub type Vec3D = [Real; 3];
-pub type Point = Vec3D;
-pub type Color = Vec3D;
+pub(crate) type Vec3D = [Real; 3];
+pub(crate) type Point = Vec3D;
+pub(crate) type Color = Vec3D;
 
 #[derive(Deserialize, Clone)]
-pub struct Config {
+pub(crate) struct Config {
     app: AppConfig,
 }
 
 impl Config {
-    pub fn app(&self) -> &AppConfig {
+    pub(crate) fn app(&self) -> &AppConfig {
         &self.app
     }
 }
 
 #[derive(Deserialize, Clone)]
-pub struct AppConfig {
+pub(crate) struct AppConfig {
     name: String,
     scene: SceneConfig,
     diagnostics: DiagnosticsConfig,
 }
 
 impl AppConfig {
-    pub fn name(&self) -> &str {
+    pub(crate) fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn scene(&self) -> &SceneConfig {
+    pub(crate) fn scene(&self) -> &SceneConfig {
         &self.scene
     }
 
-    pub fn diagnostics(&self) -> &DiagnosticsConfig {
+    pub(crate) fn diagnostics(&self) -> &DiagnosticsConfig {
         &self.diagnostics
     }
 }
 
 #[derive(Deserialize, Clone)]
-pub struct SceneConfig {
+pub(crate) struct SceneConfig {
     output_file: String,
     camera: CameraConfig,
 }
 
 impl SceneConfig {
-    pub fn camera(&self) -> &CameraConfig {
+    pub(crate) fn camera(&self) -> &CameraConfig {
         &self.camera
     }
 
-    pub fn output_file(&self) -> &str {
+    pub(crate) fn output_file(&self) -> &str {
         &self.output_file
     }
 }
 
 #[derive(Deserialize, Clone)]
-pub struct CameraConfig {
+pub(crate) struct CameraConfig {
     defaults: CameraDefaults,
 }
 
 impl CameraConfig {
-    pub fn defaults(&self) -> &CameraDefaults {
+    pub(crate) fn defaults(&self) -> &CameraDefaults {
         &self.defaults
     }
 }
 
 #[derive(Deserialize, Clone)]
-pub struct CameraDefaults {
+pub(crate) struct CameraDefaults {
     samples_per_pixel: u32,
     antialiasing: bool,
     max_depth: u32,
@@ -81,67 +81,67 @@ pub struct CameraDefaults {
 }
 
 impl CameraDefaults {
-    pub fn samples_per_pixel(&self) -> u32 {
+    pub(crate) fn samples_per_pixel(&self) -> u32 {
         self.samples_per_pixel
     }
 
-    pub fn antialiasing(&self) -> bool {
+    pub(crate) fn antialiasing(&self) -> bool {
         self.antialiasing
     }
 
-    pub fn max_depth(&self) -> u32 {
+    pub(crate) fn max_depth(&self) -> u32 {
         self.max_depth
     }
 
-    pub fn field_of_view(&self) -> Real {
+    pub(crate) fn field_of_view(&self) -> Real {
         self.field_of_view
     }
 
-    pub fn look_from(&self) -> Point {
+    pub(crate) fn look_from(&self) -> Point {
         self.look_from
     }
 
-    pub fn look_at(&self) -> Point {
+    pub(crate) fn look_at(&self) -> Point {
         self.look_at
     }
 
-    pub fn vup(&self) -> Vec3D {
+    pub(crate) fn vup(&self) -> Vec3D {
         self.vup
     }
 
-    pub fn defocus_angle(&self) -> Real {
+    pub(crate) fn defocus_angle(&self) -> Real {
         self.defocus_angle
     }
 
-    pub fn focus_distance(&self) -> Real {
+    pub(crate) fn focus_distance(&self) -> Real {
         self.focus_distance
     }
 
-    pub fn background(&self) -> Color {
+    pub(crate) fn background(&self) -> Color {
         self.background
     }
 
-    pub fn tile_width(&self) -> u32 {
+    pub(crate) fn tile_width(&self) -> u32 {
         self.tile_width
     }
 
-    pub fn tile_height(&self) -> u32 {
+    pub(crate) fn tile_height(&self) -> u32 {
         self.tile_height
     }
 }
 
 #[derive(Deserialize, Clone)]
-pub struct DiagnosticsConfig {
+pub(crate) struct DiagnosticsConfig {
     enable_metrics: bool,
     enable_stats: bool,
 }
 
 impl DiagnosticsConfig {
-    pub fn enable_metrics(&self) -> bool {
+    pub(crate) fn enable_metrics(&self) -> bool {
         self.enable_metrics
     }
 
-    pub fn enable_stats(&self) -> bool {
+    pub(crate) fn enable_stats(&self) -> bool {
         self.enable_stats
     }
 }

@@ -1,12 +1,12 @@
 macro_rules! define_flag {
     ($name: ident) => {
-        pub static $name: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+        pub(crate) static $name: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
-        pub fn enable(flag: bool) {
+        pub(crate) fn enable(flag: bool) {
             $name.store(flag, std::sync::atomic::Ordering::Relaxed);
         }
 
-        pub fn is_enabled() -> bool {
+        pub(crate) fn is_enabled() -> bool {
             $name.load(std::sync::atomic::Ordering::Relaxed)
         }
     };
@@ -20,14 +20,14 @@ macro_rules! define_metric {
 
         paste::item! {
             #[inline]
-            pub fn [<increment_$name:lower>]() {
+            pub(crate) fn [<increment_$name:lower>]() {
                 if $crate::diagnostics::metrics::is_enabled() {
                     $name.with(|c| c.set(c.get() + 1));
                 }
             }
 
             #[inline]
-            pub fn [<get_$name:lower>]() -> Option<u64> {
+            pub(crate) fn [<get_$name:lower>]() -> Option<u64> {
                 if $crate::diagnostics::metrics::is_enabled() {
                     Some($name.with(|c| c.get()))
                 } else {
@@ -36,7 +36,7 @@ macro_rules! define_metric {
             }
 
             #[inline]
-            pub fn [<report_$name:lower>]() {
+            pub(crate) fn [<report_$name:lower>]() {
                 if $crate::diagnostics::metrics::is_enabled() {
                     let label = stringify!($name);
                     let label = label.replace("_", " ");

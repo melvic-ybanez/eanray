@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 type Perm = Vec<usize>;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Perlin {
+pub(crate) struct Perlin {
     rand_vecs: Vec<UnitVec3D>,
     perm_x: Perm,
     perm_y: Perm,
@@ -14,9 +14,9 @@ pub struct Perlin {
 }
 
 impl Perlin {
-    pub const POINT_COUNT: usize = 256;
+    pub(crate) const POINT_COUNT: usize = 256;
 
-    pub fn new() -> Self {
+    pub(crate) fn new() -> Self {
         let mut rand_vecs = vec![UnitVec3D(Vec3D::zero()); Self::POINT_COUNT];
         for i in 0..Self::POINT_COUNT {
             rand_vecs[i] = Vec3D::random_range(-1.0, 1.0).to_unit();
@@ -30,7 +30,7 @@ impl Perlin {
         }
     }
 
-    pub fn noise(&self, p: &Point) -> f64 {
+    pub(crate) fn noise(&self, p: &Point) -> f64 {
         let u = p.x - p.x.floor();
         let v = p.y - p.y.floor();
         let w = p.z - p.z.floor();
@@ -93,7 +93,7 @@ impl Perlin {
         accum
     }
 
-    pub fn turbulence(&self, p: &Point, depth: u32) -> f64 {
+    pub(crate) fn turbulence(&self, p: &Point, depth: u32) -> f64 {
         let mut accum = 0.0;
         let mut temp_p = p.clone();
         let mut weight = 1.0;

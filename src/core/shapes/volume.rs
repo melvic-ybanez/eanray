@@ -9,14 +9,14 @@ use crate::core::{Color, Material, Ray, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ConstantMedium {
+pub(crate) struct ConstantMedium {
     boundary: ObjectRef,
     neg_inv_density: Real,
     phase_function: Material,
 }
 
 impl ConstantMedium {
-    pub fn new(boundary: ObjectRef, density: Real, phase_function: Material) -> Self {
+    pub(crate) fn new(boundary: ObjectRef, density: Real, phase_function: Material) -> Self {
         Self {
             boundary,
             neg_inv_density: -1.0 / density,
@@ -24,7 +24,7 @@ impl ConstantMedium {
         }
     }
 
-    pub fn from_texture(boundary: ObjectRef, density: Real, texture: Texture) -> Self {
+    pub(crate) fn from_texture(boundary: ObjectRef, density: Real, texture: Texture) -> Self {
         Self::new(
             boundary,
             density,
@@ -32,7 +32,7 @@ impl ConstantMedium {
         )
     }
 
-    pub fn from_albedo(boundary: ObjectRef, density: Real, albedo: Color) -> Self {
+    pub(crate) fn from_albedo(boundary: ObjectRef, density: Real, albedo: Color) -> Self {
         Self::new(
             boundary,
             density,
@@ -40,7 +40,7 @@ impl ConstantMedium {
         )
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let mut rec1 = self.boundary.hit(ray, &Interval::universe())?;
         let mut rec2 = self
             .boundary
@@ -81,7 +81,7 @@ impl ConstantMedium {
         }
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         self.boundary.bounding_box()
     }
 }

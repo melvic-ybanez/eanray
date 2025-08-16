@@ -9,17 +9,17 @@ use serde::{Deserialize, Serialize};
 use std::io;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SceneSchema {
+pub(crate) struct SceneSchema {
     camera: CameraSchema,
     objects: Vec<Hittable>,
 }
 
 impl SceneSchema {
-    pub fn new(camera: CameraSchema, objects: Vec<Hittable>) -> Self {
+    pub(crate) fn new(camera: CameraSchema, objects: Vec<Hittable>) -> Self {
         Self { camera, objects }
     }
 
-    pub fn render(&self, config: &'static Config) -> io::Result<()> {
+    pub(crate) fn render(&self, config: &'static Config) -> io::Result<()> {
         let camera = self.camera.build(config);
         camera.render(
             &Hittable::List(HittableList::from_vec(self.objects.clone())),
@@ -29,7 +29,7 @@ impl SceneSchema {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct CameraSchema {
+pub(crate) struct CameraSchema {
     aspect_ratio: Real,
     image_width: u32,
     samples_per_pixel: Option<u32>,
@@ -45,7 +45,7 @@ pub struct CameraSchema {
 }
 
 impl CameraSchema {
-    pub fn new(aspect_ratio: Real, image_width: u32) -> Self {
+    pub(crate) fn new(aspect_ratio: Real, image_width: u32) -> Self {
         Self {
             aspect_ratio,
             image_width,

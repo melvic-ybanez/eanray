@@ -9,16 +9,16 @@ use std::cmp::Ordering;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct BVH {
+pub(crate) struct BVH {
     left: ObjectRef,
     right: ObjectRef,
     bbox: AABB,
 }
 
 impl BVH {
-    pub const PRIMITIVE_COUNT_PER_LEAF: u32 = 1;
+    pub(crate) const PRIMITIVE_COUNT_PER_LEAF: u32 = 1;
 
-    pub fn from_list(mut list: HittableList) -> Self {
+    pub(crate) fn from_list(mut list: HittableList) -> Self {
         let mut objects = list
             .objects_mut()
             .iter()
@@ -75,7 +75,7 @@ impl BVH {
         }
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         metrics::increment_bvh_hit_attempt_count();
 
         if !self.bbox.hit(ray, ray_t) {
@@ -100,23 +100,23 @@ impl BVH {
         }
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
 
-    pub fn box_x_compare(a: &ObjectRef, b: &ObjectRef) -> Ordering {
+    pub(crate) fn box_x_compare(a: &ObjectRef, b: &ObjectRef) -> Ordering {
         Self::box_compare(a, b, &Axis::X)
     }
 
-    pub fn box_y_compare(a: &ObjectRef, b: &ObjectRef) -> Ordering {
+    pub(crate) fn box_y_compare(a: &ObjectRef, b: &ObjectRef) -> Ordering {
         Self::box_compare(a, b, &Axis::Y)
     }
 
-    pub fn box_z_compare(a: &ObjectRef, b: &ObjectRef) -> Ordering {
+    pub(crate) fn box_z_compare(a: &ObjectRef, b: &ObjectRef) -> Ordering {
         Self::box_compare(a, b, &Axis::Z)
     }
 
-    pub fn box_compare(a: &ObjectRef, b: &ObjectRef, axis_index: &Axis) -> Ordering {
+    pub(crate) fn box_compare(a: &ObjectRef, b: &ObjectRef, axis_index: &Axis) -> Ordering {
         let a_axis_interval = a.bounding_box().axis_interval(axis_index);
         let b_axis_interval = b.bounding_box().axis_interval(axis_index);
         if a_axis_interval.min < b_axis_interval.min {
@@ -128,11 +128,11 @@ impl BVH {
         }
     }
 
-    pub fn left(&self) -> ObjectRef {
+    pub(crate) fn left(&self) -> ObjectRef {
         self.left.clone()
     }
 
-    pub fn right(&self) -> ObjectRef {
+    pub(crate) fn right(&self) -> ObjectRef {
         self.right.clone()
     }
 }

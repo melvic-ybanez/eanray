@@ -7,7 +7,7 @@ use std::fmt::Display;
 define_flag!(STATS_ENABLED);
 
 #[derive(Default)]
-pub struct BVHStats {
+pub(crate) struct BVHStats {
     internal_node_count: u32,
     leaf_count: u32,
     // number of edges from the root to the farthest leaf
@@ -17,7 +17,7 @@ pub struct BVHStats {
 }
 
 impl BVHStats {
-    pub fn from_bvh(bvh: &BVH) -> Self {
+    pub(crate) fn from_bvh(bvh: &BVH) -> Self {
         let mut this: Self = Default::default();
         this.inspect_bvh(bvh, 0);
         this
@@ -66,7 +66,7 @@ impl BVHStats {
         self.primitive_count as f32 / self.leaf_count as f32
     }
 
-    pub fn report(&self) {
+    pub(crate) fn report(&self) {
         if !is_enabled() {
             return;
         }
@@ -129,13 +129,13 @@ impl BVHStats {
     }
 }
 
-pub fn report_bvh(bvh: &BVH) {
+pub(crate) fn report_bvh(bvh: &BVH) {
     if is_enabled() {
         BVHStats::from_bvh(bvh).report()
     }
 }
 
-pub fn report(hittable: &Hittable) {
+pub(crate) fn report(hittable: &Hittable) {
     if !is_enabled() {
         return;
     }

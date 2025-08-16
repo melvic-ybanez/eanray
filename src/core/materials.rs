@@ -155,11 +155,11 @@ impl DiffuseLight {
 pub(crate) mod refractive_index {
     use crate::core::math::Real;
 
-    pub const GLASS: Real = 1.5;
-    pub const VACUUM: Real = 1.0;
-    pub const AIR: Real = 1.0003;
-    pub const WATER: Real = 1.333;
-    pub const DIAMOND: Real = 2.417;
+    pub(crate) const GLASS: Real = 1.5;
+    pub(crate) const VACUUM: Real = 1.0;
+    pub(crate) const AIR: Real = 1.0003;
+    pub(crate) const WATER: Real = 1.333;
+    pub(crate) const DIAMOND: Real = 2.417;
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

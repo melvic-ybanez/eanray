@@ -10,7 +10,7 @@ define_metric!(OBJECT_HIT_ATTEMPT_COUNT);
 define_metric!(LEFT_NODE_HIT_ATTEMPT_COUNT);
 define_metric!(RIGHT_NODE_HIT_ATTEMPT_COUNT);
 
-pub fn report() {
+pub(crate) fn report() {
     report_aabb_hit_attempt_count();
     report_object_hit_attempt_count();
     if is_enabled() {

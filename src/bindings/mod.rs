@@ -1,7 +1,7 @@
-pub mod lua;
+pub(crate) mod lua;
 mod materials;
 mod math;
-pub mod schemas;
+pub(crate) mod schemas;
 mod shapes;
 mod textures;
 mod transforms;

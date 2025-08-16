@@ -7,7 +7,7 @@ use crate::core::{Material, Ray, hittables, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Kind {
+pub(crate) enum Kind {
     Quad(Quad),
     Triangle(Triangle),
     Disk(Disk),
@@ -16,7 +16,7 @@ pub enum Kind {
 /// Represents any 2D planar primitive. I'm under the impression that `q`, `u`, and `v` are standard
 /// names in ray tracing, so I'll use them here as well.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Planar {
+pub(crate) struct Planar {
     q: Point,
     u: Vec3D,
     v: Vec3D,
@@ -29,19 +29,19 @@ pub struct Planar {
 }
 
 impl Planar {
-    pub fn quad(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
+    pub(crate) fn quad(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
         Self::new(q, u, v, mat, Kind::Quad(Quad))
     }
 
-    pub fn triangle(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
+    pub(crate) fn triangle(q: Point, u: Vec3D, v: Vec3D, mat: Material) -> Self {
         Self::new(q, u, v, mat, Kind::Triangle(Triangle))
     }
 
-    pub fn disk(q: Point, u: Vec3D, v: Vec3D, radius: Real, mat: Material) -> Self {
+    pub(crate) fn disk(q: Point, u: Vec3D, v: Vec3D, radius: Real, mat: Material) -> Self {
         Self::new(q, u, v, mat, Kind::Disk(Disk { radius }))
     }
 
-    pub fn new(q: Point, u: Vec3D, v: Vec3D, mat: Material, kind: Kind) -> Self {
+    pub(crate) fn new(q: Point, u: Vec3D, v: Vec3D, mat: Material, kind: Kind) -> Self {
         let n = u.cross(&v);
         let normal = n.to_unit();
         let d = normal.0.dot(&q.clone().into());
@@ -67,11 +67,11 @@ impl Planar {
         self.bbox = AABB::from_boxes(&bbox_diagonal1, &bbox_diagonal2);
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let denom = self.normal.0.dot(ray.direction());
 
         // ray is parallel to the plane
@@ -118,7 +118,7 @@ impl Planar {
 /// Quadrilaterals. This is technically a parallelogram, but for some reason,
 /// Peter Shirley named it quad in his books, and I intend to adapt that name here.
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Quad;
+pub(crate) struct Quad;
 
 impl Quad {
     fn is_interior(a: Real, b: Real) -> bool {
@@ -129,7 +129,7 @@ impl Quad {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Triangle;
+pub(crate) struct Triangle;
 
 impl Triangle {
     fn is_interior(a: Real, b: Real) -> bool {
@@ -138,7 +138,7 @@ impl Triangle {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Disk {
+pub(crate) struct Disk {
     radius: Real,
 }
 

@@ -111,7 +111,7 @@ impl Cylinder {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum CylinderKind {
+pub(crate) enum CylinderKind {
     Finite { height: Real },
     Infinite,
 }

@@ -6,40 +6,40 @@ use crate::core::math::vector::{CanAdd, PointKind, VecKind, VecLike};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct ColorKind;
+pub(crate) struct ColorKind;
 
-pub type Color = VecLike<ColorKind>;
+pub(crate) type Color = VecLike<ColorKind>;
 
 impl Color {
-    pub fn red_component(&self) -> Real {
+    pub(crate) fn red_component(&self) -> Real {
         self.x
     }
 
-    pub fn green_component(&self) -> Real {
+    pub(crate) fn green_component(&self) -> Real {
         self.y
     }
 
-    pub fn blue_component(&self) -> Real {
+    pub(crate) fn blue_component(&self) -> Real {
         self.z
     }
 
-    pub fn black() -> Color {
+    pub(crate) fn black() -> Color {
         Color::new(0.0, 0.0, 0.0)
     }
 
-    pub fn white() -> Color {
+    pub(crate) fn white() -> Color {
         Color::new(1.0, 1.0, 1.0)
     }
 
-    pub fn red() -> Color {
+    pub(crate) fn red() -> Color {
         Color::new(1.0, 0.0, 0.0)
     }
 
-    pub fn cyan() -> Color {
+    pub(crate) fn cyan() -> Color {
         Color::new(0.0, 1.0, 1.0)
     }
 
-    pub fn to_bytes_string(&self) -> String {
+    pub(crate) fn to_bytes_string(&self) -> String {
         let intensity = Interval::new(0.0, 0.999);
 
         let to_byte = |component: Real| -> u16 {

@@ -94,7 +94,7 @@ impl Cylinder {
     }
 
     pub(super) fn compute_uv(&self, p: &Vec3D) -> (Real, Real) {
-        let theta = p.z.atan2(p.z); // angle around the y-axis. range: (-pi, pi]
+        let theta = p.z.atan2(p.x); // angle around the y-axis. range: (-pi, pi]
         let u = theta / (2.0 * math::PI) + 0.5; // convert to [0, 1].
 
         let v = match self.kind {

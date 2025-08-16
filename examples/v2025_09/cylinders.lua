@@ -18,9 +18,13 @@ end
 
 make_ground()
 
-local height = 0.25
-local bottom_cylinder = Translate:new(Cylinder:finite(1, height, Lambertian:from_albedo(Color:new(1, 1, 1))), Vec:new(4, height / 2, 0))
-objects:add(bottom_cylinder)
+for i = 0, 6 do
+  local height = 0.25 + 0.2 * i
+  local radius = 0.65 ^ i
+  local cylinder = Cylinder:finite(radius, height, Lambertian:from_albedo(Color:new(1, 1, 1)))
+  local translate = Translate:new(cylinder, Vec:new(4, height / 2, 0))
+  objects:add(translate)
+end
 
 local outer_light_radius = 7
 local outer_light = DiffuseLight:from_emission(Color:new(1, 1, 1))

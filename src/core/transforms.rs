@@ -7,14 +7,14 @@ use crate::core::{Ray, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Translate {
+pub(crate) struct Translate {
     object: ObjectRef,
     offset: Vec3D,
     bbox: AABB,
 }
 
 impl Translate {
-    pub fn new(object: ObjectRef, offset: Vec3D) -> Self {
+    pub(crate) fn new(object: ObjectRef, offset: Vec3D) -> Self {
         let bbox = object.bounding_box() + &offset;
         Self {
             object,
@@ -23,7 +23,7 @@ impl Translate {
         }
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let offset_origin = ray.origin() - &self.offset;
         let offset_ray = Ray::new_timed(offset_origin, ray.direction().clone(), ray.time());
         let mut hit_record = self.object.hit(&offset_ray, ray_t)?;
@@ -31,20 +31,20 @@ impl Translate {
         Some(hit_record)
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum RotateKind {
+pub(crate) enum RotateKind {
     X,
     Y,
     Z,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Rotate {
+pub(crate) struct Rotate {
     object: ObjectRef,
     sin_theta: Real,
     cos_theta: Real,
@@ -53,7 +53,7 @@ pub struct Rotate {
 }
 
 impl Rotate {
-    pub fn new(object: ObjectRef, angle: Real, kind: RotateKind) -> Self {
+    pub(crate) fn new(object: ObjectRef, angle: Real, kind: RotateKind) -> Self {
         let radians = math::degrees_to_radians(angle);
         let sin_theta = radians.sin();
         let cos_theta = radians.cos();
@@ -91,7 +91,7 @@ impl Rotate {
         }
     }
 
-    pub fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
         let rotated_ray = self.to_object_space(ray);
 
         let mut hit_record = self.object.hit(&rotated_ray, ray_t)?;
@@ -201,7 +201,7 @@ impl Rotate {
         (new_x, new_y)
     }
 
-    pub fn bounding_box(&self) -> &AABB {
+    pub(crate) fn bounding_box(&self) -> &AABB {
         &self.bbox
     }
 }

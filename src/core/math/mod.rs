@@ -14,6 +14,7 @@ pub(crate) use vector::VecLike;
 pub(crate) const INFINITY: Real = Real::INFINITY;
 pub(crate) const PI: Real = std::f64::consts::PI;
 pub(crate) const GAMMA: f32 = 2.2;
+pub(crate) const EPSILON: f64 = 1e-8;
 
 pub(crate) fn degrees_to_radians(degrees: Real) -> Real {
     degrees * PI / 180.0

@@ -14,5 +14,5 @@ pub use camera::Camera;
 pub use color::Color;
 pub use hittables::Hittable;
 pub use hittables::HittableList;
-pub use materials::Material;
+pub(crate) use materials::Material;
 pub use ray::Ray;

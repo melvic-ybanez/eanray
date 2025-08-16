@@ -34,7 +34,7 @@ impl Cylinder {
 
     /// The formula for an infinite vertical cylinder with radius `r` is `x^2 + z^2 = r^2`.
     /// If we plug in a ray `o + td`, we'd get: `(o_x + td_x)^2 + (o_z + td_z)^2 = r^2`.
-    pub(super) fn computations(&self, ray: &Ray) -> (Real, Real, Real, Point) {
+    pub(super) fn computations(&self, ray: &Ray) -> Option<(Real, Real, Real, Point)> {
         // for brevity, and to mimic the variables above
         let d = ray.direction();
         let o = ray.origin();
@@ -45,13 +45,28 @@ impl Cylinder {
         let b = 2.0 * (o.x * d.x + o.z * d.z);
         let c = o.x * o.x + o.z * o.z - r * r;
 
-        // For now, the current-center is set to (0, 0, 0). We might have to revisit this
-        // once motion blurs for cylinders have been implemented
-        (a, b, c, Point::zero())
+        if a.abs() < math::EPSILON {
+            None
+        } else {
+            // For now, the current-center is set to (0, 0, 0). We might have to revisit this
+            // once motion blurs for cylinders have been implemented
+            Some((a, b, c, Point::zero()))
+        }
     }
 
     pub(super) fn compute_outward_normal(&self, p: &Point) -> UnitVec3D {
-        Vec3D::new(p.x, 0.0, p.z).to_unit()
+        UnitVec3D(Vec3D::new(p.x, 0.0, p.z) / self.radius)
+    }
+
+    pub(super) fn check_y_hit(&self, ray: &Ray, root: Real) -> bool {
+        match self.kind {
+            CylinderKind::Finite { height } => {
+                let y_hit = ray.origin().y + root * ray.direction().y;
+                let half = height / 2.0;
+                -half <= y_hit && y_hit <= half
+            }
+            _ => true,
+        }
     }
 
     pub(crate) fn material(&self) -> &Material {
@@ -69,7 +84,7 @@ impl Cylinder {
                 let half = height / 2.0;
                 (-half, half)
             }
-            CylinderKind::Infinite => (0.0, 0.0),
+            CylinderKind::Infinite => (-math::INFINITY, math::INFINITY),
         };
 
         self.bbox = AABB::from_points(
@@ -84,7 +99,7 @@ impl Cylinder {
 
         let v = match self.kind {
             CylinderKind::Finite { height } => (p.y + height / 2.0) / height, // normalize to [0, 1]
-            CylinderKind::Infinite => p.y % 1.0
+            CylinderKind::Infinite => p.y % 1.0,
         };
 
         (u, v)

@@ -5,7 +5,7 @@ use crate::core::{Color, Ray, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum Material {
+pub(crate) enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
     Dielectric(Dielectric),
@@ -14,7 +14,7 @@ pub enum Material {
 }
 
 impl Material {
-    pub fn scatter<'a, 'b, 'c>(&self, ray_in: &Ray, rec: &'b HitRecord) -> Option<(Ray, Color)> {
+    pub(crate) fn scatter<'a, 'b, 'c>(&self, ray_in: &Ray, rec: &'b HitRecord) -> Option<(Ray, Color)> {
         match self {
             Self::Lambertian(lambertian) => Some(lambertian.scatter(ray_in, rec)),
             Self::Metal(metal) => Some(metal.scatter(ray_in, rec)),
@@ -24,11 +24,11 @@ impl Material {
         }
     }
 
-    pub fn new_dielectric(refraction_index: Real) -> Self {
+    pub(crate) fn new_dielectric(refraction_index: Real) -> Self {
         Material::Dielectric(Dielectric::new(refraction_index))
     }
 
-    pub fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
+    pub(crate) fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
         match self {
             Self::DiffuseLight(diffuse_light) => diffuse_light.emitted(u, v, p),
             _ => Color::black(),
@@ -37,17 +37,17 @@ impl Material {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Lambertian {
+pub(crate) struct Lambertian {
     texture: Texture,
 }
 
 impl Lambertian {
     // TODO: Rename this to `from_texture`
-    pub fn new(texture: Texture) -> Self {
+    pub(crate) fn new(texture: Texture) -> Self {
         Self { texture }
     }
 
-    pub fn from_albedo(albedo: Color) -> Self {
+    pub(crate) fn from_albedo(albedo: Color) -> Self {
         Self::new(Texture::SolidColor(SolidColor::new(albedo)))
     }
 
@@ -65,13 +65,13 @@ impl Lambertian {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Metal {
+pub(crate) struct Metal {
     albedo: Color,
     fuzz: Real,
 }
 
 impl Metal {
-    pub fn new(albedo: Color, fuzz: Real) -> Self {
+    pub(crate) fn new(albedo: Color, fuzz: Real) -> Self {
         Self {
             albedo,
             fuzz: if fuzz < 1.0 { fuzz } else { 1.0 },
@@ -88,12 +88,12 @@ impl Metal {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Dielectric {
+pub(crate) struct Dielectric {
     refraction_index: Real,
 }
 
 impl Dielectric {
-    pub fn new(refraction_index: Real) -> Self {
+    pub(crate) fn new(refraction_index: Real) -> Self {
         Self { refraction_index }
     }
 
@@ -130,25 +130,25 @@ impl Dielectric {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct DiffuseLight {
+pub(crate) struct DiffuseLight {
     texture: Texture,
 }
 
 impl DiffuseLight {
-    pub fn from_texture(texture: Texture) -> Self {
+    pub(crate) fn from_texture(texture: Texture) -> Self {
         Self { texture }
     }
 
-    pub fn from_emission(emission_color: Color) -> Self {
+    pub(crate) fn from_emission(emission_color: Color) -> Self {
         Self::from_texture(Texture::SolidColor(SolidColor::new(emission_color)))
     }
 
-    pub fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
+    pub(crate) fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
         self.texture.value(u, v, p)
     }
 }
 
-pub mod refractive_index {
+pub(crate) mod refractive_index {
     use crate::core::math::Real;
 
     pub const GLASS: Real = 1.5;
@@ -159,20 +159,20 @@ pub mod refractive_index {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct Isotropic {
+pub(crate) struct Isotropic {
     texture: Texture,
 }
 
 impl Isotropic {
-    pub fn from_albedo(albedo: Color) -> Self {
+    pub(crate) fn from_albedo(albedo: Color) -> Self {
         Self::from_texture(Texture::SolidColor(SolidColor::new(albedo)))
     }
 
-    pub fn from_texture(texture: Texture) -> Self {
+    pub(crate) fn from_texture(texture: Texture) -> Self {
         Self { texture }
     }
 
-    pub fn scatter<'a>(&self, ray_in: &Ray, hit_record: &'a HitRecord) -> (Ray, Color) {
+    pub(crate) fn scatter<'a>(&self, ray_in: &Ray, hit_record: &'a HitRecord) -> (Ray, Color) {
         let scattered = Ray::new_timed(
             hit_record.p().clone(),
             Vec3D::random_unit().0,

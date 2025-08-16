@@ -1,11 +1,11 @@
 use crate::common::macros::impl_deref;
 use crate::core::math;
+use crate::core::math::macros::impl_from_for_vec_like;
 use crate::core::math::{Axis, Real};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
-use crate::core::math::macros::impl_from_for_vec_like;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct VecKind;
@@ -100,7 +100,11 @@ impl Vec3D {
         self - &normal.0 * 2.0 * self.dot(&normal)
     }
 
-    pub(crate) fn refract(unit_vec3d: &UnitVec3D, normal: &UnitVec3D, etai_over_etat: Real) -> Vec3D {
+    pub(crate) fn refract(
+        unit_vec3d: &UnitVec3D,
+        normal: &UnitVec3D,
+        etai_over_etat: Real,
+    ) -> Vec3D {
         let cos_theta = -unit_vec3d.dot(&normal.0).min(1.0);
         let refracted_perpendicular = (&unit_vec3d.0 + &normal.0 * cos_theta) * etai_over_etat;
         let refracted_parallel =
@@ -109,8 +113,7 @@ impl Vec3D {
     }
 
     pub(crate) fn near_zero(&self) -> bool {
-        let small = 1e-8;
-        self.x.abs() < small && self.y.abs() < small && self.z.abs() < small
+        self.x.abs() < math::EPSILON && self.y.abs() < math::EPSILON && self.z.abs() < math::EPSILON
     }
 
     pub(crate) fn random_unit() -> UnitVec3D {

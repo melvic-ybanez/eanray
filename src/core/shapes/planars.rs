@@ -3,7 +3,7 @@ use crate::core::hittables::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{Material, Ray, hittables};
+use crate::core::{hittables, math, Material, Ray};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -75,7 +75,7 @@ impl Planar {
         let denom = self.normal.0.dot(ray.direction());
 
         // ray is parallel to the plane
-        if denom.abs() < 1e-8 {
+        if denom.abs() < math::EPSILON {
             return None;
         }
 

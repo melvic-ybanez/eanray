@@ -75,7 +75,7 @@ impl Planar {
         let denom = self.normal.0.dot(ray.direction());
 
         // ray is parallel to the plane
-        if denom.abs() < math::EPSILON {
+        if math::near_zero(denom.abs()) {
             return None;
         }
 

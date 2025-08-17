@@ -11,7 +11,6 @@ local Image = textures.Image
 local DiffuseLight = engine.materials.DiffuseLight
 
 local objects = ObjectList:new()
-
 local planets_dir = "examples/images/planets/"
 
 local function make_ground()
@@ -20,15 +19,14 @@ local function make_ground()
   objects:add(ground)
 end
 
-make_ground()
+local function make_big_spheres()
+  local moon = Lambertian:new(Image:new("examples/images/moon.jpg"))
+  local jupiter = Lambertian:new(Image:new(planets_dir .. "jupiter.jpg"))
+  objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, jupiter))
+  objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, moon))
+end
 
--- big spheres
-local moon = Lambertian:new(Image:new("examples/images/moon.jpg"))
-local jupiter = Lambertian:new(Image:new(planets_dir .. "jupiter.jpg"))
-objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, jupiter))
-objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, moon))
-
-local function make_group()
+local function make_sun()
   local base_radius = 0.6
   local head_radius = 0.4
   local z = 2.5
@@ -37,11 +35,11 @@ local function make_group()
   objects:add(Sphere:stationary(Point:new(3, base_radius * 2 + head_radius, z), head_radius, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 end
 
-make_group()
-
-local outer_light_radius = 7
-local outer_light = DiffuseLight:from_emission(Color:new(1, 1, 1))
-objects:add(Sphere:stationary(Point:new(4, outer_light_radius + 3, 2.3), outer_light_radius, outer_light))
+local function make_outer_light()
+  local outer_light_radius = 7
+  local outer_light = DiffuseLight:from_emission(Color:new(1, 1, 1))
+  objects:add(Sphere:stationary(Point:new(4, outer_light_radius + 3, 2.3), outer_light_radius, outer_light))
+end
 
 local small_radius = 0.25
 local bouncing_radius = 0.2
@@ -78,6 +76,33 @@ local function make_small_planet(center, filename)
   objects:add(Sphere:stationary(center, small_radius, Lambertian:new(Image:new(planets_dir .. filename))))
 end
 
+local function setup_camera()
+  local camera = engine.Camera:new(1200, 16 / 9)
+  camera.samples_per_pixel = 500
+  camera.max_depth = 50
+
+  camera.field_of_view = 20
+  camera.look_from = Point:new(13, 2, 3)
+  camera.look_at = Point.ZERO
+  camera.vup = Vec:new(0, 1, 0)
+
+  camera.defocus_angle = 0.6
+  camera.focus_distance = 10
+
+  return camera
+end
+
+local function setup_bvh()
+  local world = engine.BVH:new(objects)
+  objects = ObjectList:new()
+  objects:add(world)
+end
+
+make_ground()
+make_sun()
+make_big_spheres()
+make_outer_light()
+
 make_small_planet(Point:new(5.5, small_radius, 0), "mars.jpg")
 make_small_planet(Point:new(2.5, small_radius, 1), "venus_atmosphere.jpg")
 make_small_planet(Point:new(5, small_radius, 2), "earth.jpg")
@@ -94,20 +119,6 @@ make_small_moving_sphere(Point:new(7.2, bouncing_radius, 3.2), true)
 objects:add(Sphere:stationary(Point:new(5.6, 0.2, 2.7), 0.2, Lambertian:from_albedo(Color.random() * Color.random())))
 objects:add(Sphere:stationary(Point:new(5.7, small_radius, 1), small_radius, Dielectric:new(Dielectric.RefractiveIndex.GLASS)))
 
-local camera = engine.Camera:new(1200, 16 / 9)
-camera.samples_per_pixel = 500
-camera.max_depth = 50
+setup_bvh()
 
-camera.field_of_view = 20
-camera.look_from = Point:new(13, 2, 3)
-camera.look_at = Point.ZERO
-camera.vup = Vec:new(0, 1, 0)
-
-camera.defocus_angle = 0.6
-camera.focus_distance = 10
-
-local world = engine.BVH:new(objects)
-objects = ObjectList:new()
-objects:add(world)
-
-return engine.Scene:new(camera, objects)
+return engine.Scene:new(setup_camera(), objects)

@@ -1,6 +1,7 @@
 macro_rules! define_flag {
     ($name: ident) => {
-        pub(crate) static $name: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+        pub(crate) static $name: std::sync::atomic::AtomicBool =
+            std::sync::atomic::AtomicBool::new(false);
 
         pub(crate) fn enable(flag: bool) {
             $name.store(flag, std::sync::atomic::Ordering::Relaxed);

@@ -70,3 +70,8 @@ where
 {
     start * (1.0 - a) + end * a
 }
+
+
+pub(crate) fn near_zero(value: Real) -> bool {
+   value < EPSILON
+}

@@ -3,10 +3,10 @@ use crate::bindings::lua::from_user_data;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::planars::{Planar, Quad, Triangle};
 use crate::core::shapes::plane::Plane;
-use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::quadrics::cylinder::Cylinder;
+use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
-use crate::core::shapes::{Sphere, planars};
+use crate::core::shapes::{planars, Sphere};
 use crate::core::{Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
 
@@ -181,10 +181,11 @@ fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
     table.set(
         "finite",
         lua.create_function(
-            |lua, (_, radius, height, material): (Table, Real, Real, Value)| {
+            |lua, (_, radius, height, material, closed): (Table, Real, Real, Value, bool)| {
                 let mat = lua.from_value(material)?;
-                let cylinder =
-                    Hittable::Quadric(Quadric::Cylinder(Cylinder::finite(radius, height, mat)));
+                let cylinder = Hittable::Quadric(Quadric::Cylinder(Cylinder::finite(
+                    radius, height, mat, closed,
+                )));
                 Ok(lua.to_value(&cylinder))
             },
         )?,

@@ -1,9 +1,11 @@
 use crate::core::aabb::AABB;
+use crate::core::hittables::HitRecord;
 use crate::core::materials::Material;
-use crate::core::math;
+use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
 use crate::core::ray::Ray;
+use crate::core::{hittables, math};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -63,6 +65,49 @@ impl Sphere {
         }
     }
 
+    pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        let current_center = self.center.at(ray.time());
+        let oc = &current_center - ray.origin();
+        let a = ray.direction().dot(&ray.direction());
+        let b = ray.direction().dot(&oc) * -2.0;
+        let c = oc.length_squared() - self.radius * self.radius;
+        let discriminant = b * b - 4.0 * a * c;
+
+        if discriminant < 0.0 {
+            None
+        } else {
+            let sqrt_d = discriminant.sqrt();
+            let root = (-b - sqrt_d) / (2.0 * a);
+            let root = if !ray_t.surrounds(root) {
+                let root = (-b + sqrt_d) / (2.0 * a);
+                if !ray_t.surrounds(root) {
+                    None
+                } else {
+                    Some(root)
+                }
+            } else {
+                Some(root)
+            };
+
+            root.map(|root| {
+                let p = ray.at(root);
+                let outward_normal = UnitVec3D((&p - current_center) / self.radius);
+                let (u, v) = self.compute_uv(&outward_normal);
+                let (front_face, face_normal) = HitRecord::face_normal(&ray, outward_normal);
+
+                HitRecord::new(
+                    hittables::P(p),
+                    hittables::Normal(face_normal),
+                    hittables::Mat(self.material()),
+                    hittables::T(root),
+                    hittables::FrontFace(front_face),
+                    hittables::U(u),
+                    hittables::V(v),
+                )
+            })
+        }
+    }
+
     pub(super) fn compute_uv(&self, p: &Vec3D) -> (Real, Real) {
         // NOTE: `p` should have been a Point by definition, but I'll allow a Vec
         // this time to avoid having to cast
@@ -73,19 +118,6 @@ impl Sphere {
         let u = phi / (2.0 * math::PI);
         let v = theta / math::PI;
         (u, v)
-    }
-
-    pub(super) fn computations(&self, ray: &Ray) -> (Real, Real, Real, Point) {
-        let current_center = self.center.at(ray.time());
-        let oc = &current_center - ray.origin();
-        let a = ray.direction().dot(&ray.direction());
-        let b = ray.direction().dot(&oc) * -2.0;
-        let c = oc.length_squared() - self.radius * self.radius;
-        (a, b, c, current_center)
-    }
-
-    pub(super) fn compute_outward_normal(&self, current_center: &Point, p: &Point) -> UnitVec3D {
-        UnitVec3D((p - current_center) / self.radius)
     }
 
     pub(crate) fn bounding_box(&self) -> &AABB {

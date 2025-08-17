@@ -113,7 +113,9 @@ impl Vec3D {
     }
 
     pub(crate) fn near_zero(&self) -> bool {
-        self.x.abs() < math::EPSILON && self.y.abs() < math::EPSILON && self.z.abs() < math::EPSILON
+        math::near_zero(self.x.abs())
+            && math::near_zero(self.y.abs())
+            && math::near_zero(self.z.abs())
     }
 
     pub(crate) fn random_unit() -> UnitVec3D {

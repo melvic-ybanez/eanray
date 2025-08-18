@@ -60,6 +60,18 @@ impl<K> VecLike<K> {
             math::random_range(min, max),
         )
     }
+
+    pub(crate) fn x(&self) -> Real {
+        self.x
+    }
+
+    pub(crate) fn y(&self) -> Real {
+        self.y
+    }
+
+    pub(crate) fn z(&self) -> Real {
+        self.z
+    }
 }
 
 impl Vec3D {

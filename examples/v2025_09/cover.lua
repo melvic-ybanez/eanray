@@ -5,10 +5,12 @@ local Lambertian = engine.materials.Lambertian
 local Metal = engine.materials.Metal
 local Dielectric = engine.materials.Dielectric
 local Sphere = engine.shapes.Sphere
+local Cylinder = engine.shapes.Cylinder
 local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
 local DiffuseLight = engine.materials.DiffuseLight
+local Translate = engine.transforms.Translate
 
 local objects = ObjectList:new()
 local planets_dir = "examples/images/planets/"
@@ -43,21 +45,36 @@ end
 
 local small_radius = 0.25
 local bouncing_radius = 0.2
+local cyl_height = 0.07
+
+local function make_base_cylinder(center)
+  local radius = small_radius + 0.1
+  local cylinder = Cylinder:finite(radius, cyl_height, Lambertian:from_albedo(Color:new(1, 1, 1)), true)
+  local translate = Translate:new(cylinder, Vec:new(center.x, cyl_height / 2, center.z))
+  objects:add(translate)
+end
+
+local function raise_center(center)
+  return Point:new(center.x, center.y + cyl_height / 2, center.z)
+end
 
 local function make_small_lambertian(center)
   local albedo = Color.random() * Color.random() + Color:new(0.1, 0.2, 0)
-  objects:add(Sphere:stationary(center, small_radius, Lambertian:from_albedo(albedo)))
+  objects:add(Sphere:stationary(raise_center(center), small_radius, Lambertian:from_albedo(albedo)))
+  make_base_cylinder(center)
 end
 
 local function make_small_metal(center)
   local albedo = Color.random_range(0.5, 1)
   local fuzz = engine.math.random_range(0, 0.5)
-  objects:add(Sphere:stationary(center, small_radius, Metal:new(albedo, fuzz)))
+  objects:add(Sphere:stationary(raise_center(center), small_radius, Metal:new(albedo, fuzz)))
+  make_base_cylinder(center)
 end
 
 local function make_small_glass(center)
   local sphere_material = Dielectric:new(Dielectric.RefractiveIndex.GLASS)
-  objects:add(Sphere:stationary(center, small_radius, sphere_material))
+  objects:add(Sphere:stationary(raise_center(center), small_radius, sphere_material))
+  make_base_cylinder(center)
 end
 
 local function make_small_moving_sphere(center, horizontal)
@@ -73,7 +90,8 @@ local function make_small_moving_sphere(center, horizontal)
 end
 
 local function make_small_planet(center, filename)
-  objects:add(Sphere:stationary(center, small_radius, Lambertian:new(Image:new(planets_dir .. filename))))
+  objects:add(Sphere:stationary(raise_center(center), small_radius, Lambertian:new(Image:new(planets_dir .. filename))))
+  make_base_cylinder(center)
 end
 
 local function setup_camera()

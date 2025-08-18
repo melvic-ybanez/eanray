@@ -39,7 +39,7 @@ local function make_moon()
 end
 
 local function make_capped_cylinder(x, z)
-  local height = 0.17
+  local height = 0.15
   local radius = 0.8
   local cylinder = Cylinder:finite(radius, height, Lambertian:from_albedo(Color:new(1, 1, 1)), true)
   local translate = Translate:new(cylinder, Vec:new(x, height / 2, z))

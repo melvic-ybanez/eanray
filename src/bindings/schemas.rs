@@ -4,7 +4,7 @@ use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::{Camera, Color, Hittable, HittableList};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataMethods, Value};
+use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataFields, UserDataMethods, Value};
 use serde::{Deserialize, Serialize};
 use std::io;
 
@@ -101,6 +101,10 @@ impl CameraSchema {
 }
 
 impl UserData for Vec3D {
+    fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
+        add_common_vec_like_fields(fields);
+    }
+
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
         add_addable_vec_methods(methods);
         methods.add_method("length", |_, this, ()| Ok(this.length()))
@@ -108,12 +112,20 @@ impl UserData for Vec3D {
 }
 
 impl UserData for Color {
+    fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
+        add_common_vec_like_fields(fields);
+    }
+
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
         add_addable_vec_methods(methods);
     }
 }
 
 impl UserData for Point {
+    fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
+        add_common_vec_like_fields(fields);
+    }
+    
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::Sub, |lua, this, other: Value| {
             let point: Point = lua.from_value(other)?;
@@ -144,4 +156,13 @@ fn add_addable_vec_methods<K: 'static + CanAdd + Clone, M: UserDataMethods<VecLi
         let other_vec_like: VecLike<K> = lua.from_value(other)?;
         Ok(this + other_vec_like)
     });
+}
+
+fn add_common_vec_like_fields<K: 'static + Clone, F: UserDataFields<VecLike<K>>>(
+    fields: &mut F,
+) where
+    VecLike<K>: UserData {
+    fields.add_field_method_get("x", |_, this| Ok(this.x()));
+    fields.add_field_method_get("y", |_, this| Ok(this.y()));
+    fields.add_field_method_get("z", |_, this| Ok(this.z()));
 }

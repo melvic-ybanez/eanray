@@ -3,7 +3,7 @@ use crate::core::hittables::HitRecord;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{hittables, math, Material, Ray};
+use crate::core::{hittables, math, Color, Material, Ray};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -30,15 +30,23 @@ impl Cylinder {
         Self::new(radius, material, CylinderKind::Infinite)
     }
 
-    pub(crate) fn finite(radius: Real, height: Real, material: Material, closed: bool) -> Self {
+    pub(crate) fn finite(radius: Real, height: Real, material: Material, kind: FiniteType) -> Self {
         Self::new(
             radius,
             material,
             CylinderKind::Finite {
                 half: height / 2.0,
-                closed,
+                kind,
             },
         )
+    }
+
+    pub(crate) fn open(radius: Real, height: Real, material: Material) -> Self {
+        Self::finite(radius, height, material, FiniteType::Open)
+    }
+
+    pub(crate) fn closed(radius: Real, height: Real, side_mat: Material, cap_mat: Material) -> Self {
+        Self::finite(radius, height, side_mat, FiniteType::Closed { cap_mat })
     }
 
     /// The formula for an infinite vertical cylinder with radius `r` is `x^2 + z^2 = r^2`.
@@ -160,7 +168,7 @@ impl Cylinder {
 
     pub(crate) fn nearest_cap_hit(&self, ray: &Ray, ray_t: &Interval) -> (Real, HitType) {
         match self.kind {
-            CylinderKind::Finite { half, closed: true } => {
+            CylinderKind::Finite { half, kind: FiniteType::Closed {..} } => {
                 match (self.hit_cap(ray, ray_t, half), self.hit_cap(ray, ray_t, -half)) {
                     (Some(t1), Some(t2)) => {
                         if t1 < t2 {
@@ -203,7 +211,7 @@ impl Cylinder {
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) enum CylinderKind {
-    Finite { half: Real, closed: bool },
+    Finite { half: Real, kind: FiniteType },
     Infinite,
 }
 
@@ -211,4 +219,10 @@ pub(crate) enum HitType {
     Side,
     TopCap,
     BottomCap,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) enum FiniteType {
+    Closed { cap_mat: Material },
+    Open,
 }

@@ -179,13 +179,25 @@ fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
     )?;
 
     table.set(
-        "finite",
+        "open",
         lua.create_function(
-            |lua, (_, radius, height, material, closed): (Table, Real, Real, Value, bool)| {
+            |lua, (_, radius, height, material): (Table, Real, Real, Value)| {
                 let mat = lua.from_value(material)?;
-                let cylinder = Hittable::Quadric(Quadric::Cylinder(Cylinder::finite(
-                    radius, height, mat, closed,
-                )));
+                let cylinder =
+                    Hittable::Quadric(Quadric::Cylinder(Cylinder::open(radius, height, mat)));
+                Ok(lua.to_value(&cylinder))
+            },
+        )?,
+    )?;
+
+    table.set(
+        "closed",
+        lua.create_function(
+            |lua, (_, radius, height, side_mat, cap_mat): (Table, Real, Real, Value, Value)| {
+                let side_mat = lua.from_value(side_mat)?;
+                let cap_mat = lua.from_value(cap_mat)?;
+                let cylinder =
+                    Hittable::Quadric(Quadric::Cylinder(Cylinder::closed(radius, height, side_mat, cap_mat)));
                 Ok(lua.to_value(&cylinder))
             },
         )?,

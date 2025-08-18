@@ -20,7 +20,15 @@ local function make_cylinder_group()
   for i = 0, 6 do
     local height = 0.25 + 0.2 * i
     local radius = 1.25 * 0.65 ^ i
-    local cylinder = Cylinder:finite(radius, height, Lambertian:from_albedo(Color:new(1, 1,1)))
+    local side_mat = Lambertian:from_albedo(Color:new(1, 1,1))
+    local cylinder
+
+    if i == 0 then
+      cylinder = Cylinder:open(radius, height, side_mat)
+    else
+      cylinder = Cylinder:closed(radius, height, side_mat, side_mat)
+    end
+
     local translate = Translate:new(cylinder, Vec:new(4, height / 2, 0))
     objects:add(translate)
   end
@@ -41,7 +49,8 @@ end
 local function make_capped_cylinder(x, z)
   local height = 0.15
   local radius = 0.8
-  local cylinder = Cylinder:finite(radius, height, Lambertian:from_albedo(Color:new(1, 1, 1)), true)
+  local side_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local cylinder = Cylinder:closed(radius, height, side_mat, side_mat)
   local translate = Translate:new(cylinder, Vec:new(x, height / 2, z))
   objects:add(translate)
 end

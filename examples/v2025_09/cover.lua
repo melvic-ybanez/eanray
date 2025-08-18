@@ -49,7 +49,8 @@ local cyl_height = 0.07
 
 local function make_base_cylinder(center)
   local radius = small_radius + 0.1
-  local cylinder = Cylinder:finite(radius, cyl_height, Lambertian:from_albedo(Color:new(1, 1, 1)), true)
+  local side_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local cylinder = Cylinder:closed(radius, cyl_height, side_mat, side_mat)
   local translate = Translate:new(cylinder, Vec:new(center.x, cyl_height / 2, center.z))
   objects:add(translate)
 end

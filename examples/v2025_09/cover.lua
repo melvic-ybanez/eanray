@@ -55,7 +55,7 @@ local function make_base_cylinder(center)
 end
 
 local function raise_center(center)
-  return Point:new(center.x, center.y + cyl_height / 2, center.z)
+  return Point:new(center.x, center.y + cyl_height, center.z)
 end
 
 local function make_small_lambertian(center)

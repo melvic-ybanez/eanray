@@ -104,10 +104,10 @@ impl Cylinder {
         }
     }
 
-    pub(super) fn check_y_hit(&self, ray: &Ray, root: Real) -> bool {
+    pub(super) fn check_y_hit(&self, ray: &Ray, t: Real) -> bool {
         match self.kind {
             CylinderKind::Finite { half, .. } => {
-                let y_hit = ray.origin().y + root * ray.direction().y;
+                let y_hit = ray.origin().y + t * ray.direction().y;
                 -half <= y_hit && y_hit <= half
             }
             _ => true,

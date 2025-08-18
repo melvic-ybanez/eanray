@@ -50,6 +50,28 @@ local function make_piles_of_wood()
   objects:add_all(bottom_left, bottom_right, middle_left, middle_right, upper_left, upper_right)
 end
 
+local function make_table()
+  local x = 4
+  local z = -0.7
+  local legs_height = 0.7
+  local top_height = 0.09
+  local y = top_height / 2 + legs_height
+  local table_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+
+  local top = Translate:new(Cylinder:closed(1.25, top_height, table_mat, table_mat), Vec:new(x, y, z))
+
+  local legs_half_distance = 0.5
+  local legs_radius = 0.06
+  local leg = Cylinder:closed(legs_radius, legs_height, table_mat, table_mat)
+
+  local back_left_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_height / 2, z + legs_half_distance))
+  local back_right_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_height / 2, z - legs_half_distance))
+  local front_left_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_height / 2, z + legs_half_distance))
+  local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_height / 2, z - legs_half_distance))
+
+  objects:add_all(top, back_left_leg, back_right_leg, front_left_leg, front_right_leg)
+end
+
 local function setup_camera()
   local camera = engine.Camera:new(1200, 16 / 9)
   camera.samples_per_pixel = 500
@@ -75,6 +97,7 @@ end
 make_ground()
 make_sun()
 make_piles_of_wood()
+make_table()
 
 setup_bvh()
 

@@ -62,7 +62,7 @@ impl ConstantMedium {
 
             let ray_length = ray.direction().length();
             let distance_inside_boundary = (rec2.t - rec1.t) * ray_length;
-            let hit_distance = self.neg_inv_density * math::random_real().log(std::f64::consts::E);
+            let hit_distance = self.neg_inv_density * math::random_real().ln();
 
             if hit_distance > distance_inside_boundary {
                 None

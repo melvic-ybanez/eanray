@@ -1,4 +1,4 @@
-![Planets on the ground](https://github.com/user-attachments/assets/ab464ff3-e0b6-479d-8496-8048ebd433bb)
+![Planets on the ground](https://github.com/user-attachments/assets/1730eb19-2679-4866-b18e-01c740fd1768)
 
 # Eanray
 

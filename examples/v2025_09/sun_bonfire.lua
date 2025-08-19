@@ -99,20 +99,15 @@ local function make_map_on_ground()
   objects:add(map)
 end
 
-local function make_giant_spheres()
-  local radius = 7
+local function make_stones()
+  local radius = 5.5
   local mat = Lambertian:from_albedo(Color:new(1, 1, 1))
   local right = Sphere:new(Point:new(-2.5, radius, -4.5), radius, mat)
-  local left = Sphere:new(Point:new(-3, radius, 5), radius, mat)
-  objects:add_all(right, left)
-end
 
-local function make_giant_cylinder()
-  local height = 10
-  local radius = 20
-  local cylinder = Translate:new(Cylinder:open(radius, height, Lambertian:from_albedo(Color:new(1, 1, 1))),
-    Vec:new(17, height / 2, 0))
-  objects:add(cylinder)
+  local left_height = 5
+  local left = Translate:new(Cylinder:closed(4, left_height, mat, mat), Vec:new(-2, left_height / 2, 5))
+
+  objects:add_all(right, left)
 end
 
 local function setup_camera()
@@ -142,8 +137,7 @@ make_sun()
 make_piles_of_wood()
 make_table()
 make_map_on_ground()
-make_giant_cylinder()
---make_giant_spheres()
+make_stones()
 
 setup_bvh()
 

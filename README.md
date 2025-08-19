@@ -47,6 +47,13 @@ Note: Instructions on running executables will be provided after the first relea
 Here's the Lua script that describes the scene you probably already saw above in this
 document: [cover.lua](examples/v2025_09/cover.lua)
 
+ Another example you can try is [this one](examples/v2025_09/sun_bonfire.lua) (which might take longer to render due to 
+ a higher SPP). Running the script yields:
+
+![Sun Bonfire](https://github.com/user-attachments/assets/fc45d26a-737b-46dc-8258-0a7e40bca2b7)
+
+You can modify the scripts to lower the SPP for testing/debugging purposes.
+
 More examples can be found [here](examples), including some [scenes](examples/rt1w) from
 [Ray Tracing in One Weekend](https://raytracing.github.io) series.
 

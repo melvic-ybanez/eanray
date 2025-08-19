@@ -92,14 +92,32 @@ local function make_table()
   objects:add_all(top, back_left_leg, back_right_leg, front_left_leg, front_right_leg, map, jupiter, lamp_cover, lamp_bulb)
 end
 
-local map_size = 1
-local map_mat = Lambertian:new(Image:new("examples/images/planets/venus_surface.jpg"))
-local map = Quad:new(Point:new(4.5 - map_size / 2, 0, 1.5), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
-objects:add(map)
+local function make_map_on_ground()
+  local map_size = 1
+  local map_mat = Lambertian:new(Image:new("examples/images/planets/venus_surface.jpg"))
+  local map = Quad:new(Point:new(4.5 - map_size / 2, 0, 1.5), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
+  objects:add(map)
+end
+
+local function make_giant_spheres()
+  local radius = 7
+  local mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local right = Sphere:new(Point:new(-2.5, radius, -4.5), radius, mat)
+  local left = Sphere:new(Point:new(-3, radius, 5), radius, mat)
+  objects:add_all(right, left)
+end
+
+local function make_giant_cylinder()
+  local height = 10
+  local radius = 20
+  local cylinder = Translate:new(Cylinder:open(radius, height, Lambertian:from_albedo(Color:new(1, 1, 1))),
+    Vec:new(17, height / 2, 0))
+  objects:add(cylinder)
+end
 
 local function setup_camera()
   local camera = engine.Camera:new(1200, 16 / 9)
-  camera.samples_per_pixel = 2000
+  camera.samples_per_pixel = 5000
   camera.max_depth = 50
 
   camera.field_of_view = 20
@@ -123,6 +141,9 @@ make_ground()
 make_sun()
 make_piles_of_wood()
 make_table()
+make_map_on_ground()
+make_giant_cylinder()
+--make_giant_spheres()
 
 setup_bvh()
 

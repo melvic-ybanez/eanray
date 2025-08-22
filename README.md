@@ -47,10 +47,10 @@ Note: Instructions on running executables will be provided after the first relea
 Here's the Lua script that describes the scene you probably already saw above in this
 document: [cover.lua](examples/v2025_09/cover.lua)
 
- Another example you can try is [this one](examples/v2025_09/sun_bonfire.lua) (which might take longer to render due to 
+ Another example you can try is [this one](examples/v2025_09/sun_campfire.lua) (which might take longer to render due to 
  a higher SPP). Running the script yields:
 
-![Sun Bonfire](https://github.com/user-attachments/assets/fc45d26a-737b-46dc-8258-0a7e40bca2b7)
+![Sun Campfire](https://github.com/user-attachments/assets/18b3265e-0fd6-4d16-9f92-d59ea3a82095)
 
 You can modify the script to lower the SPP for testing/debugging purposes.
 

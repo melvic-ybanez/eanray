@@ -4,13 +4,12 @@ local Vec = engine.math.Vec
 local Lambertian = engine.materials.Lambertian
 local Sphere = engine.shapes.Sphere
 local Cylinder = engine.shapes.Cylinder
+local Cone = engine.shapes.Cone
 local Quad = engine.shapes.Quad
-local Box = engine.shapes.Box
 local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
 local DiffuseLight = engine.materials.DiffuseLight
-local Metal = engine.materials.Metal
 local Translate = engine.transforms.Translate
 local RotateX = engine.transforms.RotateX
 local RotateY = engine.transforms.RotateY
@@ -67,10 +66,11 @@ local function make_table()
   local legs_radius = 0.06
   local leg = Cylinder:closed(legs_radius, legs_height, table_mat, table_mat)
 
-  local back_left_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_height / 2, z + legs_half_distance))
-  local back_right_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_height / 2, z - legs_half_distance))
-  local front_left_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_height / 2, z + legs_half_distance))
-  local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_height / 2, z - legs_half_distance))
+  local half_legs_height = legs_height / 2
+  local back_left_leg = Translate:new(leg, Vec:new(x - legs_half_distance, half_legs_height, z + legs_half_distance))
+  local back_right_leg = Translate:new(leg, Vec:new(x - legs_half_distance, half_legs_height, z - legs_half_distance))
+  local front_left_leg = Translate:new(leg, Vec:new(x + legs_half_distance, half_legs_height, z + legs_half_distance))
+  local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, half_legs_height, z - legs_half_distance))
 
   local map_size = 1
   local map_mat = Lambertian:new(Image:new("examples/images/planets/earth.jpg"))
@@ -79,15 +79,17 @@ local function make_table()
   local jupiter = Sphere:new(Point:new(x - map_size / 2, surface_y + 0.3, z - map_size / 2), 0.3,
       Lambertian:new(Image:new("examples/images/planets/jupiter.jpg")))
 
-  local lamp_cover_radius = 0.25
-  local lamp_cover_height = 0.5
+  local lamp_cover_base_radius = 0.35
+  local lamp_cover_apex_radius = lamp_cover_base_radius * 0.4
+  local lamp_cover_height = 0.55
   local lamp_x = x
   local lamp_cover_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local bulb_radius = 0.22
   local lamp_cover = Translate:new(
-      RotateX:new(Cylinder:open(lamp_cover_radius, lamp_cover_height, lamp_cover_mat), -45),
-      Vec:new(lamp_x, surface_y + 1, z - map_size))
+      RotateX:new(Cone:frustum_open(lamp_cover_base_radius, lamp_cover_apex_radius, lamp_cover_height, lamp_cover_mat), 135),
+      Vec:new(lamp_x, surface_y + 1 + bulb_radius, z - map_size - bulb_radius))
   local lamp_bulb_mat = DiffuseLight:from_emission(Color:new(1.0, 0.84, 0.66))
-  local lamp_bulb = Sphere:new(Point:new(lamp_x, surface_y + 1, z - map_size), 0.22, lamp_bulb_mat)
+  local lamp_bulb = Sphere:new(Point:new(lamp_x, surface_y + 1.01, z - map_size - 0.01), bulb_radius, lamp_bulb_mat)
 
   objects:add_all(top, back_left_leg, back_right_leg, front_left_leg, front_right_leg, map, jupiter, lamp_cover, lamp_bulb)
 end

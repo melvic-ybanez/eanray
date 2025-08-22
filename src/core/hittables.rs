@@ -5,7 +5,7 @@ use crate::core::math;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
-use crate::core::ray::Ray;
+use crate::core::math::ray::Ray;
 use crate::core::shapes::planars::Planar;
 use crate::core::shapes::plane::Plane;
 use crate::core::shapes::quadrics::Quadric;
@@ -13,6 +13,7 @@ use crate::core::shapes::volume::ConstantMedium;
 use crate::core::transforms::{Rotate, Translate};
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
+use crate::diagnostics::metrics;
 
 pub(crate) type ObjectRef = Arc<Hittable>;
 
@@ -108,28 +109,32 @@ pub(crate) enum Hittable {
 
 impl Hittable {
     pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
+        if self.has_geometry() {
+            metrics::increment_object_hit_attempt_count();
+        }
+
         match self {
-            Hittable::Quadric(quadric) => quadric.hit(ray, ray_t),
-            Hittable::List(list) => list.hit(ray, ray_t),
-            Hittable::BVH(bvh) => bvh.hit(ray, ray_t),
-            Hittable::Planar(quad) => quad.hit(ray, ray_t),
-            Hittable::Translate(translate) => translate.hit(ray, ray_t),
-            Hittable::Rotate(rotate_y) => rotate_y.hit(ray, ray_t),
-            Hittable::ConstantMedium(constant_medium) => constant_medium.hit(ray, ray_t),
-            Hittable::Plane(plane) => plane.hit(ray, ray_t),
+            Self::Quadric(quadric) => quadric.hit(ray, ray_t),
+            Self::List(list) => list.hit(ray, ray_t),
+            Self::BVH(bvh) => bvh.hit(ray, ray_t),
+            Self::Planar(quad) => quad.hit(ray, ray_t),
+            Self::Translate(translate) => translate.hit(ray, ray_t),
+            Self::Rotate(rotate_y) => rotate_y.hit(ray, ray_t),
+            Self::ConstantMedium(constant_medium) => constant_medium.hit(ray, ray_t),
+            Self::Plane(plane) => plane.hit(ray, ray_t),
         }
     }
 
     pub(crate) fn bounding_box(&self) -> &AABB {
         match self {
-            Hittable::Quadric(quadric) => quadric.bounding_box(),
-            Hittable::List(list) => list.bounding_box(),
-            Hittable::BVH(bvh) => bvh.bounding_box(),
-            Hittable::Planar(quad) => quad.bounding_box(),
-            Hittable::Translate(translate) => translate.bounding_box(),
-            Hittable::Rotate(rotate_y) => rotate_y.bounding_box(),
-            Hittable::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
-            Hittable::Plane(plane) => plane.bounding_box(),
+            Self::Quadric(quadric) => quadric.bounding_box(),
+            Self::List(list) => list.bounding_box(),
+            Self::BVH(bvh) => bvh.bounding_box(),
+            Self::Planar(quad) => quad.bounding_box(),
+            Self::Translate(translate) => translate.bounding_box(),
+            Self::Rotate(rotate_y) => rotate_y.bounding_box(),
+            Self::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
+            Self::Plane(plane) => plane.bounding_box(),
         }
     }
 
@@ -141,6 +146,13 @@ impl Hittable {
             && bbox.y().max < math::INFINITY
             && bbox.z().min < math::INFINITY
             && bbox.z().max < math::INFINITY
+    }
+
+    pub(crate) fn has_geometry(&self) -> bool {
+        match self {
+            Self::BVH(_) | Self::Translate(_) | Self::Rotate(_) | Self::List(_) => false,
+            _ => true
+        }
     }
 }
 

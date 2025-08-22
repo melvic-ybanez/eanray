@@ -4,6 +4,7 @@ use std::ops::{Add, Mul};
 pub(crate) mod interval;
 pub(crate) mod macros;
 pub(crate) mod vector;
+pub mod ray;
 
 pub(crate) type Real = f64;
 
@@ -74,4 +75,12 @@ where
 
 pub(crate) fn near_zero(value: Real) -> bool {
    value < EPSILON
+}
+
+pub(crate) fn discriminant(a: Real, b: Real, c: Real) -> Real {
+    b * b - 4.0 * a * c
+}
+
+pub(crate) fn root(a: Real, b: Real, sqrt_d: Real) -> Real {
+    (-b + sqrt_d) / (2.0 * a)
 }

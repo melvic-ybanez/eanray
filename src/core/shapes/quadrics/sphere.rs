@@ -4,9 +4,10 @@ use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D};
 use crate::core::math::{Real, Vec3D};
-use crate::core::ray::Ray;
+use crate::core::math::ray::Ray;
 use crate::core::{hittables, math};
 use serde::{Deserialize, Serialize};
+use crate::core::shapes::quadrics::compute_root_from_discriminant;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Sphere {
@@ -71,23 +72,12 @@ impl Sphere {
         let a = ray.direction().dot(&ray.direction());
         let b = ray.direction().dot(&oc) * -2.0;
         let c = oc.length_squared() - self.radius * self.radius;
-        let discriminant = b * b - 4.0 * a * c;
+        let discriminant = math::discriminant(a, b, c);
 
         if discriminant < 0.0 {
             None
         } else {
-            let sqrt_d = discriminant.sqrt();
-            let root = (-b - sqrt_d) / (2.0 * a);
-            let root = if !ray_t.surrounds(root) {
-                let root = (-b + sqrt_d) / (2.0 * a);
-                if !ray_t.surrounds(root) {
-                    None
-                } else {
-                    Some(root)
-                }
-            } else {
-                Some(root)
-            };
+           let root = compute_root_from_discriminant(discriminant, a, b, ray_t, |_| true);
 
             root.map(|root| {
                 let p = ray.at(root);

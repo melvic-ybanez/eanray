@@ -4,7 +4,7 @@ use crate::core::hittables::Hittable;
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::{Point, UnitVec3D, Vec3D, VecLike};
 use crate::core::math::{self, Real};
-use crate::core::ray::Ray;
+use crate::core::math::ray::Ray;
 use crate::diagnostics::stats;
 use crate::settings::Config;
 use rayon::prelude::*;

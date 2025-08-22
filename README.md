@@ -14,7 +14,7 @@ There is a plan to add more features in the future, but for now, the most releva
   * Multithreaded Rendering (Tile-based)
 * Naive Monte Carlo Global Illumination
 * Ray-object intersection
-  * Primitives: Quadrics (Spheres, Cylinders), Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks), Planes
+  * Primitives: Quadrics (Spheres, Cylinders, Cones), Boxes, Constant Medium, Planar (Triangles, Quadrilaterals, Disks), Planes
 * Materials: Dielectrics, Lambertians, Metals, DiffuseLight, Isotropic
 * Antialising
 * Depth of Field (Defocus Blur)
@@ -52,7 +52,7 @@ document: [cover.lua](examples/v2025_09/cover.lua)
 
 ![Sun Bonfire](https://github.com/user-attachments/assets/fc45d26a-737b-46dc-8258-0a7e40bca2b7)
 
-You can modify the scripts to lower the SPP for testing/debugging purposes.
+You can modify the script to lower the SPP for testing/debugging purposes.
 
 More examples can be found [here](examples), including some [scenes](examples/rt1w) from
 [Ray Tracing in One Weekend](https://raytracing.github.io) series.

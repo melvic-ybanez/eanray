@@ -3,6 +3,7 @@ use crate::bindings::lua::from_user_data;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::planars::{Planar, Quad, Triangle};
 use crate::core::shapes::plane::Plane;
+use crate::core::shapes::quadrics::cone::{Cone, EndType};
 use crate::core::shapes::quadrics::cylinder::Cylinder;
 use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
@@ -12,6 +13,7 @@ use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
 
 pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     let shapes = lua.create_table()?;
+
     shapes.set("Sphere", new_sphere_table(lua)?)?;
     shapes.set("Quad", new_planar_table(lua, planars::Kind::Quad(Quad))?)?;
     shapes.set(
@@ -23,6 +25,8 @@ pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     shapes.set("ConstantMedium", new_constant_medium_table(lua)?)?;
     shapes.set("Plane", new_plane_table(lua)?)?;
     shapes.set("Cylinder", new_cylinder_table(lua)?)?;
+    shapes.set("Cone", new_cone_table(lua)?)?;
+
     Ok(shapes)
 }
 
@@ -196,9 +200,87 @@ fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
             |lua, (_, radius, height, side_mat, cap_mat): (Table, Real, Real, Value, Value)| {
                 let side_mat = lua.from_value(side_mat)?;
                 let cap_mat = lua.from_value(cap_mat)?;
-                let cylinder =
-                    Hittable::Quadric(Quadric::Cylinder(Cylinder::closed(radius, height, side_mat, cap_mat)));
+                let cylinder = Hittable::Quadric(Quadric::Cylinder(Cylinder::closed(
+                    radius, height, side_mat, cap_mat,
+                )));
                 Ok(lua.to_value(&cylinder))
+            },
+        )?,
+    )?;
+
+    Ok(table)
+}
+
+fn new_cone_table(lua: &Lua) -> mlua::Result<Table> {
+    let table = lua.create_table()?;
+
+    table.set(
+        "full_open",
+        lua.create_function(
+            |lua, (_, base_radius, height, material): (Table, Real, Real, Value)| {
+                let mat = lua.from_value(material)?;
+                let cone = Hittable::Quadric(Quadric::Cone(Cone::full(
+                    base_radius,
+                    height,
+                    mat,
+                    EndType::Open,
+                )));
+                Ok(lua.to_value(&cone))
+            },
+        )?,
+    )?;
+
+    table.set(
+        "full_closed",
+        lua.create_function(
+            |lua, (_, base_radius, height, side_mat, cap_mat): (Table, Real, Real, Value, Value)| {
+                let side_mat = lua.from_value(side_mat)?;
+                let cap_mat = lua.from_value(cap_mat)?;
+                let cone = Hittable::Quadric(Quadric::Cone(Cone::full(
+                    base_radius,
+                    height,
+                    side_mat,
+                    EndType::Closed { cap_mat },
+                )));
+                Ok(lua.to_value(&cone))
+            },
+        )?,
+    )?;
+
+    table.set(
+        "frustum_open",
+        lua.create_function(
+            |lua, (_, base_radius, apex_radius, height, material): (Table, Real, Real, Real, Value)| {
+                let mat = lua.from_value(material)?;
+                let cone =
+                    Hittable::Quadric(Quadric::Cone(Cone::frustum(base_radius, apex_radius, height, mat, EndType::Open)));
+                Ok(lua.to_value(&cone))
+            },
+        )?,
+    )?;
+
+    table.set(
+        "frustum_closed",
+        lua.create_function(
+            |lua,
+             (_, base_radius, apex_radius, height, side_mat, cap_mat): (
+                Table,
+                Real,
+                Real,
+                Real,
+                Value,
+                Value,
+            )| {
+                let side_mat = lua.from_value(side_mat)?;
+                let cap_mat = lua.from_value(cap_mat)?;
+                let cone = Hittable::Quadric(Quadric::Cone(Cone::frustum(
+                    base_radius,
+                    apex_radius,
+                    height,
+                    side_mat,
+                    EndType::Closed { cap_mat },
+                )));
+                Ok(lua.to_value(&cone))
             },
         )?,
     )?;

@@ -50,7 +50,7 @@ document: [cover.lua](examples/v2025_09/cover.lua)
  Another example you can try is [this one](examples/v2025_09/sun_campfire.lua) (which might take longer to render due to 
  a higher SPP). Running the script yields:
 
-![Sun Campfire](https://github.com/user-attachments/assets/18b3265e-0fd6-4d16-9f92-d59ea3a82095)
+![Sun Campire](https://github.com/user-attachments/assets/405458a1-d53e-4ea2-8aa2-a7550a4046a5)
 
 You can modify the script to lower the SPP for testing/debugging purposes.
 

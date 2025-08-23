@@ -28,10 +28,6 @@ impl Material {
         }
     }
 
-    pub(crate) fn new_dielectric(refraction_index: Real) -> Self {
-        Material::Dielectric(Dielectric::new(refraction_index))
-    }
-
     pub(crate) fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
         match self {
             Self::DiffuseLight(diffuse_light) => diffuse_light.emitted(u, v, p),

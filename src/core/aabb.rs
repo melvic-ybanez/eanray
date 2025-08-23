@@ -17,7 +17,7 @@ pub(crate) struct AABB {
 impl AABB {
     pub(crate) fn empty() -> Self {
         let mut this = Self::new(Interval::empty(), Interval::empty(), Interval::empty());
-        this.pad_to_minimus();
+        this.pad_to_minimums();
         this
     }
 
@@ -124,7 +124,7 @@ impl AABB {
         }
     }
 
-    fn pad_to_minimus(&mut self) {
+    fn pad_to_minimums(&mut self) {
         let delta = 0.0001;
         if self.x.size() < delta {
             self.x = self.x.expand(delta);

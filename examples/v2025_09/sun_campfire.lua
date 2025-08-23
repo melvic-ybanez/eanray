@@ -62,15 +62,15 @@ local function make_table()
 
   local top = Translate:new(Cylinder:closed(1.25, top_height, table_mat, table_mat), Vec:new(x, surface_y - top_height / 2, z))
 
-  local legs_half_distance = 0.5
-  local legs_radius = 0.06
-  local leg = Cylinder:closed(legs_radius, legs_height, table_mat, table_mat)
+  local legs_half_distance = 0.6
+  local leg_base_radius = 0.06
+  local leg = Cone:frustum_closed(leg_base_radius, leg_base_radius * 0.5, legs_height, table_mat, table_mat)
 
-  local half_legs_height = legs_height / 2
-  local back_left_leg = Translate:new(leg, Vec:new(x - legs_half_distance, half_legs_height, z + legs_half_distance))
-  local back_right_leg = Translate:new(leg, Vec:new(x - legs_half_distance, half_legs_height, z - legs_half_distance))
-  local front_left_leg = Translate:new(leg, Vec:new(x + legs_half_distance, half_legs_height, z + legs_half_distance))
-  local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, half_legs_height, z - legs_half_distance))
+  local legs_y = 0
+  local back_left_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_y, z + legs_half_distance))
+  local back_right_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_y, z - legs_half_distance))
+  local front_left_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_y, z + legs_half_distance))
+  local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_y, z - legs_half_distance))
 
   local map_size = 1
   local map_mat = Lambertian:new(Image:new("examples/images/planets/earth.jpg"))

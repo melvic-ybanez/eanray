@@ -16,9 +16,7 @@ pub(crate) struct AABB {
 
 impl AABB {
     pub(crate) fn empty() -> Self {
-        let mut this = Self::new(Interval::empty(), Interval::empty(), Interval::empty());
-        this.pad_to_minimums();
-        this
+        Self::new(Interval::empty(), Interval::empty(), Interval::empty())
     }
 
     pub(crate) fn universe() -> Self {
@@ -30,7 +28,9 @@ impl AABB {
     }
 
     pub(crate) fn new(x: Interval, y: Interval, z: Interval) -> Self {
-        Self { x, y, z }
+        let mut this = Self { x, y, z };
+        this.pad_to_minimums();
+        this
     }
 
     pub(crate) fn from_points(a: Point, b: Point) -> Self {

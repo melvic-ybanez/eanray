@@ -2,10 +2,12 @@ local Color = engine.Color
 local Point = engine.math.Point
 local Vec = engine.math.Vec
 local Lambertian = engine.materials.Lambertian
+local Metal = engine.materials.Metal
 local Sphere = engine.shapes.Sphere
 local Cylinder = engine.shapes.Cylinder
 local Cone = engine.shapes.Cone
 local Quad = engine.shapes.Quad
+local Disk = engine.shapes.Disk
 local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
@@ -73,11 +75,24 @@ local function make_table()
   local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_y, z - legs_half_distance))
 
   local map_size = 1
+  local half_map_size = map_size / 2
   local map_mat = Lambertian:new(Image:new("examples/images/planets/earth.jpg"))
-  local map = Quad:new(Point:new(x - map_size / 2, surface_y, z + map_size / 2), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
+  local map = Quad:new(Point:new(x - half_map_size, surface_y, z + half_map_size), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
 
-  local jupiter = Sphere:new(Point:new(x - map_size / 2, surface_y + 0.3, z - map_size / 2), 0.3,
+  local jupiter_radius = 0.35
+  local jupiter = Sphere:new(
+      Point:new(x - half_map_size, surface_y + jupiter_radius, z - half_map_size), jupiter_radius,
       Lambertian:new(Image:new("examples/images/planets/jupiter.jpg")))
+
+  local saturn_radius = jupiter_radius * 0.4
+  local saturn = Sphere:new(
+      Point:new(x - half_map_size, surface_y + saturn_radius, z + half_map_size), saturn_radius,
+      Lambertian:new(Image:new("examples/images/planets/saturn.jpg")))
+
+  local meta_sphere_radius = jupiter_radius * 0.5
+  local metal_sphere = Sphere:new(
+      Point:new(x + half_map_size, surface_y + meta_sphere_radius, z - half_map_size - 0.05), meta_sphere_radius,
+      Metal:new(Color:new(1, 1, 1), 0))
 
   local lamp_cover_base_radius = 0.35
   local lamp_cover_apex_radius = lamp_cover_base_radius * 0.4
@@ -91,7 +106,9 @@ local function make_table()
   local lamp_bulb_mat = DiffuseLight:from_emission(Color:new(1.0, 0.84, 0.66))
   local lamp_bulb = Sphere:new(Point:new(lamp_x, surface_y + 1.01, z - map_size - 0.01), bulb_radius, lamp_bulb_mat)
 
-  objects:add_all(top, back_left_leg, back_right_leg, front_left_leg, front_right_leg, map, jupiter, lamp_cover, lamp_bulb)
+  objects:add_all(top,
+      back_left_leg, back_right_leg, front_left_leg, front_right_leg, map,
+      jupiter, saturn, lamp_cover, metal_sphere, lamp_bulb)
 end
 
 local function make_map_on_ground()

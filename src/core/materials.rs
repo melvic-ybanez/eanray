@@ -1,7 +1,7 @@
 use crate::core::hittables::HitRecord;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::textures::{SolidColor, Texture};
-use crate::core::{Color, Ray, math};
+use crate::core::{math, Color, Ray};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -132,19 +132,35 @@ impl Dielectric {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct DiffuseLight {
     texture: Texture,
+    intensity: Color,
 }
 
 impl DiffuseLight {
     pub(crate) fn from_texture(texture: Texture) -> Self {
-        Self { texture }
+        Self::from_texture_intensified(texture, Self::default_intensity())
     }
 
     pub(crate) fn from_emission(emission_color: Color) -> Self {
-        Self::from_texture(Texture::SolidColor(SolidColor::new(emission_color)))
+        Self::from_emission_intensified(emission_color, Self::default_intensity())
+    }
+
+    pub(crate) fn from_texture_intensified(texture: Texture, intensity: Color) -> Self {
+        Self { texture, intensity }
+    }
+
+    pub(crate) fn from_emission_intensified(emission_color: Color, intensity: Color) -> Self {
+        Self::from_texture_intensified(
+            Texture::SolidColor(SolidColor::new(emission_color)),
+            intensity,
+        )
     }
 
     pub(crate) fn emitted(&self, u: Real, v: Real, p: &Point) -> Color {
-        self.texture.value(u, v, p)
+        self.texture.value(u, v, p) * self.intensity.clone()
+    }
+
+    pub(crate) fn default_intensity() -> Color {
+        Color::white()
     }
 }
 

@@ -16,7 +16,9 @@ where
         }),
     )?;
 
+    // TODO: This one may not be usable in places where user-data is expected
     table.set("ZERO", lua.to_value(&VecLike::<K>::zero())?)?;
+
     table.set(
         "random",
         lua.create_function(|lua, ()| {
@@ -28,6 +30,13 @@ where
         "random_range",
         lua.create_function(|lua, (min, max): (Real, Real)| {
             let vec_like: VecLike<K> = VecLike::<K>::random_range(min, max);
+            Ok(lua.create_ser_userdata(vec_like))
+        })?,
+    )?;
+    table.set(
+        "from_scalar",
+        lua.create_function(|lua, (_, scalar): (Table, Real)| {
+            let vec_like: VecLike<K> = VecLike::from_scalar(scalar);
             Ok(lua.create_ser_userdata(vec_like))
         })?,
     )?;

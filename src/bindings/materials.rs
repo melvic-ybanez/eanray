@@ -1,6 +1,6 @@
 use crate::bindings::lua;
 use crate::bindings::lua::from_user_data;
-use crate::core::materials::{Dielectric, DiffuseLight, Lambertian, Metal, refractive_index};
+use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::core::math::Real;
 use crate::core::textures::Texture;
 use crate::core::{Color, Material};
@@ -88,6 +88,32 @@ fn new_diffuse_light_table(lua: &Lua) -> mlua::Result<Table> {
             let diffuse_light = Material::DiffuseLight(DiffuseLight::from_texture(texture));
             Ok(lua.to_value(&diffuse_light))
         })?,
+    )?;
+    table.set(
+        "from_texture_intensified",
+        lua.create_function(
+            |lua, (_, texture, intensity): (Table, Value, AnyUserData)| {
+                let texture: Texture = lua.from_value(texture)?;
+                let intensity = from_user_data!(intensity, Color);
+                let diffuse_light = Material::DiffuseLight(DiffuseLight::from_texture_intensified(
+                    texture, intensity,
+                ));
+                Ok(lua.to_value(&diffuse_light))
+            },
+        )?,
+    )?;
+    table.set(
+        "from_emission_intensified",
+        lua.create_function(
+            |lua, (_, emission_color, intensity): (Table, AnyUserData, AnyUserData)| {
+                let emission_color: Color = from_user_data!(emission_color, Color);
+                let intensity = from_user_data!(intensity, Color);
+                let diffuse_light = Material::DiffuseLight(
+                    DiffuseLight::from_emission_intensified(emission_color, intensity),
+                );
+                Ok(lua.to_value(&diffuse_light))
+            },
+        )?,
     )?;
 
     Ok(table)

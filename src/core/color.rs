@@ -35,6 +35,14 @@ impl Color {
         Color::new(1.0, 0.0, 0.0)
     }
 
+    pub(crate) fn blue() -> Color {
+        Color::new(0.0, 0.0, 1.0)
+    }
+
+    pub(crate) fn green() -> Color {
+        Color::new(0.0, 1.0, 0.0)
+    }
+
     pub(crate) fn cyan() -> Color {
         Color::new(0.0, 1.0, 1.0)
     }

@@ -7,7 +7,6 @@ local Sphere = engine.shapes.Sphere
 local Cylinder = engine.shapes.Cylinder
 local Cone = engine.shapes.Cone
 local Quad = engine.shapes.Quad
-local Disk = engine.shapes.Disk
 local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
@@ -20,7 +19,7 @@ local objects = ObjectList:new()
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:new(0.5, 0.5, 0.5)))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_albedo(Color:from_scalar(0.5)))
   objects:add(ground)
 end
 
@@ -28,7 +27,11 @@ local wood_radius = 0.1
 
 local function make_sun()
   local radius = 0.6
-  local sun = DiffuseLight:from_texture(Image:new("examples/images/sun.jpg"))
+
+  -- higher red, moderate green and lower blue, to make it warm
+  local intensity = Color:new(3.5, 2.9, 2.2)
+
+  local sun = DiffuseLight:from_texture_intensified(Image:new("examples/images/sun.jpg"), intensity)
   objects:add(Sphere:stationary(Point:new(3.5, radius + wood_radius * 2, 2), radius, sun))
 end
 
@@ -60,7 +63,7 @@ local function make_table()
   local legs_height = 0.7
   local top_height = 0.09
   local surface_y = top_height + legs_height
-  local table_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local table_mat = Lambertian:from_albedo(Color.WHITE)
 
   local top = Translate:new(Cylinder:closed(1.25, top_height, table_mat, table_mat), Vec:new(x, surface_y - top_height / 2, z))
 
@@ -92,19 +95,19 @@ local function make_table()
   local meta_sphere_radius = jupiter_radius * 0.5
   local metal_sphere = Sphere:new(
       Point:new(x + half_map_size, surface_y + meta_sphere_radius, z - half_map_size - 0.05), meta_sphere_radius,
-      Metal:new(Color:new(1, 1, 1), 0))
+      Metal:new(Color.WHITE, 0))
 
   local lamp_cover_base_radius = 0.35
   local lamp_cover_apex_radius = lamp_cover_base_radius * 0.4
   local lamp_cover_height = 0.55
   local lamp_x = x
-  local lamp_cover_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local lamp_cover_mat = Lambertian:from_albedo(Color.WHITE)
   local bulb_radius = 0.22
   local lamp_cover = Translate:new(
       RotateX:new(Cone:frustum_open(lamp_cover_base_radius, lamp_cover_apex_radius, lamp_cover_height, lamp_cover_mat), 135),
-      Vec:new(lamp_x, surface_y + 1 + bulb_radius, z - map_size - bulb_radius))
-  local lamp_bulb_mat = DiffuseLight:from_emission(Color:new(1.0, 0.84, 0.66))
-  local lamp_bulb = Sphere:new(Point:new(lamp_x, surface_y + 1.01, z - map_size - 0.01), bulb_radius, lamp_bulb_mat)
+      Vec:new(lamp_x, surface_y + 1.1 + bulb_radius, z - map_size - bulb_radius - 0.1))
+  local lamp_bulb_mat = DiffuseLight:from_emission_intensified(Color:new(1.0, 0.84, 0.66), Color:from_scalar(2))
+  local lamp_bulb = Sphere:new(Point:new(lamp_x, surface_y + 1.11, z - map_size - 0.11), bulb_radius, lamp_bulb_mat)
 
   objects:add_all(top,
       back_left_leg, back_right_leg, front_left_leg, front_right_leg, map,
@@ -120,7 +123,7 @@ end
 
 local function make_stones()
   local radius = 5.5
-  local mat = Lambertian:from_albedo(Color:new(1, 1, 1))
+  local mat = Lambertian:from_albedo(Color.WHITE)
   local right = Sphere:new(Point:new(-2.5, radius, -4.5), radius, mat)
 
   local left_height = 5

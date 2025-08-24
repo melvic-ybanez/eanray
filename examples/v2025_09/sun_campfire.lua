@@ -135,7 +135,7 @@ local function setup_camera()
   camera.max_depth = 50
 
   camera.field_of_view = 20
-  camera.look_from = Point:new(13, 2, 3)
+  camera.look_from = Point:new(12.5, 2.5, 2.3)
   camera.look_at = Point.ZERO
   camera.vup = Vec:new(0, 1, 0)
 

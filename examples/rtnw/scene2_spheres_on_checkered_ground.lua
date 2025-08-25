@@ -12,7 +12,7 @@ local objects = ObjectList:new()
 local function make_ground()
   local radius = 1000
   local checker = engine.textures.Checker:from_colors(0.32, Color:new(.2, .3, .1), Color:new(.9, .9, .9))
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(checker))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:from_texture(checker))
   objects:add(ground)
 end
 

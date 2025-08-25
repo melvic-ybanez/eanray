@@ -7,8 +7,8 @@ local Sphere = engine.shapes.Sphere
 local pertext = engine.textures.Noise:new(4, engine.Color:new(0.5, 0.5, 0.5))
 local objects = engine.ObjectList:new()
 
-objects:add(Sphere:stationary(Point:new(0, -1000, 0), 1000, Lambertian:new(pertext)))
-objects:add(Sphere:stationary(Point:new(0, 2, 0), 2, Lambertian:new(pertext)))
+objects:add(Sphere:stationary(Point:new(0, -1000, 0), 1000, Lambertian:from_texture(pertext)))
+objects:add(Sphere:stationary(Point:new(0, 2, 0), 2, Lambertian:from_texture(pertext)))
 
 local cam = engine.Camera:new(400, 16 / 9)
 

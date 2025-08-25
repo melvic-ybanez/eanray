@@ -53,10 +53,10 @@ world:add(ConstantMedium:from_albedo(boundary, 0.2, Color:new(0.2, 0.4, 0.9)))
 boundary = Sphere:stationary(Point:new(0, 0, 0), 5000, Dielectric:new(1.5))
 world:add(ConstantMedium:from_albedo(boundary, .0001, Color:new(1, 1, 1)))
 
-local emat = Lambertian:new(engine.textures.Image:new("examples/images/earthmap.jpg"))
+local emat = Lambertian:from_texture(engine.textures.Image:new("examples/images/earthmap.jpg"))
 world:add(Sphere:stationary(Point:new(400, 200, 400), 100, emat))
 local pertext = engine.textures.Noise:new(0.2, Color:new(0.5, 0.5, 0.5))
-world:add(Sphere:stationary(Point:new(220, 280, 300), 80, Lambertian:new(pertext)))
+world:add(Sphere:stationary(Point:new(220, 280, 300), 80, Lambertian:from_texture(pertext)))
 
 local boxes2 = ObjectList:new()
 local white = Lambertian:from_albedo(Color:new(.73, .73, .73))

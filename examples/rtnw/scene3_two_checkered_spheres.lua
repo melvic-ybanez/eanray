@@ -13,8 +13,8 @@ local checker = engine.textures.Checker:from_colors(
 
 local objects = engine.ObjectList:new()
 
-objects:add(Sphere:stationary(Point:new(0, -10, 0), 10, Lambertian:new(checker)))
-objects:add(Sphere:stationary(Point:new(0, 10, 0), 10, Lambertian:new(checker)))
+objects:add(Sphere:stationary(Point:new(0, -10, 0), 10, Lambertian:from_texture(checker)))
+objects:add(Sphere:stationary(Point:new(0, 10, 0), 10, Lambertian:from_texture(checker)))
 
 local camera = final_scene.setup_camera(false)
 camera.defocus_angle = 0

@@ -9,8 +9,8 @@ local Sphere = engine.shapes.Sphere
 local pertext = engine.textures.Noise:new(4, Color:new(0.5, 0.5, 0.5))
 local objects = engine.ObjectList:new()
 
-objects:add(Sphere:stationary(Point:new(0, -1000, 0), 1000, Lambertian:new(pertext)))
-objects:add(Sphere:stationary(Point:new(0, 2, 0), 2, Lambertian:new(pertext)))
+objects:add(Sphere:stationary(Point:new(0, -1000, 0), 1000, Lambertian:from_texture(pertext)))
+objects:add(Sphere:stationary(Point:new(0, 2, 0), 2, Lambertian:from_texture(pertext)))
 
 local diff_light = engine.materials.DiffuseLight:from_emission(Color:new(4, 4, 4))
 objects:add(engine.shapes.Quad:new(Point:new(3, 1, -2), Vec:new(2, 0, 0), Vec:new(0, 2, 0), diff_light))

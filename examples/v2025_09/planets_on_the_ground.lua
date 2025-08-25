@@ -17,13 +17,14 @@ local planets_dir = "examples/images/planets/"
 
 local function make_ground()
   local radius = 1000
-  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius, Lambertian:new(textures.Noise:new(4, Color:new(0.5, 0.5, 0.5))))
+  local ground = Sphere:stationary(Point:new(0, -radius, 0), radius,
+      Lambertian:from_texture(textures.Noise:new(4, Color:new(0.5, 0.5, 0.5))))
   objects:add(ground)
 end
 
 local function make_big_spheres()
-  local moon = Lambertian:new(Image:new("examples/images/moon.jpg"))
-  local jupiter = Lambertian:new(Image:new(planets_dir .. "jupiter.jpg"))
+  local moon = Lambertian:from_texture(Image:new("examples/images/moon.jpg"))
+  local jupiter = Lambertian:from_texture(Image:new(planets_dir .. "jupiter.jpg"))
   objects:add(Sphere:stationary(Point:new(-4, 1, 0), 1.0, jupiter))
   objects:add(Sphere:stationary(Point:new(4, 1, 0), 1.0, moon))
 end
@@ -34,7 +35,8 @@ local function make_sun()
   local z = 2.5
   local sun = DiffuseLight:from_texture(Image:new("examples/images/sun.jpg"))
   objects:add(Sphere:stationary(Point:new(3, base_radius, z), base_radius, sun))
-  objects:add(Sphere:stationary(Point:new(3, base_radius * 2 + head_radius, z), head_radius, Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
+  objects:add(Sphere:stationary(Point:new(3, base_radius * 2 + head_radius, z), head_radius,
+      Metal:new(Color:new(0.7, 0.6, 0.5), 0)))
 end
 
 local function make_outer_light()
@@ -91,7 +93,8 @@ local function make_small_moving_sphere(center, horizontal)
 end
 
 local function make_small_planet(center, filename)
-  objects:add(Sphere:stationary(raise_center(center), small_radius, Lambertian:new(Image:new(planets_dir .. filename))))
+  objects:add(Sphere:stationary(raise_center(center),
+      small_radius, Lambertian:from_texture(Image:new(planets_dir .. filename))))
   make_base_cylinder(center)
 end
 

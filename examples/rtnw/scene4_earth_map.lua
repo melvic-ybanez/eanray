@@ -3,7 +3,7 @@ local common = require("examples.rt1w.common")
 local Point = engine.math.Point
 
 local earth_texture = engine.textures.Image:new("examples/images/earthmap.jpg")
-local earth_surface = engine.materials.Lambertian:new(earth_texture)
+local earth_surface = engine.materials.Lambertian:from_texture(earth_texture)
 local globe = engine.shapes.Sphere:stationary(Point:new(0, 0, 0), 2, earth_surface)
 
 local cam = engine.Camera:new(400, 16 / 9)

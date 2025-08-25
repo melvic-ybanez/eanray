@@ -79,18 +79,18 @@ local function make_table()
 
   local map_size = 1
   local half_map_size = map_size / 2
-  local map_mat = Lambertian:new(Image:new("examples/images/planets/earth.jpg"))
+  local map_mat = Lambertian:from_texture(Image:new("examples/images/planets/earth.jpg"))
   local map = Quad:new(Point:new(x - half_map_size, surface_y, z + half_map_size), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
 
   local jupiter_radius = 0.35
   local jupiter = Sphere:new(
       Point:new(x - half_map_size, surface_y + jupiter_radius, z - half_map_size), jupiter_radius,
-      Lambertian:new(Image:new("examples/images/planets/jupiter.jpg")))
+      Lambertian:from_texture(Image:new("examples/images/planets/jupiter.jpg")))
 
   local saturn_radius = jupiter_radius * 0.4
   local saturn = Sphere:new(
       Point:new(x - half_map_size, surface_y + saturn_radius, z + half_map_size), saturn_radius,
-      Lambertian:new(Image:new("examples/images/planets/saturn.jpg")))
+      Lambertian:from_texture(Image:new("examples/images/planets/saturn.jpg")))
 
   local meta_sphere_radius = jupiter_radius * 0.5
   local metal_sphere = Sphere:new(
@@ -116,7 +116,7 @@ end
 
 local function make_map_on_ground()
   local map_size = 1
-  local map_mat = Lambertian:new(Image:new("examples/images/planets/venus_surface.jpg"))
+  local map_mat = Lambertian:from_texture(Image:new("examples/images/planets/venus_surface.jpg"))
   local map = Quad:new(Point:new(4.5 - map_size / 2, 0, 1.5), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
   objects:add(map)
 end

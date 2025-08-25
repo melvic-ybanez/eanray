@@ -42,13 +42,12 @@ pub(crate) struct Lambertian {
 }
 
 impl Lambertian {
-    // TODO: Rename this to `from_texture`
-    pub(crate) fn new(texture: Texture) -> Self {
+    pub(crate) fn from_texture(texture: Texture) -> Self {
         Self { texture }
     }
 
     pub(crate) fn from_albedo(albedo: Color) -> Self {
-        Self::new(Texture::SolidColor(SolidColor::new(albedo)))
+        Self::from_texture(Texture::SolidColor(SolidColor::new(albedo)))
     }
 
     fn scatter<'a>(&self, ray_in: &Ray, rec: &'a HitRecord) -> (Ray, Color) {

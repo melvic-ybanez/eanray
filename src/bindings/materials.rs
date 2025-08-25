@@ -16,14 +16,14 @@ pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
 }
 
 fn new_lambertian_table(lua: &Lua) -> mlua::Result<Table> {
-    // TODO: should be `from_texture` instead of `new`
-    let table = lua::new_table(
-        lua,
+    let table = lua.create_table()?;
+    table.set(
+        "from_texture",
         lua.create_function(|lua, (_, texture): (Table, Value)| {
             let texture: Texture = lua.from_value(texture)?;
-            let lambertian = Material::Lambertian(Lambertian::new(texture));
+            let lambertian = Material::Lambertian(Lambertian::from_texture(texture));
             Ok(lua.to_value(&lambertian))
-        }),
+        })?,
     )?;
 
     table.set(

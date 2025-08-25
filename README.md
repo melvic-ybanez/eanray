@@ -1,4 +1,4 @@
-![Planets on the ground](https://github.com/user-attachments/assets/1730eb19-2679-4866-b18e-01c740fd1768)
+![Sun Campfire 6](https://github.com/user-attachments/assets/e69a6d3e-3032-43c6-9b3e-1851e6196622)
 
 # Eanray
 
@@ -45,14 +45,12 @@ Note: Instructions on running executables will be provided after the first relea
 ### Examples
 
 Here's the Lua script that describes the scene you probably already saw above in this
-document: [cover.lua](examples/v2025_09/cover.lua)
-
- Another example you can try is [this one](examples/v2025_09/sun_campfire.lua) (which might take longer to render due to 
- a higher SPP). Running the script yields:
-
-![Sun Campfire 6](https://github.com/user-attachments/assets/e69a6d3e-3032-43c6-9b3e-1851e6196622)
-
+document: [sun_campfire.lua](examples/v2025_09/sun_campfire.lua). 
 You can modify the script to lower the SPP for testing/debugging purposes.
+
+ Another example you can try is [this one](examples/v2025_09/planets_on_the_ground.lua):
+
+![Planets on the ground](https://github.com/user-attachments/assets/1730eb19-2679-4866-b18e-01c740fd1768)
 
 More examples can be found [here](examples), including some [scenes](examples/rt1w) from
 [Ray Tracing in One Weekend](https://raytracing.github.io) series.

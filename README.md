@@ -65,10 +65,7 @@ provided by the user should be written in [Lua](https://www.lua.org/)
 
 [Ray Tracing in One Weekend](https://raytracing.github.io/) series by Peter Shirley et al. 
 
-[Here](examples/rtnw/scene10_final_scene.lua) is the Lua script for Peter Shirley's ["Sweet Dreams"](https://raytracing.github.io/books/RayTracingTheNextWeek.html#ascenetestingallnewfeatures), the final image of the [second book](https://raytracing.github.io/books/RayTracingTheNextWeek.html). 
-If you feed that to Eanray, you'll get the image below:
-
-![sweet_dreams](https://github.com/user-attachments/assets/d34f8454-a3e0-4142-b636-547188c1ad2e)
+[The Ray Tracer Challenge](http://raytracerchallenge.com/) by Jamis Buck
 
 
 ## Assets

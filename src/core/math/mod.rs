@@ -5,6 +5,8 @@ pub(crate) mod interval;
 pub(crate) mod macros;
 pub(crate) mod vector;
 pub mod ray;
+mod matrix;
+mod tuple;
 
 pub(crate) type Real = f64;
 

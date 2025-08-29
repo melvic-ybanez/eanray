@@ -1,15 +1,13 @@
 use std::ops::{Index, IndexMut};
 use crate::core::math::Real;
 
-pub(crate) const SIZE: usize = 4;
+pub(crate) type Elems = [Real; 4];
 
-pub(crate) type Elems = [Real; SIZE];
-
-pub(crate) struct Tuple {
+pub(crate) struct Tuple4 {
     elems: Elems
 }
 
-impl Tuple {
+impl Tuple4 {
     pub(crate) fn from_elems(elems: Elems) -> Self {
         Self { elems }
     }
@@ -19,7 +17,7 @@ impl Tuple {
     }
 }
 
-impl Index<usize> for Tuple {
+impl Index<usize> for Tuple4 {
     type Output = Real;
 
     fn index(&self, index: usize) -> &Self::Output {
@@ -27,7 +25,7 @@ impl Index<usize> for Tuple {
     }
 }
 
-impl IndexMut<usize> for Tuple {
+impl IndexMut<usize> for Tuple4 {
     fn index_mut(&mut self, index: usize) -> &mut Self::Output {
         &mut self.elems[index]
     }

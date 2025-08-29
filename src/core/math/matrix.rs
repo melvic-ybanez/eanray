@@ -1,83 +1,169 @@
-use crate::core::math::tuple::{Elems, Tuple, SIZE};
+use crate::core::math::tuple::{Elems, Tuple4};
+use crate::core::math::Real;
 use std::default::Default;
 use std::ops::{Index, IndexMut, Mul};
 
-type Table = [Row; SIZE];
-type Row = Elems;
+type Table4x4 = [Real; 16];
+type Table3x3 = [Real; 9];
+type Table2x2 = [Real; 4];
 
-pub(crate) struct Matrix {
-    elems: Table,
+#[derive(Clone)]
+pub(crate) struct Matrix4x4 {
+    elems: Table4x4,
 }
 
-impl Matrix {
-    pub(crate) fn new(rows: Table) -> Self {
-        Self { elems: rows }
+impl Matrix4x4 {
+    //noinspection RsConstNaming
+    #[rustfmt::skip]
+    pub(crate) const IDENTITY_4x4: Matrix4x4 = Self {
+        elems: [
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            0.0, 0.0, 0.0, 1.0,
+        ],
+    };
+
+    pub(crate) fn new(elems: Table4x4) -> Self {
+        Self { elems }
     }
 
-    pub(crate) fn identify() -> Self {
-        Self::new([
-            [1.0, 0.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0, 0.0],
-            [0.0, 0.0, 0.0, 1.0],
-        ])
+    pub(crate) fn transpose(&self) -> Self {
+        let mut transposition: Matrix4x4 = self.clone();
+        matrix_loop(|row, col| {
+            transposition[(row, col)] = self[(col, row)];
+        });
+        transposition
+    }
+
+    /// Yields a new smaller matrix that does not contain the
+    /// row `row` and column `col`.
+    fn submatrix(&self, row: usize, col: usize) -> Table3x3 {
+        let mut table = Table3x3::default();
+        let mut i = 0;
+        matrix_loop(|r, c| {
+            if r != row && c != col {
+                table[i] = self[(row, col)];
+            }
+            i += 1;
+        });
+        table
     }
 }
 
-impl Default for Matrix {
+fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
+    let a = matrix_2x2[fold_index((0, 0), 3)];
+    let b = matrix_2x2[fold_index((0, 1), 3)];
+    let c = matrix_2x2[fold_index((1, 0), 3)];
+    let d = matrix_2x2[fold_index((1, 1), 3)];
+
+    a * d - b * c
+}
+
+fn submatrix_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Table2x2 {
+    let mut table = Table2x2::default();
+    let mut i = 0;
+
+    for index in 0..9 {
+        let (r, c) = unfold_index(index, 3);
+        if r != row && c != col {
+            table[i] = matrix_3x3[index];
+        }
+        i += 1;
+    }
+
+    table
+}
+
+/// The minor at (`row`, `col`) from a 3x3 matrix, defined as
+/// the determinant of the submatrix at (`row`, `col`).
+fn minor_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
+    determinant_2x2(submatrix_3x3(matrix_3x3, row, col))
+}
+
+fn cofactor_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
+    let minor = minor_3x3(matrix_3x3, row, col);
+    if row + col % 2 == 0 {
+        minor
+    } else {
+        -minor
+    }
+}
+
+fn fold_index(index: (usize, usize), size: usize) -> usize {
+    let (row, col) = index;
+    row * size + col
+}
+
+fn unfold_index(index: usize, size: usize) -> (usize, usize) {
+    (index / size, index % size)
+}
+
+impl Default for Matrix4x4 {
     fn default() -> Self {
         Self {
-            elems: Table::default(),
+            elems: Table4x4::default(),
         }
     }
 }
 
-impl PartialEq<Self> for Matrix {
+impl PartialEq<Self> for Matrix4x4 {
     fn eq(&self, other: &Self) -> bool {
         self.elems == other.elems
     }
 }
 
-impl Index<usize> for Matrix {
-    type Output = Row;
+impl Index<(usize, usize)> for Matrix4x4 {
+    type Output = Real;
 
-    fn index(&self, index: usize) -> &Self::Output {
-        &self.elems[index]
+    fn index(&self, index: (usize, usize)) -> &Self::Output {
+        &self.elems[fold_index(index, 4)]
     }
 }
 
-impl IndexMut<usize> for Matrix {
-    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
-        &mut self.elems[index]
+impl IndexMut<(usize, usize)> for Matrix4x4 {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.elems[fold_index(index, 4)]
     }
 }
 
-impl Mul<&Matrix> for &Matrix {
-    type Output = Matrix;
+impl Mul<&Matrix4x4> for &Matrix4x4 {
+    type Output = Matrix4x4;
 
-    fn mul(self, other: &Matrix) -> Self::Output {
-        let mut result: Matrix = Matrix::default();
-        for row in 0..SIZE {
-            for col in 0..SIZE {
-                for i in 0..SIZE {
-                    result[row][col] += self[row][i] * other[i][col];
-                }
+    fn mul(self, other: &Matrix4x4) -> Self::Output {
+        let mut result: Matrix4x4 = Matrix4x4::default();
+        matrix_loop(|row, col| {
+            // this is effectively a series of dot products
+            for i in 0..4 {
+                result[(row, col)] += self[(row, i)] * other[(i, col)];
             }
-        }
+        });
         result
     }
 }
 
-impl Mul<&Tuple> for &Matrix {
-    type Output = Tuple;
+impl Mul<&Tuple4> for &Matrix4x4 {
+    type Output = Tuple4;
 
-    fn mul(self, tuple: &Tuple) -> Self::Output {
+    fn mul(self, tuple: &Tuple4) -> Self::Output {
         let mut result = Elems::default();
-        for row in 0..SIZE {
-            for i in 0..SIZE {
-                result[row] += self[row][i] * tuple[i];
+        for row in 0..4 {
+            // like dot product, but for a single column
+            for i in 0..4 {
+                result[row] += self[(row, i)] * tuple[i];
             }
         }
-        Tuple::from_elems(result)
+        Tuple4::from_elems(result)
+    }
+}
+
+fn matrix_loop<F>(mut f: F)
+where
+    F: FnMut(usize, usize) -> (),
+{
+    for row in 0..4 {
+        for col in 0..4 {
+            f(row, col);
+        }
     }
 }

@@ -27,8 +27,16 @@ impl Matrix4x4 {
         ],
     };
 
-    pub(crate) fn new(elems: Table4x4) -> Self {
+    pub(crate) fn from_array(elems: Table4x4) -> Self {
         Self { elems }
+    }
+
+    pub(crate) fn from_2df(elems: [[Real; 4]; 4]) -> Self {
+        Self::from_array(elems.concat().try_into().unwrap())
+    }
+
+    pub(crate) fn from_2di(elems: [[u32; 4]; 4]) -> Self {
+        Self::from_2df(elems.map(|row| row.map(|f| f as Real)))
     }
 
     pub(crate) fn transpose(&self) -> Self {
@@ -46,16 +54,16 @@ impl Matrix4x4 {
         let mut i = 0;
         matrix_loop(|r, c| {
             if r != row && c != col {
-                table[i] = self[(row, col)];
+                table[i] = self[(r, c)];
+                i += 1;
             }
-            i += 1;
         });
         table
     }
 
     fn determinant(&self) -> Real {
         let mut det = 0.0;
-        for col in 0..3 {
+        for col in 0..4 {
             det += self[(0, col)] * self.cofactor(0, col);
         }
         det
@@ -68,7 +76,7 @@ impl Matrix4x4 {
     /// The minor at (`row`, `col`) of a 4x4 matrix, defined as
     /// the determinant of the submatrix at (`row`, `col`).
     fn minor(&self, row: usize, col: usize) -> Real {
-        determinant_3x3(self.submatrix(row, col))
+        matrix_3x3::determinant(self.submatrix(row, col))
     }
 
     fn invertible(&self) -> bool {
@@ -93,6 +101,41 @@ impl Matrix4x4 {
         }
     }
 }
+mod matrix_3x3 {
+    use super::*;
+
+    pub(super) fn determinant(matrix: Table3x3) -> Real {
+        let mut det = 0.0;
+        for col in 0..3 {
+            det += matrix[fold_index((0, col), 3)] * cofactor(matrix, 0, col);
+        }
+        det
+    }
+
+    fn submatrix(matrix_3x3: Table3x3, row: usize, col: usize) -> Table2x2 {
+        let mut table = Table2x2::default();
+        let mut i = 0;
+
+        for index in 0..9 {
+            let (r, c) = unfold_index(index, 3);
+            if r != row && c != col {
+                table[i] = matrix_3x3[index];
+            }
+            i += 1;
+        }
+
+        table
+    }
+
+    fn minor(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
+        determinant_2x2(submatrix(matrix_3x3, row, col))
+    }
+
+    fn cofactor(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
+        let minor = minor(matrix_3x3, row, col);
+        cofactor_from_minor(minor, row, col)
+    }
+}
 
 fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
     let a = matrix_2x2[fold_index((0, 0), 3)];
@@ -101,38 +144,6 @@ fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
     let d = matrix_2x2[fold_index((1, 1), 3)];
 
     a * d - b * c
-}
-
-fn determinant_3x3(matrix: Table3x3) -> Real {
-    let mut det = 0.0;
-    for col in 0..3 {
-        det += matrix[fold_index((0, col), 3)] * cofactor_3x3(matrix, 0, col);
-    }
-    det
-}
-
-fn submatrix_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Table2x2 {
-    let mut table = Table2x2::default();
-    let mut i = 0;
-
-    for index in 0..9 {
-        let (r, c) = unfold_index(index, 3);
-        if r != row && c != col {
-            table[i] = matrix_3x3[index];
-        }
-        i += 1;
-    }
-
-    table
-}
-
-fn minor_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
-    determinant_2x2(submatrix_3x3(matrix_3x3, row, col))
-}
-
-fn cofactor_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
-    let minor = minor_3x3(matrix_3x3, row, col);
-    cofactor_from_minor(minor, row, col)
 }
 
 fn cofactor_from_minor(minor: Real, row: usize, col: usize) -> Real {
@@ -214,5 +225,38 @@ where
         for col in 0..4 {
             f(row, col);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_submatrix() {
+        #[rustfmt::skip]
+        let matrix = Matrix4x4::from_2di([
+            [1, 2, 3, 4],
+            [0, 5, 6, 7],
+            [8, 9, 1, 2],
+            [3, 4, 5, 6]
+        ]);
+
+        #[rustfmt::skip]
+        let submatrix = [
+            [1, 2, 4],
+            [8, 9, 2],
+            [3, 4, 6]
+        ];
+
+        assert_eq!(matrix.submatrix(1, 2), to_table_3x3_f(submatrix));
+    }
+
+    fn to_table_3x3_f(table: [[u32; 3]; 3]) -> Table3x3 {
+        table
+            .map(|row| row.map(|f| f as Real))
+            .concat()
+            .try_into()
+            .unwrap()
     }
 }

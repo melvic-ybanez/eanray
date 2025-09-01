@@ -7,6 +7,9 @@ type Table4x4 = [Real; 16];
 type Table3x3 = [Real; 9];
 type Table2x2 = [Real; 4];
 
+/// Represents a 4x4 matrix, as the name suggests.
+/// Note that there is no need to generalize the matrix to have arbitrary size because
+/// most of the operations we care about here only involve 4x4 matrices.
 #[derive(Clone)]
 pub(crate) struct Matrix4x4 {
     elems: Table4x4,
@@ -49,6 +52,46 @@ impl Matrix4x4 {
         });
         table
     }
+
+    fn determinant(&self) -> Real {
+        let mut det = 0.0;
+        for col in 0..3 {
+            det += self[(0, col)] * self.cofactor(0, col);
+        }
+        det
+    }
+
+    fn cofactor(&self, row: usize, col: usize) -> Real {
+        cofactor_from_minor(self.minor(row, col), row, col)
+    }
+
+    /// The minor at (`row`, `col`) of a 4x4 matrix, defined as
+    /// the determinant of the submatrix at (`row`, `col`).
+    fn minor(&self, row: usize, col: usize) -> Real {
+        determinant_3x3(self.submatrix(row, col))
+    }
+
+    fn invertible(&self) -> bool {
+        self.determinant() != 0.0
+    }
+
+    fn inverse(&self) -> Option<Matrix4x4> {
+        if self.invertible() {
+            let mut matrix = Matrix4x4::default();
+            let determinant = self.determinant();
+
+            matrix_loop(|row, col| {
+                let c = self.cofactor(row, col);
+
+                // we are reversing `row` and `col` to transpose the matrix
+                matrix[(col, row)] = c / determinant;
+            });
+
+            Some(matrix)
+        } else {
+            None
+        }
+    }
 }
 
 fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
@@ -58,6 +101,14 @@ fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
     let d = matrix_2x2[fold_index((1, 1), 3)];
 
     a * d - b * c
+}
+
+fn determinant_3x3(matrix: Table3x3) -> Real {
+    let mut det = 0.0;
+    for col in 0..3 {
+        det += matrix[fold_index((0, col), 3)] * cofactor_3x3(matrix, 0, col);
+    }
+    det
 }
 
 fn submatrix_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Table2x2 {
@@ -75,19 +126,17 @@ fn submatrix_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Table2x2 {
     table
 }
 
-/// The minor at (`row`, `col`) from a 3x3 matrix, defined as
-/// the determinant of the submatrix at (`row`, `col`).
 fn minor_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
     determinant_2x2(submatrix_3x3(matrix_3x3, row, col))
 }
 
 fn cofactor_3x3(matrix_3x3: Table3x3, row: usize, col: usize) -> Real {
     let minor = minor_3x3(matrix_3x3, row, col);
-    if row + col % 2 == 0 {
-        minor
-    } else {
-        -minor
-    }
+    cofactor_from_minor(minor, row, col)
+}
+
+fn cofactor_from_minor(minor: Real, row: usize, col: usize) -> Real {
+    if row + col % 2 == 0 { minor } else { -minor }
 }
 
 fn fold_index(index: (usize, usize), size: usize) -> usize {

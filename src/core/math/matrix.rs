@@ -120,8 +120,8 @@ mod matrix_3x3 {
             let (r, c) = unfold_index(index, 3);
             if r != row && c != col {
                 table[i] = matrix_3x3[index];
+                i += 1;
             }
-            i += 1;
         }
 
         table
@@ -138,10 +138,10 @@ mod matrix_3x3 {
 }
 
 fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
-    let a = matrix_2x2[fold_index((0, 0), 3)];
-    let b = matrix_2x2[fold_index((0, 1), 3)];
-    let c = matrix_2x2[fold_index((1, 0), 3)];
-    let d = matrix_2x2[fold_index((1, 1), 3)];
+    let a = matrix_2x2[fold_index((0, 0), 2)];
+    let b = matrix_2x2[fold_index((0, 1), 2)];
+    let c = matrix_2x2[fold_index((1, 0), 2)];
+    let d = matrix_2x2[fold_index((1, 1), 2)];
 
     a * d - b * c
 }
@@ -250,6 +250,33 @@ mod tests {
         ];
 
         assert_eq!(matrix.submatrix(1, 2), to_table_3x3_f(submatrix));
+
+        #[rustfmt::skip]
+        let matrix = Matrix4x4::from_2di([
+            [4, 1, 0, 2],
+            [7, 5, 9, 3],
+            [6, 8, 2, 1],
+            [5, 0, 3, 4]
+        ]);
+
+        let submatrix = [
+            [5, 9, 3],
+            [8, 2, 1],
+            [0, 3, 4]
+        ];
+
+        assert_eq!(matrix.submatrix(0, 0), to_table_3x3_f(submatrix));
+    }
+
+    #[test]
+    fn test_determinant() {
+        let matrix = Matrix4x4::from_2di([
+            [1, 2, 3, 4],
+            [2, 0, 1, 5],
+            [3, 1, 2, 6],
+            [4, 2, 1, 0]
+        ]);
+        assert_eq!(matrix.determinant(), -3.0);
     }
 
     fn to_table_3x3_f(table: [[u32; 3]; 3]) -> Table3x3 {

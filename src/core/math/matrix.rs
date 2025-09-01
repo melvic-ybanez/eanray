@@ -234,7 +234,7 @@ mod tests {
 
     #[rustfmt::skip]
     #[test]
-    fn test_submatrix() {
+    fn test_submatrices() {
         let matrix = Matrix4x4::from_2di([
             [1, 2, 3, 4],
             [0, 5, 6, 7],
@@ -266,8 +266,9 @@ mod tests {
         assert_eq!(matrix.submatrix(0, 0), to_table_3x3_f(submatrix));
     }
 
+    #[rustfmt::skip]
     #[test]
-    fn test_determinant() {
+    fn test_determinants() {
         let matrix = Matrix4x4::from_2di([
             [1, 2, 3, 4],
             [2, 0, 1, 5],
@@ -291,6 +292,27 @@ mod tests {
             [3, 2, 4, 0]
         ]);
         assert_eq!(matrix.determinant(), -51.0);
+    }
+
+    #[test]
+    fn test_minors_and_cofactors() {
+        let matrix = Matrix4x4::from_2di([
+            [1, 2, 3, 4],
+            [0, 5, 6, 7],
+            [8, 9, 1, 2],
+            [3, 4, 5, 6]
+        ]);
+        assert_eq!(matrix.minor(0, 0), -9.0);
+        assert_eq!(matrix.cofactor(0, 0), -9.0);
+
+        let matrix = Matrix4x4::from_2di([
+            [2, 3, 4, 1],
+            [0, 5, 6, 7],
+            [8, 1, 2, 3],
+            [4, 5, 6, 7]
+        ]);
+        assert_eq!(matrix.minor(1, 2), -112.0);
+        assert_eq!(matrix.cofactor(1, 2), 112.0);
     }
 
     fn to_table_3x3_f(table: [[u32; 3]; 3]) -> Table3x3 {

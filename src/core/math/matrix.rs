@@ -232,9 +232,9 @@ where
 mod tests {
     use super::*;
 
+    #[rustfmt::skip]
     #[test]
     fn test_submatrix() {
-        #[rustfmt::skip]
         let matrix = Matrix4x4::from_2di([
             [1, 2, 3, 4],
             [0, 5, 6, 7],
@@ -242,7 +242,6 @@ mod tests {
             [3, 4, 5, 6]
         ]);
 
-        #[rustfmt::skip]
         let submatrix = [
             [1, 2, 4],
             [8, 9, 2],
@@ -251,7 +250,6 @@ mod tests {
 
         assert_eq!(matrix.submatrix(1, 2), to_table_3x3_f(submatrix));
 
-        #[rustfmt::skip]
         let matrix = Matrix4x4::from_2di([
             [4, 1, 0, 2],
             [7, 5, 9, 3],
@@ -277,6 +275,22 @@ mod tests {
             [4, 2, 1, 0]
         ]);
         assert_eq!(matrix.determinant(), -3.0);
+
+        let matrix = Matrix4x4::from_2di([
+            [2, 1, 0, 3],
+            [4, 5, 6, 1],
+            [7, 0, 8, 2],
+            [1, 2, 3, 4]
+        ]);
+        assert_eq!(matrix.determinant(), 450.0);
+
+        let matrix = Matrix4x4::from_2di([
+            [0, 2, 1, 3],
+            [4, 1, 5, 2],
+            [7, 0, 6, 1],
+            [3, 2, 4, 0]
+        ]);
+        assert_eq!(matrix.determinant(), -51.0);
     }
 
     fn to_table_3x3_f(table: [[u32; 3]; 3]) -> Table3x3 {

@@ -2,6 +2,8 @@ use crate::core::math::tuple::{Elems, Tuple4};
 use crate::core::math::Real;
 use std::default::Default;
 use std::ops::{Index, IndexMut, Mul};
+use crate::common::macros::impl_index;
+use crate::core::math;
 
 type Table4x4 = [Real; 16];
 type Table3x3 = [Real; 9];
@@ -10,7 +12,7 @@ type Table2x2 = [Real; 4];
 /// Represents a 4x4 matrix, as the name suggests.
 /// Note that there is no need to generalize the matrix to have arbitrary size because
 /// most of the operations we care about here only involve 4x4 matrices.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct Matrix4x4 {
     elems: Table4x4,
 }
@@ -147,7 +149,7 @@ fn determinant_2x2(matrix_2x2: Table2x2) -> Real {
 }
 
 fn cofactor_from_minor(minor: Real, row: usize, col: usize) -> Real {
-    if row + col % 2 == 0 { minor } else { -minor }
+    if (row + col) % 2 == 0 { minor } else { -minor }
 }
 
 fn fold_index(index: (usize, usize), size: usize) -> usize {
@@ -167,23 +169,30 @@ impl Default for Matrix4x4 {
     }
 }
 
-impl PartialEq<Self> for Matrix4x4 {
+impl PartialEq for Matrix4x4 {
     fn eq(&self, other: &Self) -> bool {
-        self.elems == other.elems
+        for i in 0..16 {
+            if (self[i] - other[i]).abs() >= 1e-6 {
+                return false
+            }
+        }
+        true
     }
 }
+
+impl_index!(usize, Matrix4x4, Real, elems);
 
 impl Index<(usize, usize)> for Matrix4x4 {
     type Output = Real;
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
-        &self.elems[fold_index(index, 4)]
+        &self[fold_index(index, 4)]
     }
 }
 
 impl IndexMut<(usize, usize)> for Matrix4x4 {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
-        &mut self.elems[fold_index(index, 4)]
+        &mut self[fold_index(index, 4)]
     }
 }
 
@@ -342,6 +351,24 @@ mod tests {
                 [0, 0, 3, 0],
                 [0, 0, 0, 0]
             ]).is_invertible()
+        )
+    }
+
+    #[test]
+    fn test_inverses() {
+        assert_eq!(
+            Matrix4x4::from_2di([
+                [1, 2, 0, 3],
+                [0, 1, 4, 2],
+                [5, 0, 1, 1],
+                [2, 3, 0, 1]
+            ]).inverse(),
+            Some(Matrix4x4::from_2df([
+                [-1.0 / 21.0, -1.0 / 21.0, 4.0 / 21.0, 1.0 / 21.0],
+                [-16.0 / 147.0, 5.0 / 147.0, -20.0 / 147.0, 58.0 / 147.0],
+                [-9.0 / 49.0, 12.0 / 49.0, 1.0 / 49.0, 2.0 / 49.0],
+                [62.0 / 147.0, -1.0 / 147.0, 4.0 / 147.0, -41.0 / 147.0]
+            ]))
         )
     }
 

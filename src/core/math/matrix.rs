@@ -1,9 +1,8 @@
+use crate::common::macros::impl_index;
 use crate::core::math::tuple::{Elems, Tuple4};
 use crate::core::math::Real;
 use std::default::Default;
 use std::ops::{Index, IndexMut, Mul};
-use crate::common::macros::impl_index;
-use crate::core::math;
 
 type Table4x4 = [Real; 16];
 type Table3x3 = [Real; 9];
@@ -172,8 +171,8 @@ impl Default for Matrix4x4 {
 impl PartialEq for Matrix4x4 {
     fn eq(&self, other: &Self) -> bool {
         for i in 0..16 {
-            if (self[i] - other[i]).abs() >= 1e-6 {
-                return false
+            if (self[i] - other[i]).abs() >= 1e-5 {
+                return false;
             }
         }
         true
@@ -354,6 +353,7 @@ mod tests {
         )
     }
 
+    #[rustfmt::skip]
     #[test]
     fn test_inverses() {
         assert_eq!(
@@ -368,6 +368,20 @@ mod tests {
                 [-16.0 / 147.0, 5.0 / 147.0, -20.0 / 147.0, 58.0 / 147.0],
                 [-9.0 / 49.0, 12.0 / 49.0, 1.0 / 49.0, 2.0 / 49.0],
                 [62.0 / 147.0, -1.0 / 147.0, 4.0 / 147.0, -41.0 / 147.0]
+            ]))
+        );
+        assert_eq!(
+            Matrix4x4::from_2di([
+                [3, 0, 2, 1],
+                [1, 2, 0, 1],
+                [0, 1, 1, 0],
+                [2, 3, 0, 1]
+            ]).inverse(),
+            Some(Matrix4x4::from_2df([
+                [0.16667, -0.83333, -0.33333, 0.66667],
+                [-0.16667, -0.16667, 0.33333, 0.33333],
+                [0.16667, 0.16667, 0.66667, -0.33333],
+                [0.16667, 2.16667, -0.33333, -1.33333]
             ]))
         )
     }

@@ -191,6 +191,14 @@ impl Mul<&Matrix> for &Matrix {
     }
 }
 
+impl Mul<Matrix> for Matrix {
+    type Output = Matrix;
+
+    fn mul(self, rhs: Matrix) -> Self::Output {
+        &self * &rhs
+    }
+}
+
 impl Mul<&Tuple4> for &Matrix {
     type Output = Tuple4;
 
@@ -209,6 +217,48 @@ impl Mul<&Tuple4> for &Matrix {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[rustfmt::skip]
+    #[test]
+    fn test_multiplications() {
+        let a = matrix_4x4::from_2di([
+            [1, 2, 3, 4],
+            [0, 1, 0, 1],
+            [2, 0, 1, 0],
+            [1, 1, 1, 1]
+        ]);
+        let b = matrix_4x4::from_2di([
+            [1, 0, 2, 1],
+            [0, 1, 0, 2],
+            [3, 0, 1, 0],
+            [2, 1, 0, 1]
+        ]);
+        assert_eq!(a * b, matrix_4x4::from_2di([
+            [18, 6, 5, 9],
+            [2, 2, 0, 3],
+            [5, 0, 5, 2],
+            [6, 2, 3, 4]
+        ]));
+
+        let a = matrix_4x4::from_2di([
+            [2, 1, 0, 3],
+            [1, 0, 1, 2],
+            [0, 2, 1, 1],
+            [3, 1, 0, 0]
+        ]);
+        let b = matrix_4x4::from_2di([
+            [1, 2, 0, 1],
+            [0, 1, 1, 0],
+            [2, 0, 1, 2],
+            [1, 1, 0, 1]
+        ]);
+        assert_eq!(a * b, matrix_4x4::from_2di([
+            [5, 8, 1, 5],
+            [5, 4, 1, 5],
+            [3, 3, 3, 3],
+            [3, 7, 1, 3]
+        ]))
+    }
 
     #[rustfmt::skip]
     #[test]

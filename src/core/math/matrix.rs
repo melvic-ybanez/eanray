@@ -79,12 +79,12 @@ impl Matrix4x4 {
         matrix_3x3::determinant(self.submatrix(row, col))
     }
 
-    fn invertible(&self) -> bool {
+    fn is_invertible(&self) -> bool {
         self.determinant() != 0.0
     }
 
     fn inverse(&self) -> Option<Matrix4x4> {
-        if self.invertible() {
+        if self.is_invertible() {
             let mut matrix = Matrix4x4::default();
             let determinant = self.determinant();
 
@@ -294,6 +294,7 @@ mod tests {
         assert_eq!(matrix.determinant(), -51.0);
     }
 
+    #[rustfmt::skip]
     #[test]
     fn test_minors_and_cofactors() {
         let matrix = Matrix4x4::from_2di([
@@ -313,6 +314,35 @@ mod tests {
         ]);
         assert_eq!(matrix.minor(1, 2), -112.0);
         assert_eq!(matrix.cofactor(1, 2), 112.0);
+    }
+
+    #[rustfmt::skip]
+    #[test]
+    fn test_invertibility() {
+        assert!(
+            !Matrix4x4::from_2di([
+                [1, 2, 3, 4],
+                [2, 4, 6, 8],
+                [1, 0, 1, 0],
+                [0, 1, 0, 1]
+            ]).is_invertible(),
+        );
+        assert!(
+            Matrix4x4::from_2di([
+                [2, 0, 1, 3],
+                [1, 2, 0, 4],
+                [0, 5, 1, 2],
+                [3, 1, 0, 1]
+            ]).is_invertible()
+        );
+        assert!(
+            !Matrix4x4::from_2di([
+                [1, 0, 0, 0],
+                [0, 2, 0, 0],
+                [0, 0, 3, 0],
+                [0, 0, 0, 0]
+            ]).is_invertible()
+        )
     }
 
     fn to_table_3x3_f(table: [[u32; 3]; 3]) -> Table3x3 {

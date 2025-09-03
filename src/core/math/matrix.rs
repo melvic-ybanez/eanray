@@ -409,6 +409,11 @@ mod tests {
     #[test]
     fn test_transposition() {
         assert_eq!(
+            matrix_4x4::identity().transpose(),
+            matrix_4x4::identity()
+        );
+
+        assert_eq!(
             matrix_4x4::from_2di([
                 [1, 2, 3, 4],
                 [0, 1, 0, 1],

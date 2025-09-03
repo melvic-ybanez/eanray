@@ -4,13 +4,14 @@ use std::ops::{Add, Mul};
 pub(crate) mod interval;
 pub(crate) mod macros;
 pub(crate) mod vector;
-pub mod ray;
+pub(crate) mod ray;
 mod matrix;
 mod tuple;
+pub(crate) mod point;
 
 pub(crate) type Real = f64;
 
-pub(crate) use vector::Point;
+pub(crate) use point::Point;
 pub(crate) use vector::Vec3D;
 pub(crate) use vector::VecLike;
 

@@ -1,20 +1,17 @@
 use crate::common::macros::impl_deref;
 use crate::core::math;
-use crate::core::math::macros::impl_from_for_vec_like;
-use crate::core::math::{Axis, Real};
+use crate::core::math::macros::impl_vec_like_conversion;
+use crate::core::math::{Axis, Point, Real};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
+use crate::core::math::point::PointKind;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct VecKind;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
-pub(crate) struct PointKind;
-
 pub(crate) type Vec3D = VecLike<VecKind>;
-pub(crate) type Point = VecLike<PointKind>;
 
 #[derive(Clone, Serialize, Deserialize, Debug)]
 pub(crate) struct VecLike<Kind> {
@@ -270,38 +267,6 @@ impl Sub<Vec3D> for &Vec3D {
     }
 }
 
-impl Sub for &Point {
-    type Output = Vec3D;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Vec3D::new(self.x - rhs.x, self.y - rhs.y, self.z - rhs.z)
-    }
-}
-
-impl Sub<Point> for &Point {
-    type Output = Vec3D;
-
-    fn sub(self, rhs: Point) -> Self::Output {
-        self - &rhs
-    }
-}
-
-impl Sub<&Point> for Point {
-    type Output = Vec3D;
-
-    fn sub(self, rhs: &Point) -> Self::Output {
-        &self - rhs
-    }
-}
-
-impl Sub<Point> for Point {
-    type Output = Vec3D;
-
-    fn sub(self, rhs: Point) -> Self::Output {
-        &self - rhs
-    }
-}
-
 impl Sub<Vec3D> for &Point {
     type Output = Point;
 
@@ -426,7 +391,7 @@ impl<K> IndexMut<&Axis> for VecLike<K> {
     }
 }
 
-impl_from_for_vec_like!(PointKind, VecKind);
-impl_from_for_vec_like!(VecKind, PointKind);
+impl_vec_like_conversion!(PointKind, VecKind);
+impl_vec_like_conversion!(VecKind, PointKind);
 
 impl_deref!(UnitVec3D, Vec3D);

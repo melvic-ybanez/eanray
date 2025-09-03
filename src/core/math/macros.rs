@@ -1,4 +1,4 @@
-macro_rules! impl_from_for_vec_like {
+macro_rules! impl_vec_like_conversion {
     ($from: ty, $to: ty) => {
         impl From<&$crate::core::math::VecLike<$from>> for $crate::core::math::VecLike<$to> {
             fn from(value: &$crate::core::math::VecLike<$from>) -> Self {
@@ -14,4 +14,4 @@ macro_rules! impl_from_for_vec_like {
     };
 }
 
-pub(crate) use impl_from_for_vec_like;
+pub(crate) use impl_vec_like_conversion;

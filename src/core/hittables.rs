@@ -3,17 +3,17 @@ use crate::core::bvh::BVH;
 use crate::core::materials::Material;
 use crate::core::math;
 use crate::core::math::interval::Interval;
-use crate::core::math::vector::{Point, UnitVec3D};
-use crate::core::math::{Real, Vec3D};
 use crate::core::math::ray::Ray;
+use crate::core::math::vector::UnitVec3D;
+use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::planars::Planar;
 use crate::core::shapes::plane::Plane;
 use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
 use crate::core::transforms::{Rotate, Translate};
+use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
-use crate::diagnostics::metrics;
 
 pub(crate) type ObjectRef = Arc<Hittable>;
 

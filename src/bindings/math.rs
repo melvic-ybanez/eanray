@@ -1,6 +1,7 @@
 use crate::bindings::lua;
 use crate::core::math;
-use crate::core::math::vector::{PointKind, VecKind};
+use crate::core::math::point::PointKind;
+use crate::core::math::vector::VecKind;
 use crate::core::math::{Real, VecLike};
 use mlua::{Lua, LuaSerdeExt, Table, UserData};
 

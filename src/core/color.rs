@@ -1,9 +1,10 @@
 use crate::core::math;
 use crate::core::math::Real;
 use crate::core::math::interval::Interval;
-use crate::core::math::macros::impl_from_for_vec_like;
-use crate::core::math::vector::{CanAdd, PointKind, VecKind, VecLike};
+use crate::core::math::macros::impl_vec_like_conversion;
+use crate::core::math::vector::{CanAdd, VecKind, VecLike};
 use serde::{Deserialize, Serialize};
+use crate::core::math::point::PointKind;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct ColorKind;
@@ -74,7 +75,7 @@ impl Color {
 
 impl CanAdd for ColorKind {}
 
-impl_from_for_vec_like!(VecKind, ColorKind);
-impl_from_for_vec_like!(ColorKind, VecKind);
-impl_from_for_vec_like!(PointKind, ColorKind);
-impl_from_for_vec_like!(ColorKind, PointKind);
+impl_vec_like_conversion!(VecKind, ColorKind);
+impl_vec_like_conversion!(ColorKind, VecKind);
+impl_vec_like_conversion!(PointKind, ColorKind);
+impl_vec_like_conversion!(ColorKind, PointKind);

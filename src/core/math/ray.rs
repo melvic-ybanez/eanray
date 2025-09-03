@@ -1,5 +1,5 @@
-use crate::core::math::Real;
-use crate::core::math::vector::{Point, Vec3D};
+use crate::core::math::vector::Vec3D;
+use crate::core::math::{Point, Real};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]

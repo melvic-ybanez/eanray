@@ -1,12 +1,14 @@
 use crate::common::macros::impl_deref;
 use crate::core::math;
-use crate::core::math::macros::impl_vec_like_conversion;
+use crate::core::math::macros::{define_tuple_conversion, impl_vec_like_conversion};
 use crate::core::math::{Axis, Point, Real};
 use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
+use crate::core::math::matrix::Matrix;
 use crate::core::math::point::PointKind;
+use crate::core::math::tuple::Tuple4;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct VecKind;
@@ -157,6 +159,8 @@ impl Vec3D {
             }
         }
     }
+
+    define_tuple_conversion!();
 }
 
 pub(crate) trait CanAdd {}

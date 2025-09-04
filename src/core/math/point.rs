@@ -1,11 +1,18 @@
 use std::ops::Sub;
 use serde::{Deserialize, Serialize};
 use crate::core::math::{Vec3D, VecLike};
+use crate::core::math::macros::define_tuple_conversion;
+use crate::core::math::matrix::Matrix;
+use crate::core::math::tuple::Tuple4;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct PointKind;
 
 pub(crate) type Point = VecLike<PointKind>;
+
+impl Point {
+    define_tuple_conversion!();
+}
 
 impl Sub for &Point {
     type Output = Vec3D;

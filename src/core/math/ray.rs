@@ -1,3 +1,4 @@
+use crate::core::math::matrix::Matrix;
 use crate::core::math::vector::Vec3D;
 use crate::core::math::{Point, Real};
 use serde::{Deserialize, Serialize};
@@ -24,6 +25,14 @@ impl Ray {
 
     pub(crate) fn at(&self, t: Real) -> Point {
         &self.origin + &self.direction * t
+    }
+
+    pub(crate) fn transform(&self, transformation: &Matrix) -> Self {
+        Self::new_timed(
+            self.origin.transform(transformation),
+            self.direction.transform(transformation),
+            self.time,
+        )
     }
 
     pub(crate) fn origin(&self) -> &Point {

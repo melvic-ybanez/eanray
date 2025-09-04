@@ -296,6 +296,22 @@ impl Mul<&Tuple4> for &Matrix {
     }
 }
 
+impl Mul<Tuple4> for &Matrix {
+    type Output = Tuple4;
+
+    fn mul(self, rhs: Tuple4) -> Self::Output {
+        self * &rhs
+    }
+}
+
+impl Mul<Tuple4> for Matrix {
+    type Output = Tuple4;
+
+    fn mul(self, rhs: Tuple4) -> Self::Output {
+        &self * &rhs
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -1,13 +1,13 @@
 use crate::core::aabb::AABB;
-use crate::core::hittables::HitRecord;
+use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::materials::Material;
 use crate::core::math::interval::Interval;
+use crate::core::math::ray::Ray;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::math::ray::Ray;
+use crate::core::shapes::quadrics::compute_root_from_discriminant;
 use crate::core::{hittables, math};
 use serde::{Deserialize, Serialize};
-use crate::core::shapes::quadrics::compute_root_from_discriminant;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Sphere {
@@ -15,8 +15,7 @@ pub(crate) struct Sphere {
     center: Ray,
 
     radius: Real,
-    mat: Material,
-    bbox: AABB,
+    pub(super) fields: HittableFields,
 }
 
 impl Sphere {
@@ -46,8 +45,7 @@ impl Sphere {
         let box1 = AABB::from_points(&this.center.at(0.0) - &r_vec, this.center.at(0.0) + &r_vec);
         let box2 = AABB::from_points(&this.center.at(1.0) - &r_vec, this.center.at(1.0) + &r_vec);
 
-        this.bbox = AABB::from_boxes(&box1, &box2);
-
+        this.fields.bounding_box = AABB::from_boxes(&box1, &box2);
         this
     }
 
@@ -61,8 +59,7 @@ impl Sphere {
         Self {
             center: Ray::new(center, direction),
             radius: Real::max(0.0, radius),
-            mat,
-            bbox,
+            fields: HittableFields::new(mat, bbox),
         }
     }
 
@@ -77,7 +74,7 @@ impl Sphere {
         if discriminant < 0.0 {
             None
         } else {
-           let root = compute_root_from_discriminant(discriminant, a, b, ray_t, |_| true);
+            let root = compute_root_from_discriminant(discriminant, a, b, ray_t, |_| true);
 
             root.map(|root| {
                 let p = ray.at(root);
@@ -88,7 +85,7 @@ impl Sphere {
                 HitRecord::new(
                     hittables::P(p),
                     hittables::Normal(face_normal),
-                    hittables::Mat(self.material()),
+                    hittables::Mat(&self.fields.material),
                     hittables::T(root),
                     hittables::FrontFace(front_face),
                     hittables::U(u),
@@ -108,13 +105,5 @@ impl Sphere {
         let u = phi / (2.0 * math::PI);
         let v = theta / math::PI;
         (u, v)
-    }
-
-    pub(crate) fn bounding_box(&self) -> &AABB {
-        &self.bbox
-    }
-
-    pub(super) fn material(&self) -> &Material {
-        &self.mat
     }
 }

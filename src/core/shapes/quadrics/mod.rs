@@ -30,9 +30,9 @@ impl Quadric {
 
     pub(crate) fn bounding_box(&self) -> &AABB {
         match self {
-            Self::Sphere(sphere) => sphere.bounding_box(),
-            Self::Cylinder(cylinder) => cylinder.bounding_box(),
-            Self::Cone(cone) => cone.bounding_box()
+            Self::Sphere(sphere) => &sphere.fields.bounding_box,
+            Self::Cylinder(cylinder) => &cylinder.fields.bounding_box,
+            Self::Cone(cone) => &cone.fields.bounding_box
         }
     }
 }

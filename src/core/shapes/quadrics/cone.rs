@@ -1,5 +1,5 @@
 use crate::core::aabb::AABB;
-use crate::core::hittables::HitRecord;
+use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
@@ -13,9 +13,8 @@ pub(crate) struct Cone {
     height: Real,
     base_radius: Real,
     apex_radius: Real,
-    mat: Material,
-    bbox: AABB,
     end_type: EndType,
+    pub(super) fields: HittableFields,
 }
 
 impl Cone {
@@ -30,8 +29,7 @@ impl Cone {
             base_radius,
             apex_radius,
             height,
-            mat: material,
-            bbox: AABB::empty(),
+            fields: HittableFields::from_mat(material),
             end_type,
         };
         this.compute_bounding_box();
@@ -81,10 +79,10 @@ impl Cone {
         let t0 = compute_root(a, b, c, ray_t, |root| self.check_y_range(ray, root));
         let (t, hit_type) = nearest_hit(t0, self.nearest_cap_hit(ray, ray_t));
         let compute_mat = || match hit_type {
-            HitType::Side => &self.mat,
+            HitType::Side => &self.fields.material,
             _ => match &self.end_type {
                 EndType::Closed { cap_mat } => &cap_mat,
-                _ => &self.mat,
+                _ => &self.fields.material,
             },
         };
 
@@ -133,14 +131,10 @@ impl Cone {
     }
 
     fn compute_bounding_box(&mut self) {
-        self.bbox = AABB::from_points(
+        self.fields.bounding_box = AABB::from_points(
             Point::new(-self.base_radius, 0.0, -self.base_radius),
             Point::new(self.base_radius, self.height, self.base_radius),
         )
-    }
-
-    pub(super) fn bounding_box(&self) -> &AABB {
-        &self.bbox
     }
 }
 

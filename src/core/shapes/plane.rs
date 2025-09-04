@@ -1,5 +1,5 @@
 use crate::core::aabb::AABB;
-use crate::core::hittables::HitRecord;
+use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
@@ -10,8 +10,7 @@ use serde::{Deserialize, Serialize};
 pub(crate) struct Plane {
     p0: Point,    // a point on the plane
     n: UnitVec3D, // plane normal
-    mat: Material,
-    bbox: AABB,
+    pub(in crate::core) fields: HittableFields,
 }
 
 impl Plane {
@@ -19,8 +18,7 @@ impl Plane {
         Self {
             p0,
             n,
-            mat,
-            bbox: AABB::universe(),
+            fields: HittableFields::new(mat, AABB::universe()),
         }
     }
 
@@ -44,7 +42,7 @@ impl Plane {
                 Some(HitRecord::new(
                     hittables::P(hit_point),
                     hittables::Normal(face_normal),
-                    hittables::Mat(&self.mat),
+                    hittables::Mat(&self.fields.material),
                     hittables::T(t),
                     hittables::FrontFace(front_face),
                     hittables::U(delta.dot(&u_vec)),
@@ -68,9 +66,5 @@ impl Plane {
         let u = self.n.cross(&temp).to_unit();
         let v = self.n.cross(&u).to_unit();
         (u.0, v.0)
-    }
-
-    pub(crate) fn bounding_box(&self) -> &AABB {
-        &self.bbox
     }
 }

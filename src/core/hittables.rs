@@ -130,11 +130,11 @@ impl Hittable {
             Self::Quadric(quadric) => quadric.bounding_box(),
             Self::List(list) => list.bounding_box(),
             Self::BVH(bvh) => bvh.bounding_box(),
-            Self::Planar(quad) => quad.bounding_box(),
+            Self::Planar(quad) => &quad.fields.bounding_box,
             Self::Translate(translate) => translate.bounding_box(),
             Self::Rotate(rotate_y) => rotate_y.bounding_box(),
             Self::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
-            Self::Plane(plane) => plane.bounding_box(),
+            Self::Plane(plane) => &plane.fields.bounding_box,
         }
     }
 
@@ -153,6 +153,25 @@ impl Hittable {
             Self::BVH(_) | Self::Translate(_) | Self::Rotate(_) | Self::List(_) => false,
             _ => true
         }
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub(crate) struct HittableFields {
+    pub(super) bounding_box: AABB,
+    pub(super) material: Material
+}
+
+impl HittableFields {
+    pub(crate) fn new(mat: Material, bbox: AABB) -> Self {
+        Self {
+            material: mat,
+            bounding_box: bbox
+        }
+    }
+
+    pub(crate) fn from_mat(mat: Material) -> Self {
+        Self::new(mat, AABB::empty())
     }
 }
 

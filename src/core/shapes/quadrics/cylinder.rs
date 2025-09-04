@@ -1,5 +1,5 @@
 use crate::core::aabb::AABB;
-use crate::core::hittables::HitRecord;
+use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
@@ -17,8 +17,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct Cylinder {
     radius: Real,
-    mat: Material,
-    bbox: AABB,
+    pub(super) fields: HittableFields,
     pub(super) kind: CylinderKind,
 }
 
@@ -26,8 +25,7 @@ impl Cylinder {
     fn new(radius: Real, material: Material, kind: CylinderKind) -> Self {
         let mut this = Self {
             radius,
-            mat: material,
-            bbox: AABB::empty(),
+            fields: HittableFields::from_mat(material),
             kind,
         };
         this.compute_bounding_box();
@@ -84,13 +82,13 @@ impl Cylinder {
 
         let (t, hit_type) = cone::nearest_hit(t0, self.nearest_cap_hit(ray, ray_t));
         let compute_mat = || match hit_type {
-            HitType::Side => &self.mat,
+            HitType::Side => &self.fields.material,
             _ => match &self.kind {
                 CylinderKind::Finite {
                     kind: FiniteType::Closed { cap_mat },
                     ..
                 } => &cap_mat,
-                _ => &self.mat,
+                _ => &self.fields.material,
             },
         };
 
@@ -113,17 +111,13 @@ impl Cylinder {
         }
     }
 
-    pub(crate) fn material(&self) -> &Material {
-        &self.mat
-    }
-
     fn compute_bounding_box(&mut self) {
         let (min_y, max_y) = match self.kind {
             CylinderKind::Finite { half, .. } => (-half, half),
             CylinderKind::Infinite => (-math::INFINITY, math::INFINITY),
         };
 
-        self.bbox = AABB::from_points(
+        self.fields.bounding_box = AABB::from_points(
             Point::new(-self.radius, min_y, -self.radius),
             Point::new(self.radius, max_y, self.radius),
         )
@@ -158,10 +152,6 @@ impl Cylinder {
 
     fn hit_cap(&self, ray: &Ray, ray_t: &Interval, height: Real) -> Option<Real> {
         point_within_disk(ray, ray_t, height, self.radius)
-    }
-
-    pub(crate) fn bounding_box(&self) -> &AABB {
-        &self.bbox
     }
 }
 

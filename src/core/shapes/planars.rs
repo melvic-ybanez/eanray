@@ -1,5 +1,5 @@
 use crate::core::aabb::AABB;
-use crate::core::hittables::HitRecord;
+use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
@@ -20,11 +20,10 @@ pub(crate) struct Planar {
     q: Point,
     u: Vec3D,
     v: Vec3D,
-    mat: Material,
-    bbox: AABB,
     normal: UnitVec3D,
     d: Real, // this is the D in Ax + By + Cz = D
     w: Vec3D,
+    pub(in crate::core) fields: HittableFields,
     kind: Kind,
 }
 
@@ -50,11 +49,10 @@ impl Planar {
             q,
             u,
             v,
-            mat,
-            bbox: AABB::empty(),
             normal,
             d,
             w,
+            fields: HittableFields::from_mat(mat),
             kind,
         };
         this.compute_bounding_box();
@@ -64,11 +62,7 @@ impl Planar {
     fn compute_bounding_box(&mut self) {
         let bbox_diagonal1 = AABB::from_points(self.q.clone(), &self.q + &self.u + &self.v);
         let bbox_diagonal2 = AABB::from_points(&self.q + &self.u, &self.q + &self.v);
-        self.bbox = AABB::from_boxes(&bbox_diagonal1, &bbox_diagonal2);
-    }
-
-    pub(crate) fn bounding_box(&self) -> &AABB {
-        &self.bbox
+        self.fields.bounding_box = AABB::from_boxes(&bbox_diagonal1, &bbox_diagonal2);
     }
 
     pub(crate) fn hit(&self, ray: &Ray, ray_t: &Interval) -> Option<HitRecord> {
@@ -95,7 +89,7 @@ impl Planar {
             Some(HitRecord::new(
                 hittables::P(intersection),
                 hittables::Normal(face_normal),
-                hittables::Mat(&self.mat),
+                hittables::Mat(&self.fields.material),
                 hittables::T(t),
                 hittables::FrontFace(front_face),
                 hittables::U(alpha),

@@ -10,8 +10,6 @@ local Sphere = engine.shapes.Sphere
 local ConstantMedium = engine.shapes.ConstantMedium
 local Point = engine.math.Point
 local Vec = engine.math.Vec
-local Translate = engine.transforms.Translate
-local RotateY = engine.transforms.RotateY
 
 local boxes1 = ObjectList:new()
 local ground = Lambertian:from_albedo(Color:new(0.48, 0.83, 0.53))
@@ -67,7 +65,7 @@ for j = 0, ns - 1 do
   boxes2:add(Sphere:stationary(Point.random_range(0, 165), 10, white))
 end
 
-world:add(Translate:new(RotateY:new(engine.BVH:new(boxes2), 15), Vec:new(-100, 270, 395)))
+world:add(engine.BVH:new(boxes2):rotate_y(15):translate(-100, 270, 395))
 
 -- change the width to 400, the spp to 250 and the max depth to 4, if you want to render a
 -- lower quality image

@@ -1,12 +1,15 @@
 use crate::core::aabb::AABB;
-use crate::core::hittables::{FrontFace, HitRecord, Mat, Normal, ObjectRef, P, T, U, V};
+use crate::core::hittables::{FrontFace, HitPoint, HitRecord, Mat, Normal, ObjectRef, T, U, V};
 use crate::core::materials::Isotropic;
 use crate::core::math::interval::Interval;
+use crate::core::math::matrix::Matrix;
+use crate::core::transform::Transform;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Real, Vec3D};
 use crate::core::textures::Texture;
-use crate::core::{Color, Material, Ray, math};
+use crate::core::{math, Color, Material, Ray};
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct ConstantMedium {
@@ -69,7 +72,7 @@ impl ConstantMedium {
             } else {
                 let t = rec1.t + hit_distance / ray_length;
                 Some(HitRecord::new(
-                    P(ray.at(t)),
+                    HitPoint(ray.at(t)),
                     Normal(UnitVec3D(Vec3D::new(1.0, 0.0, 0.0))),
                     Mat(&self.phase_function),
                     T(t),

@@ -6,7 +6,6 @@ local Sphere = engine.shapes.Sphere
 local ObjectList = engine.ObjectList
 local DiffuseLight = engine.materials.DiffuseLight
 local Cylinder = engine.shapes.Cylinder
-local Translate = engine.transforms.Translate
 
 local objects = ObjectList:new()
 
@@ -29,8 +28,7 @@ local function make_cylinder_group()
       cylinder = Cylinder:closed(radius, height, side_mat, side_mat)
     end
 
-    local translate = Translate:new(cylinder, Vec:new(4, height / 2, 0))
-    objects:add(translate)
+    objects:add(cylinder:translate(4, height / 2, 0))
   end
 end
 
@@ -51,7 +49,7 @@ local function make_capped_cylinder(x, z)
   local radius = 0.8
   local side_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
   local cylinder = Cylinder:closed(radius, height, side_mat, side_mat)
-  local translate = Translate:new(cylinder, Vec:new(x, height / 2, z))
+  local translate = cylinder:translate(x, height / 2, z)
   objects:add(translate)
 end
 

@@ -3,7 +3,7 @@ use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{Material, Ray, hittables, math};
+use crate::core::{hittables, math, Material, Ray};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -87,9 +87,9 @@ impl Planar {
             let (front_face, face_normal) = HitRecord::face_normal(&ray, self.normal.clone());
 
             Some(HitRecord::new(
-                hittables::P(intersection),
+                hittables::HitPoint(intersection),
                 hittables::Normal(face_normal),
-                hittables::Mat(&self.fields.material),
+                hittables::Mat(self.fields.material()),
                 hittables::T(t),
                 hittables::FrontFace(front_face),
                 hittables::U(alpha),

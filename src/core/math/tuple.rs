@@ -14,7 +14,7 @@ impl Tuple4 {
         }
     }
 
-    pub(crate) fn from_elems(elems: Elems) -> Self {
+    pub(crate) fn from_vec(elems: Elems) -> Self {
         Self { elems }
     }
 

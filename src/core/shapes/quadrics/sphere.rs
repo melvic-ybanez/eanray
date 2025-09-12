@@ -83,9 +83,9 @@ impl Sphere {
                 let (front_face, face_normal) = HitRecord::face_normal(&ray, outward_normal);
 
                 HitRecord::new(
-                    hittables::P(p),
+                    hittables::HitPoint(p),
                     hittables::Normal(face_normal),
-                    hittables::Mat(&self.fields.material),
+                    hittables::Mat(self.fields.material()),
                     hittables::T(root),
                     hittables::FrontFace(front_face),
                     hittables::U(u),

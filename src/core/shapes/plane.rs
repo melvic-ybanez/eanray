@@ -2,8 +2,8 @@ use crate::core::aabb::AABB;
 use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
-use crate::core::math::{Point, Real, Vec3D};
-use crate::core::{Material, Ray, hittables};
+use crate::core::math::{Point, Vec3D};
+use crate::core::{hittables, Material, Ray};
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -40,9 +40,9 @@ impl Plane {
                 let delta = &hit_point - &self.p0;
 
                 Some(HitRecord::new(
-                    hittables::P(hit_point),
+                    hittables::HitPoint(hit_point),
                     hittables::Normal(face_normal),
-                    hittables::Mat(&self.fields.material),
+                    hittables::Mat(self.fields.material()),
                     hittables::T(t),
                     hittables::FrontFace(front_face),
                     hittables::U(delta.dot(&u_vec)),

@@ -5,3 +5,5 @@ pub(crate) mod schemas;
 mod shapes;
 mod textures;
 mod transforms;
+mod macros;
+mod hittables;

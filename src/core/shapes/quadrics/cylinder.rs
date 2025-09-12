@@ -82,13 +82,13 @@ impl Cylinder {
 
         let (t, hit_type) = cone::nearest_hit(t0, self.nearest_cap_hit(ray, ray_t));
         let compute_mat = || match hit_type {
-            HitType::Side => &self.fields.material,
+            HitType::Side => self.fields.material(),
             _ => match &self.kind {
                 CylinderKind::Finite {
                     kind: FiniteType::Closed { cap_mat },
                     ..
                 } => &cap_mat,
-                _ => &self.fields.material,
+                _ => self.fields.material(),
             },
         };
 

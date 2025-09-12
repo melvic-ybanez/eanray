@@ -1,7 +1,6 @@
-use crate::core::aabb::AABB;
-use crate::core::hittables::HitRecord;
+use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
-use crate::core::math::Real;
+use crate::core::math::{Matrix, Real};
 use crate::core::shapes::quadrics::cone::Cone;
 use crate::core::shapes::Sphere;
 use crate::core::Ray;
@@ -28,11 +27,19 @@ impl Quadric {
         }
     }
 
-    pub(crate) fn bounding_box(&self) -> &AABB {
+    pub(crate) fn fields(&self) -> &HittableFields {
         match self {
-            Self::Sphere(sphere) => &sphere.fields.bounding_box,
-            Self::Cylinder(cylinder) => &cylinder.fields.bounding_box,
-            Self::Cone(cone) => &cone.fields.bounding_box
+            Self::Sphere(sphere) => &sphere.fields,
+            Self::Cylinder(cylinder) => &cylinder.fields,
+            Self::Cone(cone) => &cone.fields,
+        }
+    }
+
+    pub(crate) fn fields_mut(&mut self) -> &mut HittableFields {
+        match self {
+            Self::Sphere(sphere) => &mut sphere.fields,
+            Self::Cylinder(cylinder) => &mut cylinder.fields,
+            Self::Cone(cone) => &mut cone.fields,
         }
     }
 }

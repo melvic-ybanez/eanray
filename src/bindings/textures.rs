@@ -1,9 +1,9 @@
 use crate::bindings::lua;
-use crate::bindings::lua::from_user_data;
 use crate::core::Color;
 use crate::core::math::Real;
 use crate::core::textures::{Checker, ImageTexture, NoiseTexture, Texture};
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table};
+use crate::bindings::macros::from_user_data;
 
 pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     let textures = lua.create_table()?;

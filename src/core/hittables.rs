@@ -10,7 +10,7 @@ use crate::core::shapes::planars::Planar;
 use crate::core::shapes::plane::Plane;
 use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
-use crate::core::transforms::{Rotate, Translate};
+use crate::core::transform::Transform;
 use crate::diagnostics::metrics;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
@@ -18,7 +18,7 @@ use std::sync::Arc;
 pub(crate) type ObjectRef = Arc<Hittable>;
 
 pub(crate) struct HitRecord<'a> {
-    pub(crate) p: Point,
+    pub(crate) hit_point: Point,
     pub(crate) normal: UnitVec3D,
     mat: &'a Material,
     pub(crate) t: Real,
@@ -29,7 +29,7 @@ pub(crate) struct HitRecord<'a> {
 
 impl<'a> HitRecord<'a> {
     pub(crate) fn new(
-        p: P,
+        hit_point: HitPoint,
         normal: Normal,
         mat: Mat<'a>,
         t: T,
@@ -38,7 +38,7 @@ impl<'a> HitRecord<'a> {
         v: V,
     ) -> HitRecord {
         HitRecord {
-            p: p.0,
+            hit_point: hit_point.0,
             normal: normal.0,
             mat: mat.0,
             t: t.0,
@@ -59,7 +59,7 @@ impl<'a> HitRecord<'a> {
     }
 
     pub(crate) fn p(&self) -> &Point {
-        &self.p
+        &self.hit_point
     }
 
     pub(crate) fn normal(&self) -> &UnitVec3D {
@@ -87,7 +87,7 @@ impl<'a> HitRecord<'a> {
     }
 }
 
-pub(crate) struct P(pub(crate) Point);
+pub(crate) struct HitPoint(pub(crate) Point);
 pub(crate) struct Normal(pub(crate) UnitVec3D);
 pub(crate) struct Mat<'a>(pub(crate) &'a Material);
 pub(crate) struct T(pub(crate) Real);
@@ -101,10 +101,9 @@ pub(crate) enum Hittable {
     List(HittableList),
     BVH(BVH),
     Planar(Planar),
-    Translate(Translate),
-    Rotate(Rotate),
     ConstantMedium(ConstantMedium),
     Plane(Plane),
+    Transform(Transform),
 }
 
 impl Hittable {
@@ -114,27 +113,49 @@ impl Hittable {
         }
 
         match self {
-            Self::Quadric(quadric) => quadric.hit(ray, ray_t),
-            Self::List(list) => list.hit(ray, ray_t),
-            Self::BVH(bvh) => bvh.hit(ray, ray_t),
-            Self::Planar(quad) => quad.hit(ray, ray_t),
-            Self::Translate(translate) => translate.hit(ray, ray_t),
-            Self::Rotate(rotate_y) => rotate_y.hit(ray, ray_t),
-            Self::ConstantMedium(constant_medium) => constant_medium.hit(ray, ray_t),
-            Self::Plane(plane) => plane.hit(ray, ray_t),
+            Self::Transform(transform) => {
+                let transformed_ray = ray.transform(transform.inverse());
+
+                if let Some(mut hit_record) = transform
+                    .object
+                    .hit_with_transformed_ray(&transformed_ray, ray_t)
+                {
+                    hit_record.hit_point = hit_record.hit_point.transform(transform.forward());
+                    hit_record.normal = hit_record.normal.transform(transform.normal()).to_unit();
+                    Some(hit_record)
+                } else {
+                    None
+                }
+            }
+            _ => self.hit_with_transformed_ray(ray, ray_t),
+        }
+    }
+
+    fn hit_with_transformed_ray(
+        &self,
+        transformed_ray: &Ray,
+        ray_t: &Interval,
+    ) -> Option<HitRecord> {
+        match self {
+            Self::Quadric(quadric) => quadric.hit(transformed_ray, ray_t),
+            Self::List(list) => list.hit(transformed_ray, ray_t),
+            Self::BVH(bvh) => bvh.hit(transformed_ray, ray_t),
+            Self::Planar(planar) => planar.hit(transformed_ray, ray_t),
+            Self::ConstantMedium(constant_medium) => constant_medium.hit(transformed_ray, ray_t),
+            Self::Plane(plane) => plane.hit(transformed_ray, ray_t),
+            _ => None,
         }
     }
 
     pub(crate) fn bounding_box(&self) -> &AABB {
         match self {
-            Self::Quadric(quadric) => quadric.bounding_box(),
+            Self::Quadric(quadric) => quadric.fields().bounding_box(),
             Self::List(list) => list.bounding_box(),
             Self::BVH(bvh) => bvh.bounding_box(),
-            Self::Planar(quad) => &quad.fields.bounding_box,
-            Self::Translate(translate) => translate.bounding_box(),
-            Self::Rotate(rotate_y) => rotate_y.bounding_box(),
+            Self::Planar(planar) => &planar.fields.bounding_box,
             Self::ConstantMedium(constant_medium) => constant_medium.bounding_box(),
             Self::Plane(plane) => &plane.fields.bounding_box,
+            Self::Transform(transform) => transform.bounding_box(),
         }
     }
 
@@ -150,28 +171,36 @@ impl Hittable {
 
     pub(crate) fn has_geometry(&self) -> bool {
         match self {
-            Self::BVH(_) | Self::Translate(_) | Self::Rotate(_) | Self::List(_) => false,
-            _ => true
+            Self::BVH(_) | Self::List(_) => false,
+            _ => true,
         }
     }
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct HittableFields {
-    pub(super) bounding_box: AABB,
-    pub(super) material: Material
+    pub(crate) bounding_box: AABB,
+    mat: Material,
 }
 
 impl HittableFields {
-    pub(crate) fn new(mat: Material, bbox: AABB) -> Self {
+    pub(crate) fn new(mat: Material, bounding_box: AABB) -> Self {
         Self {
-            material: mat,
-            bounding_box: bbox
+            mat,
+            bounding_box,
         }
     }
 
     pub(crate) fn from_mat(mat: Material) -> Self {
         Self::new(mat, AABB::empty())
+    }
+
+    pub(crate) fn material(&self) -> &Material {
+        &self.mat
+    }
+
+    pub(crate) fn bounding_box(&self) -> &AABB {
+        &self.bounding_box
     }
 }
 

@@ -7,7 +7,7 @@ pub(crate) mod materials;
 pub(crate) mod math;
 pub(crate) mod shapes;
 pub(crate) mod textures;
-pub(crate) mod transforms;
+pub(crate) mod transform;
 
 pub(crate) use camera::Camera;
 pub(crate) use color::Color;

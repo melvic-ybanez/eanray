@@ -1,5 +1,5 @@
 use crate::bindings::lua;
-use crate::bindings::lua::from_user_data;
+use crate::bindings::macros::from_user_data;
 use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambertian, Metal};
 use crate::core::math::Real;
 use crate::core::textures::Texture;

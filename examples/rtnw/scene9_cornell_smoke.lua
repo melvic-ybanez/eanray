@@ -25,12 +25,10 @@ objects:add_all(
 )
 
 local box1 = Box:new(Point:new(0, 0, 0), Point:new(165, 330, 165), white)
-box1 = RotateY:new(box1, 15)
-box1 = Translate:new(box1, Vec:new(265, 0, 295))
+    :transform(RotateY:new(15):and_then(Translate:new(265, 0, 295)))
 
 local box2 = Box:new(Point:new(0, 0, 0), Point:new(165, 165, 165), white)
-box2 = RotateY:new(box2, -18)
-box2 = Translate:new(box2, Vec:new(130, 0, 65))
+    :transform(RotateY:new(-18):and_then(Translate:new(130, 0, 65)))
 
 objects:add_all(
     ConstantMedium:from_albedo(box1, 0.01, Color:new(0, 0, 0)),

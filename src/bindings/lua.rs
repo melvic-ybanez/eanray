@@ -1,4 +1,5 @@
 use crate::bindings;
+use crate::bindings::macros::from_user_data;
 use crate::bindings::schemas::{CameraSchema, SceneSchema};
 use crate::bindings::{materials, shapes, textures, transforms};
 use crate::core::camera::Background;
@@ -7,14 +8,6 @@ use crate::core::math::Real;
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, Color, Hittable, HittableList};
 use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, Value};
-
-macro_rules! from_user_data {
-    ($name: ident, $t: ty) => {
-        $name.borrow::<$t>()?.clone()
-    };
-}
-
-pub(in crate::bindings) use from_user_data;
 
 pub(crate) fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;
@@ -62,15 +55,13 @@ fn new_object_list_table(lua: &Lua) -> Result<Table> {
         lua.create_function(|lua, this: Table| {
             let object_list_table = lua.create_table()?;
 
-            object_list_table.set_metatable(Some(this.clone()));
+            object_list_table.set_metatable(Some(this.clone()))?;
             this.set("__index", this.clone())?;
 
             object_list_table.set(
                 "add",
-                lua.create_function(|lua, (this, object): (Table, Value)| {
-                    // Let's do a round-trip conversion for now to validate the structure.
-                    // This may not be the cleanest solution.
-                    let hittable: Hittable = lua.from_value(object)?;
+                lua.create_function(|lua, (this, object): (Table, AnyUserData)| {
+                    let hittable: Hittable = from_user_data!(object, Hittable);
 
                     let next_index = this.raw_len() + 1;
                     this.set(next_index, lua.to_value(&hittable)?)
@@ -87,7 +78,7 @@ fn new_bvh_table(lua: &Lua) -> Result<Table> {
         lua.create_function(|lua, (_, h_list): (Table, Value)| {
             let hittable_list: HittableList = HittableList::from_vec(lua.from_value(h_list)?);
             let bvh = bvh::BVH::from_list(hittable_list);
-            Ok(lua.to_value(&BVH(bvh)))
+            Ok(BVH(bvh))
         }),
     )
 }

@@ -1,6 +1,6 @@
-use crate::core::Hittable;
 use crate::core::bvh::BVH;
 use crate::core::hittables::ObjectRef;
+use crate::core::Hittable;
 use crate::diagnostics::macros::define_flag;
 use std::fmt::Display;
 
@@ -37,9 +37,8 @@ impl BVHStats {
         match hittable {
             Hittable::Quadric(_)
             | Hittable::Planar(_)
-            | Hittable::Translate(_)
-            | Hittable::Rotate(_)
-            | Hittable::ConstantMedium(_) => {
+            | Hittable::ConstantMedium(_)
+            | Hittable::Transform(_) => {
                 self.leaf_count += 1;
                 if depth > self.max_depth {
                     self.max_depth = depth;

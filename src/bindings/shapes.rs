@@ -1,5 +1,5 @@
 use crate::bindings::lua;
-use crate::bindings::lua::from_user_data;
+use crate::bindings::macros::from_user_data;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::planars::{Planar, Quad, Triangle};
 use crate::core::shapes::plane::Plane;
@@ -10,6 +10,7 @@ use crate::core::shapes::volume::ConstantMedium;
 use crate::core::shapes::{planars, Sphere};
 use crate::core::{Color, Hittable, HittableList, Material};
 use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
+use std::sync::Arc;
 
 pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     let shapes = lua.create_table()?;
@@ -38,7 +39,7 @@ fn new_sphere_table(lua: &Lua) -> mlua::Result<Table> {
             let sphere = Hittable::Quadric(Quadric::Sphere(Sphere::stationary(
                 center, radius, material,
             )));
-            Ok(lua.to_value(&sphere))
+            Ok(sphere)
         },
     );
     let table = lua::new_table(lua, new_function.clone())?;
@@ -60,7 +61,7 @@ fn new_sphere_table(lua: &Lua) -> mlua::Result<Table> {
                 let sphere = Hittable::Quadric(Quadric::Sphere(Sphere::moving(
                     center1, center2, radius, material,
                 )));
-                Ok(lua.to_value(&sphere))
+                Ok(sphere)
             },
         )?,
     )?;
@@ -76,8 +77,8 @@ fn new_planar_table(lua: &Lua, kind: planars::Kind) -> mlua::Result<Table> {
                 let u = from_user_data!(u, Vec3D);
                 let v = from_user_data!(v, Vec3D);
                 let mat: Material = lua.from_value(mat)?;
-                let quad = Hittable::Planar(Planar::new(q, u, v, mat, kind.clone()));
-                Ok(lua.to_value(&quad))
+                let planar = Hittable::Planar(Planar::new(q, u, v, mat, kind.clone()));
+                Ok(planar)
             },
         ),
     )
@@ -116,7 +117,7 @@ fn new_box_table(lua: &Lua) -> mlua::Result<Table> {
                 let b = from_user_data!(b, Point);
                 let mat = lua.from_value(mat)?;
                 let hl_box = Hittable::List(HittableList::make_box(a, b, mat));
-                Ok(lua.to_value(&hl_box))
+                Ok(hl_box)
             },
         ),
     )
@@ -143,26 +144,30 @@ fn new_constant_medium_table(lua: &Lua) -> mlua::Result<Table> {
     table.set(
         "from_texture",
         lua.create_function(
-            |lua, (_, hittable, density, texture): (Table, Value, Real, Value)| {
-                let hittable = lua.from_value(hittable)?;
+            |lua, (_, hittable, density, texture): (Table, AnyUserData, Real, Value)| {
+                let hittable = from_user_data!(hittable, Hittable);
                 let texture = lua.from_value(texture)?;
                 let constant_medium = Hittable::ConstantMedium(ConstantMedium::from_texture(
-                    hittable, density, texture,
+                    Arc::new(hittable),
+                    density,
+                    texture,
                 ));
-                Ok(lua.to_value(&constant_medium))
+                Ok(constant_medium)
             },
         )?,
     )?;
     table.set(
         "from_albedo",
         lua.create_function(
-            |lua, (_, hittable, density, albedo): (Table, Value, Real, AnyUserData)| {
-                let hittable = lua.from_value(hittable)?;
+            |lua, (_, hittable, density, albedo): (Table, AnyUserData, Real, AnyUserData)| {
+                let hittable = from_user_data!(hittable, Hittable);
                 let albedo = from_user_data!(albedo, Color);
                 let constant_medium = Hittable::ConstantMedium(ConstantMedium::from_albedo(
-                    hittable, density, albedo,
+                    Arc::new(hittable),
+                    density,
+                    albedo,
                 ));
-                Ok(lua.to_value(&constant_medium))
+                Ok(constant_medium)
             },
         )?,
     )?;
@@ -178,7 +183,7 @@ fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
         lua.create_function(|lua, (_, radius, material): (Table, Real, Value)| {
             let mat = lua.from_value(material)?;
             let cylinder = Hittable::Quadric(Quadric::Cylinder(Cylinder::infinite(radius, mat)));
-            Ok(lua.to_value(&cylinder))
+            Ok(cylinder)
         })?,
     )?;
 
@@ -189,7 +194,7 @@ fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
                 let mat = lua.from_value(material)?;
                 let cylinder =
                     Hittable::Quadric(Quadric::Cylinder(Cylinder::open(radius, height, mat)));
-                Ok(lua.to_value(&cylinder))
+                Ok(cylinder)
             },
         )?,
     )?;
@@ -203,7 +208,7 @@ fn new_cylinder_table(lua: &Lua) -> mlua::Result<Table> {
                 let cylinder = Hittable::Quadric(Quadric::Cylinder(Cylinder::closed(
                     radius, height, side_mat, cap_mat,
                 )));
-                Ok(lua.to_value(&cylinder))
+                Ok(cylinder)
             },
         )?,
     )?;
@@ -225,7 +230,7 @@ fn new_cone_table(lua: &Lua) -> mlua::Result<Table> {
                     mat,
                     EndType::Open,
                 )));
-                Ok(lua.to_value(&cone))
+                Ok(cone)
             },
         )?,
     )?;
@@ -242,7 +247,7 @@ fn new_cone_table(lua: &Lua) -> mlua::Result<Table> {
                     side_mat,
                     EndType::Closed { cap_mat },
                 )));
-                Ok(lua.to_value(&cone))
+                Ok(cone)
             },
         )?,
     )?;
@@ -252,9 +257,7 @@ fn new_cone_table(lua: &Lua) -> mlua::Result<Table> {
         lua.create_function(
             |lua, (_, base_radius, apex_radius, height, material): (Table, Real, Real, Real, Value)| {
                 let mat = lua.from_value(material)?;
-                let cone =
-                    Hittable::Quadric(Quadric::Cone(Cone::frustum(base_radius, apex_radius, height, mat, EndType::Open)));
-                Ok(lua.to_value(&cone))
+                Ok(Hittable::Quadric(Quadric::Cone(Cone::frustum(base_radius, apex_radius, height, mat, EndType::Open))))
             },
         )?,
     )?;
@@ -280,7 +283,7 @@ fn new_cone_table(lua: &Lua) -> mlua::Result<Table> {
                     side_mat,
                     EndType::Closed { cap_mat },
                 )));
-                Ok(lua.to_value(&cone))
+                Ok(cone)
             },
         )?,
     )?;

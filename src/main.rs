@@ -38,10 +38,10 @@ fn main() -> mlua::Result<()> {
     engine_setup(&lua)?;
 
     let script_name = args[1].clone();
-    let script_content = fs::read_to_string(script_name)?;
+    let script_content = fs::read_to_string(script_name.clone())?;
 
     log::info!("Evaluating Lua script...");
-    let scene_table = lua.load(script_content).eval()?;
+    let scene_table = lua.load(script_content).set_name(script_name).eval()?;
     let scene: SceneSchema = lua.from_value(scene_table)?;
     log::info!("Script evaluated. Rendering the scene...");
 

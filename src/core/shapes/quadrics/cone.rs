@@ -79,10 +79,10 @@ impl Cone {
         let t0 = compute_root(a, b, c, ray_t, |root| self.check_y_range(ray, root));
         let (t, hit_type) = nearest_hit(t0, self.nearest_cap_hit(ray, ray_t));
         let compute_mat = || match hit_type {
-            HitType::Side => &self.fields.material,
+            HitType::Side => self.fields.material(),
             _ => match &self.end_type {
                 EndType::Closed { cap_mat } => &cap_mat,
-                _ => &self.fields.material,
+                _ => self.fields.material(),
             },
         };
 
@@ -230,7 +230,7 @@ where
         let (front_face, face_normal) = HitRecord::face_normal(&ray, outward_normal);
 
         Some(HitRecord::new(
-            hittables::P(p),
+            hittables::HitPoint(p),
             hittables::Normal(face_normal),
             hittables::Mat(compute_mat()),
             hittables::T(t),

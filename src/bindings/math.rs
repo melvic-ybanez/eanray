@@ -13,7 +13,7 @@ where
         lua,
         lua.create_function(|lua, (_, x, y, z): (Table, Real, Real, Real)| {
             let vec_like: VecLike<K> = VecLike::<K>::new(x, y, z);
-            Ok(lua.create_ser_userdata(vec_like))
+            lua.create_ser_userdata(vec_like)
         }),
     )?;
 
@@ -24,7 +24,7 @@ where
         "random",
         lua.create_function(|lua, ()| {
             let vec_like: VecLike<K> = VecLike::<K>::random();
-            Ok(lua.create_ser_userdata(vec_like))
+            lua.create_ser_userdata(vec_like)
         })?,
     )?;
     table.set(

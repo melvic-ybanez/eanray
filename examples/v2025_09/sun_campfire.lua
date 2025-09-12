@@ -11,9 +11,6 @@ local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
 local DiffuseLight = engine.materials.DiffuseLight
-local Translate = engine.transforms.Translate
-local RotateX = engine.transforms.RotateX
-local RotateY = engine.transforms.RotateY
 
 local objects = ObjectList:new()
 
@@ -42,17 +39,17 @@ local function make_piles_of_wood()
   local cut_wood_mat = Lambertian:from_albedo(Color:new(0.784, 0.667, 0.471))  -- pale golden wood
   local wood = Cylinder:closed(wood_radius, 1.4, bark_mat, cut_wood_mat)
 
-  local rotated_cw = RotateY:new(RotateX:new(wood, 90), -45)
-  local rotated_ccw = RotateY:new(RotateX:new(wood, 90), 45)
+  local rotated_cw = wood:rotate_x(90):rotate_y(-45)
+  local rotated_ccw = wood:rotate_x(90):rotate_y(45)
 
-  local bottom_left = Translate:new(rotated_cw, Vec:new(x + 0.7, wood_radius, left - 0.2))
-  local bottom_right = Translate:new(rotated_cw, Vec:new(x + 0.3, wood_radius, left - 0.7))
+  local bottom_left = rotated_cw:translate(x + 0.7, wood_radius, left - 0.2)
+  local bottom_right = rotated_cw:translate(x + 0.3, wood_radius, left - 0.7)
 
-  local middle_left = Translate:new(rotated_ccw, Vec:new(x, wood_radius * 3, left - 0.15))
-  local middle_right = Translate:new(rotated_ccw, Vec:new(x + 0.8, wood_radius * 3, left - 0.9))
+  local middle_left = rotated_ccw:translate(x, wood_radius * 3, left - 0.15)
+  local middle_right = rotated_ccw:translate(x + 0.8, wood_radius * 3, left - 0.9)
 
-  local upper_left = Translate:new(rotated_cw, Vec:new(x + 1, wood_radius * 5, left - 0.2))
-  local upper_right = Translate:new(rotated_cw, Vec:new(x + 0.2, wood_radius * 5, left - 0.7))
+  local upper_left = rotated_cw:translate(x + 1, wood_radius * 5, left - 0.2)
+  local upper_right = rotated_cw:translate(x + 0.2, wood_radius * 5, left - 0.7)
 
   objects:add_all(bottom_left, bottom_right, middle_left, middle_right, upper_left, upper_right)
 end
@@ -65,22 +62,23 @@ local function make_table()
   local surface_y = top_height + legs_height
   local table_mat = Lambertian:from_albedo(Color.WHITE)
 
-  local top = Translate:new(Cylinder:closed(1.25, top_height, table_mat, table_mat), Vec:new(x, surface_y - top_height / 2, z))
+  local top = Cylinder:closed(1.25, top_height, table_mat, table_mat):translate(x, surface_y - top_height / 2, z)
 
   local legs_half_distance = 0.6
   local leg_base_radius = 0.06
   local leg = Cone:frustum_closed(leg_base_radius, leg_base_radius * 0.5, legs_height, table_mat, table_mat)
 
   local legs_y = 0
-  local back_left_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_y, z + legs_half_distance))
-  local back_right_leg = Translate:new(leg, Vec:new(x - legs_half_distance, legs_y, z - legs_half_distance))
-  local front_left_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_y, z + legs_half_distance))
-  local front_right_leg = Translate:new(leg, Vec:new(x + legs_half_distance, legs_y, z - legs_half_distance))
+  local back_left_leg = leg:translate(x - legs_half_distance, legs_y, z + legs_half_distance)
+  local back_right_leg = leg:translate(x - legs_half_distance, legs_y, z - legs_half_distance)
+  local front_left_leg = leg:translate(x + legs_half_distance, legs_y, z + legs_half_distance)
+  local front_right_leg = leg:translate(x + legs_half_distance, legs_y, z - legs_half_distance)
 
   local map_size = 1
   local half_map_size = map_size / 2
   local map_mat = Lambertian:from_texture(Image:new("examples/images/planets/earth.jpg"))
-  local map = Quad:new(Point:new(x - half_map_size, surface_y, z + half_map_size), Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
+  local map = Quad:new(Point:new(x - half_map_size, surface_y, z + half_map_size),
+      Vec:new(map_size, 0, 0), Vec:new(0, 0, -map_size), map_mat)
 
   local jupiter_radius = 0.35
   local jupiter = Sphere:new(
@@ -103,9 +101,9 @@ local function make_table()
   local lamp_x = x
   local lamp_cover_mat = Lambertian:from_albedo(Color.WHITE)
   local bulb_radius = 0.22
-  local lamp_cover = Translate:new(
-      RotateX:new(Cone:frustum_open(lamp_cover_base_radius, lamp_cover_apex_radius, lamp_cover_height, lamp_cover_mat), 135),
-      Vec:new(lamp_x, surface_y + 1.1 + bulb_radius, z - map_size - bulb_radius - 0.1))
+  local lamp_cover = Cone:frustum_open(lamp_cover_base_radius, lamp_cover_apex_radius, lamp_cover_height, lamp_cover_mat)
+                         :rotate_x(135)
+                         :translate(lamp_x, surface_y + 1.1 + bulb_radius, z - map_size - bulb_radius - 0.1)
   local lamp_bulb_mat = DiffuseLight:from_emission_intensified(Color:new(1.0, 0.84, 0.66), Color:from_scalar(2))
   local lamp_bulb = Sphere:new(Point:new(lamp_x, surface_y + 1.11, z - map_size - 0.11), bulb_radius, lamp_bulb_mat)
 
@@ -127,7 +125,7 @@ local function make_stones()
   local right = Sphere:new(Point:new(-2.5, radius, -4.5), radius, mat)
 
   local left_height = 5
-  local left = Translate:new(Cylinder:closed(4, left_height, mat, mat), Vec:new(-2, left_height / 2, 5))
+  local left = Cylinder:closed(4, left_height, mat, mat):translate(-2, left_height / 2, 5)
 
   objects:add_all(right, left)
 end

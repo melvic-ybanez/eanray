@@ -17,7 +17,7 @@ macro_rules! impl_vec_like_conversion {
 macro_rules! define_tuple_conversion {
     () => {
         pub(crate) fn transform(&self, transformation: &Matrix) -> Self {
-            (transformation * crate::core::math::tuple::Tuple4::from(self)).into()
+            (transformation * $crate::core::math::tuple::Tuple4::from(self)).into()
         }
     };
 }

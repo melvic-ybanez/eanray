@@ -1,12 +1,18 @@
+use crate::bindings::macros::from_user_data;
 use crate::core::camera::{Background, Image};
+use crate::core::math::matrix::matrix_4x4;
 use crate::core::math::vector::CanAdd;
-use crate::core::math::{Point, Real, Vec3D, VecLike};
+use crate::core::math::{Matrix, Point, Real, Vec3D, VecLike};
+use crate::core::transform::Transform;
 use crate::core::{Camera, Color, Hittable, HittableList};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataFields, UserDataMethods, Value};
+use mlua::{
+    AnyUserData, LuaSerdeExt, MetaMethod, UserData, UserDataFields, UserDataMethods, Value,
+};
 use serde::{Deserialize, Serialize};
 use std::io;
+use std::sync::Arc;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct SceneSchema {
@@ -125,7 +131,7 @@ impl UserData for Point {
     fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
         add_common_vec_like_fields(fields);
     }
-    
+
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
         methods.add_meta_method(MetaMethod::Sub, |lua, this, other: Value| {
             let point: Point = lua.from_value(other)?;
@@ -158,10 +164,10 @@ fn add_addable_vec_methods<K: 'static + CanAdd + Clone, M: UserDataMethods<VecLi
     });
 }
 
-fn add_common_vec_like_fields<K: 'static + Clone, F: UserDataFields<VecLike<K>>>(
-    fields: &mut F,
-) where
-    VecLike<K>: UserData {
+fn add_common_vec_like_fields<K: 'static + Clone, F: UserDataFields<VecLike<K>>>(fields: &mut F)
+where
+    VecLike<K>: UserData,
+{
     fields.add_field_method_get("x", |_, this| Ok(this.x()));
     fields.add_field_method_get("y", |_, this| Ok(this.y()));
     fields.add_field_method_get("z", |_, this| Ok(this.z()));

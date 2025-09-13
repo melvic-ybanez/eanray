@@ -1,11 +1,10 @@
+use crate::bindings::macros::from_user_data;
 use crate::core::camera::{Background, Image};
-use crate::core::math::vector::CanAdd;
 use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::{Camera, Color, Hittable, HittableList};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataFields, UserDataMethods, Value};
-use serde::{Deserialize, Serialize};
+use mlua::{AnyUserData, UserData, UserDataFields};
 use std::io;
 
 #[derive(Clone, Debug)]
@@ -27,7 +26,7 @@ impl SceneSchema {
 
 impl UserData for SceneSchema {}
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct CameraSchema {
     aspect_ratio: Real,
     image_width: u32,
@@ -99,69 +98,47 @@ impl CameraSchema {
     }
 }
 
-impl UserData for Vec3D {
+impl UserData for CameraSchema {
     fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
-        add_common_vec_like_fields(fields);
-    }
-
-    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
-        add_addable_vec_methods(methods);
-        methods.add_method("length", |_, this, ()| Ok(this.length()))
-    }
-}
-
-impl UserData for Color {
-    fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
-        add_common_vec_like_fields(fields);
-    }
-
-    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
-        add_addable_vec_methods(methods);
-    }
-}
-
-impl UserData for Point {
-    fn add_fields<F: UserDataFields<Self>>(fields: &mut F) {
-        add_common_vec_like_fields(fields);
-    }
-
-    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
-        methods.add_meta_method(MetaMethod::Sub, |lua, this, other: Value| {
-            let point: Point = lua.from_value(other)?;
-            Ok(this - point)
+        fields.add_field_method_set("aspect_ratio", |_, this, aspect_ratio| {
+            Ok(this.aspect_ratio = aspect_ratio)
         });
-        methods.add_meta_method(MetaMethod::Add, |lua, this, other: Value| {
-            let other_vec3: Vec3D = lua.from_value(other)?;
-            Ok(this + other_vec3)
+        fields.add_field_method_set("image_width", |_, this, image_width| {
+            Ok(this.image_width = image_width)
+        });
+        fields.add_field_method_set("samples_per_pixel", |_, this, samples_per_pixel| {
+            Ok(this.samples_per_pixel = Some(samples_per_pixel))
+        });
+        fields.add_field_method_set("antialiasing", |_, this, antialiasing| {
+            Ok(this.antialiasing = Some(antialiasing))
+        });
+        fields.add_field_method_set("max_depth", |_, this, max_depth| {
+            Ok(this.max_depth = Some(max_depth))
+        });
+        fields.add_field_method_set("field_of_view", |_, this, field_of_view| {
+            Ok(this.field_of_view = Some(field_of_view))
+        });
+        fields.add_field_method_set("look_from", |_, this, look_from: AnyUserData| {
+            let look_from = from_user_data!(look_from, Point);
+            Ok(this.look_from = Some(look_from))
+        });
+        fields.add_field_method_set("look_at", |_, this, look_at: AnyUserData| {
+            let look_at = from_user_data!(look_at, Point);
+            Ok(this.look_at = Some(look_at))
+        });
+        fields.add_field_method_set("defocus_angle", |_, this, defocus_angle| {
+            Ok(this.defocus_angle = Some(defocus_angle))
+        });
+        fields.add_field_method_set("focus_distance", |_, this, focus_distance| {
+            Ok(this.focus_distance = Some(focus_distance))
+        });
+        fields.add_field_method_set("background", |_, this, background: AnyUserData| {
+            let background = from_user_data!(background, Background);
+            Ok(this.background = Some(background))
+        });
+        fields.add_field_method_set("vup", |_, this, vup: AnyUserData| {
+            let vup = from_user_data!(vup, Vec3D);
+            Ok(this.vup = Some(vup))
         });
     }
-}
-
-fn add_addable_vec_methods<K: 'static + CanAdd + Clone, M: UserDataMethods<VecLike<K>>>(
-    methods: &mut M,
-) where
-    VecLike<K>: UserData,
-{
-    methods.add_meta_method(MetaMethod::Mul, |_, this, rhs| match rhs {
-        Value::Integer(scalar) => Ok(this * scalar as Real),
-        Value::Number(scalar) => Ok(this * scalar),
-        Value::UserData(userdata) => {
-            let other_vec_like: VecLike<K> = userdata.borrow::<VecLike<K>>()?.clone();
-            Ok(this * other_vec_like)
-        }
-        _ => Err(mlua::Error::RuntimeError("Invalid RHS".into())),
-    });
-    methods.add_meta_method(MetaMethod::Add, |lua, this, other: Value| {
-        let other_vec_like: VecLike<K> = lua.from_value(other)?;
-        Ok(this + other_vec_like)
-    });
-}
-
-fn add_common_vec_like_fields<K: 'static + Clone, F: UserDataFields<VecLike<K>>>(fields: &mut F)
-where
-    VecLike<K>: UserData,
-{
-    fields.add_field_method_get("x", |_, this| Ok(this.x()));
-    fields.add_field_method_get("y", |_, this| Ok(this.y()));
-    fields.add_field_method_get("z", |_, this| Ok(this.z()));
 }

@@ -3,7 +3,7 @@ use crate::core::math;
 use crate::core::math::point::PointKind;
 use crate::core::math::vector::VecKind;
 use crate::core::math::{Real, VecLike};
-use mlua::{Lua, LuaSerdeExt, Table, UserData};
+use mlua::{Lua, Table, UserData};
 
 pub(crate) fn new_vec_like_table<K: 'static>(lua: &Lua) -> mlua::Result<Table>
 where
@@ -11,35 +11,27 @@ where
 {
     let table = lua::new_table(
         lua,
-        lua.create_function(|lua, (_, x, y, z): (Table, Real, Real, Real)| {
-            let vec_like: VecLike<K> = VecLike::<K>::new(x, y, z);
-            lua.create_ser_userdata(vec_like)
+        lua.create_function(|_, (_, x, y, z): (Table, Real, Real, Real)| {
+            Ok(VecLike::<K>::new(x, y, z))
         }),
     )?;
 
     // TODO: This one may not be usable in places where user-data is expected
-    table.set("ZERO", lua.to_value(&VecLike::<K>::zero())?)?;
+    table.set("ZERO", VecLike::<K>::zero())?;
 
     table.set(
         "random",
-        lua.create_function(|lua, ()| {
-            let vec_like: VecLike<K> = VecLike::<K>::random();
-            lua.create_ser_userdata(vec_like)
-        })?,
+        lua.create_function(|_, ()| Ok(VecLike::<K>::random()))?,
     )?;
     table.set(
         "random_range",
-        lua.create_function(|lua, (min, max): (Real, Real)| {
-            let vec_like: VecLike<K> = VecLike::<K>::random_range(min, max);
-            Ok(lua.create_ser_userdata(vec_like))
+        lua.create_function(|_, (min, max): (Real, Real)| {
+            Ok(VecLike::<K>::random_range(min, max))
         })?,
     )?;
     table.set(
         "from_scalar",
-        lua.create_function(|lua, (_, scalar): (Table, Real)| {
-            let vec_like: VecLike<K> = VecLike::from_scalar(scalar);
-            Ok(lua.create_ser_userdata(vec_like))
-        })?,
+        lua.create_function(|_, (_, scalar): (Table, Real)| Ok(VecLike::from_scalar(scalar)))?,
     )?;
 
     Ok(table)

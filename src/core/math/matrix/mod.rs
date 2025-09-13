@@ -6,12 +6,10 @@ mod tests;
 use crate::common::macros::impl_index;
 use crate::core::math::tuple::{Elems, Tuple4};
 use crate::core::math::Real;
-use serde::{Deserialize, Serialize};
 use std::default::Default;
-use std::hash::{Hash, Hasher};
 use std::ops::{Index, IndexMut, Mul};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Matrix {
     elems: Vec<Real>,
     order: usize,

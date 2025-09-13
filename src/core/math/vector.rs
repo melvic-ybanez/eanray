@@ -1,21 +1,19 @@
 use crate::common::macros::impl_deref;
 use crate::core::math;
 use crate::core::math::macros::{define_tuple_conversion, impl_vec_like_conversion};
+use crate::core::math::matrix::Matrix;
+use crate::core::math::point::PointKind;
 use crate::core::math::{Axis, Point, Real};
-use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::marker::PhantomData;
 use std::ops::{Add, Div, Index, IndexMut, Mul, Neg, Sub};
-use crate::core::math::matrix::Matrix;
-use crate::core::math::point::PointKind;
-use crate::core::math::tuple::Tuple4;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct VecKind;
 
 pub(crate) type Vec3D = VecLike<VecKind>;
 
-#[derive(Clone, Serialize, Deserialize, Debug)]
+#[derive(Clone, Debug)]
 pub(crate) struct VecLike<Kind> {
     pub(in crate::core) x: Real,
     pub(in crate::core) y: Real,
@@ -23,7 +21,7 @@ pub(crate) struct VecLike<Kind> {
     _kind: PhantomData<Kind>,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct UnitVec3D(pub(crate) Vec3D);
 
 impl<K> VecLike<K> {

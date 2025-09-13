@@ -1,12 +1,11 @@
 use crate::core::math;
-use crate::core::math::Real;
 use crate::core::math::interval::Interval;
 use crate::core::math::macros::impl_vec_like_conversion;
-use crate::core::math::vector::{CanAdd, VecKind, VecLike};
-use serde::{Deserialize, Serialize};
 use crate::core::math::point::PointKind;
+use crate::core::math::vector::{CanAdd, VecKind, VecLike};
+use crate::core::math::Real;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct ColorKind;
 
 pub(crate) type Color = VecLike<ColorKind>;

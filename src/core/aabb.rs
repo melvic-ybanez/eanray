@@ -1,13 +1,11 @@
-use crate::core::Ray;
 use crate::core::math::interval::Interval;
 use crate::core::math::{Axis, Point, Vec3D};
+use crate::core::Ray;
 use crate::diagnostics::metrics;
-use serde::{Deserialize, Serialize};
-use std::cmp::PartialEq;
 use std::ops::Add;
 
 /// Axis-aligned Bounding Box
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct AABB {
     x: Interval,
     y: Interval,

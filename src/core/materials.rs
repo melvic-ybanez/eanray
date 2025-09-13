@@ -2,9 +2,8 @@ use crate::core::hittables::HitRecord;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::textures::{SolidColor, Texture};
 use crate::core::{math, Color, Ray};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum Material {
     Lambertian(Lambertian),
     Metal(Metal),
@@ -36,7 +35,7 @@ impl Material {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Lambertian {
     texture: Texture,
 }
@@ -63,7 +62,7 @@ impl Lambertian {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Metal {
     albedo: Color,
     fuzz: Real,
@@ -86,7 +85,7 @@ impl Metal {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Dielectric {
     refraction_index: Real,
 }
@@ -128,7 +127,7 @@ impl Dielectric {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct DiffuseLight {
     texture: Texture,
     intensity: Color,
@@ -173,7 +172,7 @@ pub(crate) mod refractive_index {
     pub(crate) const DIAMOND: Real = 2.417;
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Isotropic {
     texture: Texture,
 }

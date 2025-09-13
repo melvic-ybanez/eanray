@@ -1,11 +1,10 @@
 use crate::core::math;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Vec3D};
-use serde::{Deserialize, Serialize};
 
 type Perm = Vec<usize>;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Perlin {
     rand_vecs: Vec<UnitVec3D>,
     perm_x: Perm,

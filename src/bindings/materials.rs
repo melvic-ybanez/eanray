@@ -4,7 +4,7 @@ use crate::core::materials::{refractive_index, Dielectric, DiffuseLight, Lambert
 use crate::core::math::Real;
 use crate::core::textures::Texture;
 use crate::core::{Color, Material};
-use mlua::{AnyUserData, Lua, LuaSerdeExt, Table, Value};
+use mlua::{AnyUserData, Lua, Table};
 
 pub(crate) fn new_table(lua: &Lua) -> mlua::Result<Table> {
     let materials = lua.create_table()?;
@@ -19,10 +19,9 @@ fn new_lambertian_table(lua: &Lua) -> mlua::Result<Table> {
     let table = lua.create_table()?;
     table.set(
         "from_texture",
-        lua.create_function(|lua, (_, texture): (Table, Value)| {
-            let texture: Texture = lua.from_value(texture)?;
-            let lambertian = Material::Lambertian(Lambertian::from_texture(texture));
-            Ok(lua.to_value(&lambertian))
+        lua.create_function(|lua, (_, texture): (Table, AnyUserData)| {
+            let texture: Texture = from_user_data!(texture, Texture);
+            Ok(Material::Lambertian(Lambertian::from_texture(texture)))
         })?,
     )?;
 
@@ -30,8 +29,7 @@ fn new_lambertian_table(lua: &Lua) -> mlua::Result<Table> {
         "from_albedo",
         lua.create_function(|lua, (_, albedo): (Table, AnyUserData)| {
             let albedo: Color = from_user_data!(albedo, Color);
-            let lambertian = Material::Lambertian(Lambertian::from_albedo(albedo));
-            Ok(lua.to_value(&lambertian))
+            Ok(Material::Lambertian(Lambertian::from_albedo(albedo)))
         })?,
     )?;
 
@@ -41,10 +39,9 @@ fn new_lambertian_table(lua: &Lua) -> mlua::Result<Table> {
 fn new_metal_table(lua: &Lua) -> mlua::Result<Table> {
     lua::new_table(
         lua,
-        lua.create_function(|lua, (_, albedo, fuzz): (Table, AnyUserData, Real)| {
+        lua.create_function(|_, (_, albedo, fuzz): (Table, AnyUserData, Real)| {
             let albedo: Color = from_user_data!(albedo, Color);
-            let metal = Material::Metal(Metal::new(albedo, fuzz));
-            Ok(lua.to_value(&metal))
+            Ok(Material::Metal(Metal::new(albedo, fuzz)))
         }),
     )
 }
@@ -52,9 +49,8 @@ fn new_metal_table(lua: &Lua) -> mlua::Result<Table> {
 fn new_dielectric_table(lua: &Lua) -> mlua::Result<Table> {
     let table = lua::new_table(
         lua,
-        lua.create_function(|lua, (_, refraction_index): (Table, Real)| {
-            let dielectric = Material::Dielectric(Dielectric::new(refraction_index));
-            Ok(lua.to_value(&dielectric))
+        lua.create_function(|_, (_, refraction_index): (Table, Real)| {
+            Ok(Material::Dielectric(Dielectric::new(refraction_index)))
         }),
     )?;
 
@@ -75,43 +71,43 @@ fn new_diffuse_light_table(lua: &Lua) -> mlua::Result<Table> {
 
     table.set(
         "from_emission",
-        lua.create_function(|lua, (_, emission_color): (Table, AnyUserData)| {
+        lua.create_function(|_, (_, emission_color): (Table, AnyUserData)| {
             let emission_color: Color = from_user_data!(emission_color, Color);
-            let diffuse_light = Material::DiffuseLight(DiffuseLight::from_emission(emission_color));
-            Ok(lua.to_value(&diffuse_light))
+            Ok(Material::DiffuseLight(DiffuseLight::from_emission(
+                emission_color,
+            )))
         })?,
     )?;
     table.set(
         "from_texture",
-        lua.create_function(|lua, (_, texture): (Table, Value)| {
-            let texture: Texture = lua.from_value(texture)?;
-            let diffuse_light = Material::DiffuseLight(DiffuseLight::from_texture(texture));
-            Ok(lua.to_value(&diffuse_light))
+        lua.create_function(|_, (_, texture): (Table, AnyUserData)| {
+            let texture: Texture = from_user_data!(texture, Texture);
+            Ok(Material::DiffuseLight(DiffuseLight::from_texture(texture)))
         })?,
     )?;
     table.set(
         "from_texture_intensified",
         lua.create_function(
-            |lua, (_, texture, intensity): (Table, Value, AnyUserData)| {
-                let texture: Texture = lua.from_value(texture)?;
+            |_, (_, texture, intensity): (Table, AnyUserData, AnyUserData)| {
+                let texture: Texture = from_user_data!(texture, Texture);
                 let intensity = from_user_data!(intensity, Color);
                 let diffuse_light = Material::DiffuseLight(DiffuseLight::from_texture_intensified(
                     texture, intensity,
                 ));
-                Ok(lua.to_value(&diffuse_light))
+                Ok(diffuse_light)
             },
         )?,
     )?;
     table.set(
         "from_emission_intensified",
         lua.create_function(
-            |lua, (_, emission_color, intensity): (Table, AnyUserData, AnyUserData)| {
+            |_, (_, emission_color, intensity): (Table, AnyUserData, AnyUserData)| {
                 let emission_color: Color = from_user_data!(emission_color, Color);
                 let intensity = from_user_data!(intensity, Color);
                 let diffuse_light = Material::DiffuseLight(
                     DiffuseLight::from_emission_intensified(emission_color, intensity),
                 );
-                Ok(lua.to_value(&diffuse_light))
+                Ok(diffuse_light)
             },
         )?,
     )?;

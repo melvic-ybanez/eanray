@@ -8,7 +8,6 @@ use crate::core::math::ray::Ray;
 use crate::diagnostics::stats;
 use crate::settings::Config;
 use rayon::prelude::*;
-use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{self, Write};
 use std::time::Instant;
@@ -461,7 +460,7 @@ impl DefocusDisk {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum Background {
     Color(Color),
     Lerp { start: Color, end: Color },

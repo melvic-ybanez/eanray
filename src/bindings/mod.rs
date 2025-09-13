@@ -7,3 +7,4 @@ mod textures;
 mod transforms;
 mod macros;
 mod hittables;
+mod userdata;

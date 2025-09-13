@@ -1,8 +1,7 @@
 use crate::core::math::{self, Real};
-use serde::{Deserialize, Serialize};
 use std::ops::Add;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Interval {
     pub(crate) min: Real,
     pub(crate) max: Real,

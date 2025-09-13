@@ -3,12 +3,11 @@ use crate::core::math::{Point, Real};
 use crate::core::{Color, math};
 use image::{ImageReader, ImageResult, RgbImage};
 use perlin::Perlin;
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 mod perlin;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum Texture {
     SolidColor(SolidColor),
     Checker(Checker),
@@ -27,7 +26,7 @@ impl Texture {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct SolidColor {
     albedo: Color,
 }
@@ -46,7 +45,7 @@ impl SolidColor {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Checker {
     scale_inverse: Real,
     even: Arc<Texture>,
@@ -85,7 +84,7 @@ impl Checker {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct ImageTexture {
     image: SerializeableImage,
 }
@@ -131,7 +130,7 @@ impl ImageTexture {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct SerializeableImage {
     width: u32,
     height: u32,
@@ -182,7 +181,7 @@ impl From<SerializeableImage> for RgbImage {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct NoiseTexture {
     noise: Perlin,
     scale: f64,

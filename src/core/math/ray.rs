@@ -1,9 +1,8 @@
 use crate::core::math::matrix::Matrix;
 use crate::core::math::vector::Vec3D;
 use crate::core::math::{Point, Real};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Ray {
     origin: Point,
     direction: Vec3D,

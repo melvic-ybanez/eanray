@@ -10,7 +10,6 @@ local ObjectList = engine.ObjectList
 local textures = engine.textures
 local Image = textures.Image
 local DiffuseLight = engine.materials.DiffuseLight
-local Translate = engine.transforms.Translate
 
 local objects = ObjectList:new()
 local planets_dir = "examples/images/planets/"
@@ -53,8 +52,8 @@ local function make_base_cylinder(center)
   local radius = small_radius + 0.1
   local side_mat = Lambertian:from_albedo(Color:new(1, 1, 1))
   local cylinder = Cylinder:closed(radius, cyl_height, side_mat, side_mat)
-  local translate = Translate:new(cylinder, Vec:new(center.x, cyl_height / 2, center.z))
-  objects:add(translate)
+      :translate(center.x, cyl_height / 2, center.z)
+  objects:add(cylinder)
 end
 
 local function raise_center(center)

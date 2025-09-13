@@ -7,7 +7,7 @@ use crate::core::color::ColorKind;
 use crate::core::math::Real;
 use crate::core::Hittable::BVH;
 use crate::core::{bvh, Color, HittableList};
-use mlua::{AnyUserData, Function, Lua, LuaSerdeExt, Result, Table, Value};
+use mlua::{AnyUserData, Function, Lua, Result, Table};
 
 pub(crate) fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> {
     let table = lua.create_table()?;
@@ -18,9 +18,8 @@ pub(crate) fn new_table(lua: &Lua, function: Result<Function>) -> Result<Table> 
 fn new_camera_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (_, image_width, aspect_ratio): (Table, u32, Real)| {
-            let camera = CameraSchema::new(aspect_ratio, image_width);
-            Ok(lua.to_value(&camera))
+        lua.create_function(|_, (_, image_width, aspect_ratio): (Table, u32, Real)| {
+            Ok(CameraSchema::new(aspect_ratio, image_width))
         }),
     )
 }
@@ -30,19 +29,18 @@ fn new_background_table(lua: &Lua) -> Result<Table> {
 
     table.set(
         "from_color",
-        lua.create_function(|lua, (_, color): (Table, AnyUserData)| {
+        lua.create_function(|_, (_, color): (Table, AnyUserData)| {
             let color = from_user_data!(color, Color);
-            let background = Background::from_color(color);
-            Ok(lua.to_value(&background))
+            Ok(Background::from_color(color))
         })?,
     )?;
     table.set(
         "from_lerp",
-        lua.create_function(|lua, (_, start, end): (Table, AnyUserData, AnyUserData)| {
+        lua.create_function(|_, (_, start, end): (Table, AnyUserData, AnyUserData)| {
             let start = from_user_data!(start, Color);
             let end = from_user_data!(end, Color);
             let background = Background::from_lerp(start, end);
-            Ok(lua.to_value(&background))
+            Ok(background)
         })?,
     )?;
 
@@ -52,14 +50,14 @@ fn new_background_table(lua: &Lua) -> Result<Table> {
 fn new_object_list_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, this: Table| Ok(HittableList::empty())),
+        lua.create_function(|_, _: Table| Ok(HittableList::empty())),
     )
 }
 
 fn new_bvh_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (_, h_list): (Table, AnyUserData)| {
+        lua.create_function(|_, (_, h_list): (Table, AnyUserData)| {
             let hittable_list = from_user_data!(h_list, HittableList);
             let bvh = bvh::BVH::from_list(hittable_list);
             Ok(BVH(bvh))
@@ -70,8 +68,8 @@ fn new_bvh_table(lua: &Lua) -> Result<Table> {
 fn new_scene_table(lua: &Lua) -> Result<Table> {
     new_table(
         lua,
-        lua.create_function(|lua, (_, camera, objects): (Table, Value, AnyUserData)| {
-            let camera: CameraSchema = lua.from_value(camera)?;
+        lua.create_function(|_, (_, camera, objects): (Table, AnyUserData, AnyUserData)| {
+            let camera: CameraSchema = from_user_data!(camera, CameraSchema);
             let objects = from_user_data!(objects, HittableList);
             let scene: SceneSchema = SceneSchema::new(camera, objects);
             Ok(scene)

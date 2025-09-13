@@ -8,7 +8,10 @@ use std::sync::Arc;
 
 impl UserData for Hittable {
     fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
-        fn build_transform(hittable: &Hittable, transform_matrix: Matrix) -> Result<Hittable, Error> {
+        fn build_transform(
+            hittable: &Hittable,
+            transform_matrix: Matrix,
+        ) -> Result<Hittable, Error> {
             let transform =
                 Hittable::Transform(Transform::new(Arc::new(hittable.clone()), transform_matrix));
             Ok(transform)
@@ -34,6 +37,11 @@ impl UserData for Hittable {
         add_rotate_method("rotate_x", matrix_4x4::rotation_x);
         add_rotate_method("rotate_y", matrix_4x4::rotation_y);
         add_rotate_method("rotate_z", matrix_4x4::rotation_z);
+
+        methods.add_method("scale", |_, this, (x, y, z): (Real, Real, Real)| {
+            let scale = matrix_4x4::scaling(x, y, z);
+            build_transform(this, scale)
+        });
     }
 }
 

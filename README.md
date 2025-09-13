@@ -22,7 +22,7 @@ There is a plan to add more features in the future, but for now, the most releva
 * Motion Blur (currently supported only for Spheres)
 * Texture Mappings: Checkers, Perlin Noise, Images
 * Light Sources
-* Transformations: Translation, Rotations
+* Transformations: Translation, Rotations, Scaling
 * Diagnostics: Metrics, Statistics
 
 ## How To Run

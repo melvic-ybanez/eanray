@@ -2,16 +2,12 @@ use crate::core::aabb::AABB;
 use crate::core::hittables::{FrontFace, HitPoint, HitRecord, Mat, Normal, ObjectRef, T, U, V};
 use crate::core::materials::Isotropic;
 use crate::core::math::interval::Interval;
-use crate::core::math::matrix::Matrix;
-use crate::core::transform::Transform;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Real, Vec3D};
 use crate::core::textures::Texture;
 use crate::core::{math, Color, Material, Ray};
-use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct ConstantMedium {
     boundary: ObjectRef,
     neg_inv_density: Real,

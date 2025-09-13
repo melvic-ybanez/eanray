@@ -1,7 +1,7 @@
 use crate::bindings::schemas::SceneSchema;
 use crate::diagnostics::metrics;
 use config::{Config, File};
-use mlua::{Lua, LuaSerdeExt};
+use mlua::{AnyUserData, Lua, LuaSerdeExt};
 use std::{env, fs};
 
 pub(crate) mod bindings;
@@ -41,8 +41,8 @@ fn main() -> mlua::Result<()> {
     let script_content = fs::read_to_string(script_name.clone())?;
 
     log::info!("Evaluating Lua script...");
-    let scene_table = lua.load(script_content).set_name(script_name).eval()?;
-    let scene: SceneSchema = lua.from_value(scene_table)?;
+    let scene_table: AnyUserData = lua.load(script_content).set_name(script_name).eval()?;
+    let scene: SceneSchema = scene_table.borrow::<SceneSchema>()?.clone();
     log::info!("Script evaluated. Rendering the scene...");
 
     let settings: &'static settings::Config = Box::leak(Box::new(settings));

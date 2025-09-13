@@ -6,7 +6,6 @@ use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::quadrics::cone::HitType;
 use crate::core::shapes::quadrics::{cone, point_within_disk};
 use crate::core::{math, Material, Ray};
-use serde::{Deserialize, Serialize};
 
 /// Theoretically, the finite cylinder can be encoded as a truncated cone with the same top
 /// and bottom radii, so we can probably just unify both. However, the generalization
@@ -14,7 +13,7 @@ use serde::{Deserialize, Serialize};
 /// (I haven't profiled this, so I don't know)
 ///
 /// Let's keep them separate for now and maybe revisit these implementations in the future.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Cylinder {
     radius: Real,
     pub(super) fields: HittableFields,
@@ -155,13 +154,13 @@ impl Cylinder {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum CylinderKind {
     Finite { half: Real, kind: FiniteType },
     Infinite,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum FiniteType {
     Closed { cap_mat: Material },
     Open,

@@ -12,7 +12,6 @@ use crate::core::shapes::quadrics::Quadric;
 use crate::core::shapes::volume::ConstantMedium;
 use crate::core::transform::Transform;
 use crate::diagnostics::metrics;
-use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
 pub(crate) type ObjectRef = Arc<Hittable>;
@@ -95,7 +94,7 @@ pub(crate) struct FrontFace(pub(crate) bool);
 pub(crate) struct U(pub(crate) Real);
 pub(crate) struct V(pub(crate) Real);
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum Hittable {
     Quadric(Quadric),
     List(HittableList),
@@ -177,7 +176,7 @@ impl Hittable {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct HittableFields {
     pub(crate) bounding_box: AABB,
     mat: Material,
@@ -204,7 +203,7 @@ impl HittableFields {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct HittableList {
     objects: Vec<Hittable>,
     bbox: AABB,

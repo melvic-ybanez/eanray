@@ -1,38 +1,31 @@
-use crate::bindings::macros::from_user_data;
 use crate::core::camera::{Background, Image};
-use crate::core::math::matrix::matrix_4x4;
 use crate::core::math::vector::CanAdd;
-use crate::core::math::{Matrix, Point, Real, Vec3D, VecLike};
-use crate::core::transform::Transform;
+use crate::core::math::{Point, Real, Vec3D, VecLike};
 use crate::core::{Camera, Color, Hittable, HittableList};
 use crate::settings;
 use crate::settings::Config;
-use mlua::{
-    AnyUserData, LuaSerdeExt, MetaMethod, UserData, UserDataFields, UserDataMethods, Value,
-};
+use mlua::{LuaSerdeExt, MetaMethod, UserData, UserDataFields, UserDataMethods, Value};
 use serde::{Deserialize, Serialize};
 use std::io;
-use std::sync::Arc;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct SceneSchema {
     camera: CameraSchema,
-    objects: Vec<Hittable>,
+    objects: HittableList,
 }
 
 impl SceneSchema {
-    pub(crate) fn new(camera: CameraSchema, objects: Vec<Hittable>) -> Self {
+    pub(crate) fn new(camera: CameraSchema, objects: HittableList) -> Self {
         Self { camera, objects }
     }
 
     pub(crate) fn render(&self, config: &'static Config) -> io::Result<()> {
         let camera = self.camera.build(config);
-        camera.render(
-            &Hittable::List(HittableList::from_vec(self.objects.clone())),
-            config,
-        )
+        camera.render(&Hittable::List(self.objects.clone()), config)
     }
 }
+
+impl UserData for SceneSchema {}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub(crate) struct CameraSchema {

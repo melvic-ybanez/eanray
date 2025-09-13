@@ -7,9 +7,8 @@ use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::quadrics::compute_root_from_discriminant;
 use crate::core::{hittables, math};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Sphere {
     // we are using a Ray for the center as opposed to a Point to allow for "motion" effects
     center: Ray,

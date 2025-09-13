@@ -102,7 +102,7 @@ fn new_disk_table(lua: &Lua) -> mlua::Result<Table> {
                 let v = from_user_data!(v, Vec3D);
                 let mat: Material = lua.from_value(mat)?;
                 let quad = Hittable::Planar(Planar::disk(q, u, v, radius, mat));
-                Ok(lua.to_value(&quad))
+                Ok(quad)
             },
         ),
     )
@@ -132,7 +132,7 @@ fn new_plane_table(lua: &Lua) -> mlua::Result<Table> {
                 let n = from_user_data!(n, Vec3D);
                 let mat: Material = lua.from_value(mat)?;
                 let plane = Hittable::Plane(Plane::new(p0, n.to_unit(), mat));
-                Ok(lua.to_value(&plane))
+                Ok(plane)
             },
         ),
     )

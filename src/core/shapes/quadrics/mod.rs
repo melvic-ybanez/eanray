@@ -1,17 +1,16 @@
 use crate::core::hittables::{HitRecord, HittableFields};
 use crate::core::math::interval::Interval;
-use crate::core::math::{Matrix, Real};
+use crate::core::math::Real;
 use crate::core::shapes::quadrics::cone::Cone;
 use crate::core::shapes::Sphere;
 use crate::core::Ray;
 use cylinder::Cylinder;
-use serde::{Deserialize, Serialize};
 
 pub(crate) mod cone;
 pub(crate) mod cylinder;
 pub(crate) mod sphere;
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum Quadric {
     Sphere(Sphere),
     Cylinder(Cylinder),

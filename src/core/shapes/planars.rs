@@ -4,9 +4,8 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Real, Vec3D};
 use crate::core::{hittables, math, Material, Ray};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum Kind {
     Quad(Quad),
     Triangle(Triangle),
@@ -15,7 +14,7 @@ pub(crate) enum Kind {
 
 /// Represents any 2D planar primitive. I'm under the impression that `q`, `u`, and `v` are standard
 /// names in ray tracing, so I'll use them here as well.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Planar {
     q: Point,
     u: Vec3D,
@@ -111,7 +110,7 @@ impl Planar {
 
 /// Quadrilaterals. This is technically a parallelogram, but for some reason,
 /// Peter Shirley named it quad in his books, and I intend to adapt that name here.
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Quad;
 
 impl Quad {
@@ -122,7 +121,7 @@ impl Quad {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Triangle;
 
 impl Triangle {
@@ -131,7 +130,7 @@ impl Triangle {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Disk {
     radius: Real,
 }

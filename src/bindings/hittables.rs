@@ -2,8 +2,8 @@ use crate::bindings::macros::from_user_data;
 use crate::core::math::matrix::matrix_4x4;
 use crate::core::math::{Matrix, Real};
 use crate::core::transform::Transform;
-use crate::core::Hittable;
-use mlua::{AnyUserData, Error, UserData, UserDataMethods};
+use crate::core::{Hittable, HittableList};
+use mlua::{AnyUserData, Error, UserData, UserDataMethods, Variadic};
 use std::sync::Arc;
 
 impl UserData for Hittable {
@@ -34,5 +34,23 @@ impl UserData for Hittable {
         add_rotate_method("rotate_x", matrix_4x4::rotation_x);
         add_rotate_method("rotate_y", matrix_4x4::rotation_y);
         add_rotate_method("rotate_z", matrix_4x4::rotation_z);
+    }
+}
+
+impl UserData for HittableList {
+    fn add_methods<M: UserDataMethods<Self>>(methods: &mut M) {
+        methods.add_method_mut("add", |_, this, object: AnyUserData| {
+            let object = from_user_data!(object, Hittable);
+            this.add(object);
+            Ok(())
+        });
+
+        methods.add_method_mut("add_all", |_, this, objects: Variadic<AnyUserData>| {
+            for object in objects {
+                let hittable = from_user_data!(object, Hittable);
+                this.add(hittable);
+            }
+            Ok(())
+        })
     }
 }

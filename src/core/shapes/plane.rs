@@ -4,9 +4,8 @@ use crate::core::math::interval::Interval;
 use crate::core::math::vector::UnitVec3D;
 use crate::core::math::{Point, Vec3D};
 use crate::core::{hittables, Material, Ray};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Plane {
     p0: Point,    // a point on the plane
     n: UnitVec3D, // plane normal

@@ -3,9 +3,8 @@ use crate::core::hittables::ObjectRef;
 use crate::core::math::matrix::{matrix_4x4, Matrix};
 use crate::core::math::{Axis, Point, Real};
 use crate::core::{math, Hittable};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Transform {
     forward: Matrix,
     inverse: Matrix,

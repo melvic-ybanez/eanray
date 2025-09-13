@@ -6,9 +6,8 @@ use crate::core::math::{Point, Real, Vec3D};
 use crate::core::shapes::quadrics;
 use crate::core::shapes::quadrics::point_within_disk;
 use crate::core::{hittables, math, Material, Ray};
-use serde::{Deserialize, Serialize};
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) struct Cone {
     height: Real,
     base_radius: Real,
@@ -138,7 +137,7 @@ impl Cone {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug)]
 pub(crate) enum EndType {
     Open,
     Closed { cap_mat: Material },
